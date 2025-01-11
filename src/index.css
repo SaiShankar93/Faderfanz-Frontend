@@ -474,3 +474,45 @@ ul.listing_disc li {
     @apply bg-background text-foreground;
   }
 }
+
+/* .backg {
+  background: url('/') no-repeat;
+  background-position: center;
+  background-size: cover;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: 'Lora', serif;
+  font-family: 'Merriweather', serif;
+  font-family: 'Roboto', sans-serif;
+}
+
+.bg-cont {
+  background-color: transparent;
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(0, 0, 0, .2);
+  width: 400px;
+  padding: 20px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin-top: -80px;
+  align-items: center;
+  border-radius: 10px;
+} */
+@keyframes scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+/* Tailwind custom utility example (optional) */
+@layer utilities {
+  .animate-scroll {
+    animation: scroll 20s linear infinite;
+  }
+}

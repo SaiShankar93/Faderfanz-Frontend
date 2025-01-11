@@ -14,6 +14,8 @@ import Featured2 from "@/components/Featured2";
 import { Helmet } from "react-helmet";
 import PopupModal from "@/components/PopupModal";
 import { Swiper, SwiperSlide } from "swiper/react";
+import ScrollAnimation from "../components/ScrollAnimation";
+import { variants, scaleUpVariants } from "../animations/variants";
 
 import "swiper/css";
 import "swiper/css/pagination";
@@ -48,26 +50,66 @@ const box = [
 //   { icon: "/main/hm5.svg", text: "hospitality", param: "hospitality" },
 //   { icon: "/main/hm6.svg", text: "Outdoor", param: "outdoor" },
 // ];
-const Process = [
+const testimonials = [
   {
-    number: "01",
-    text: "First, a conversation sparks off the magic",
-    describe: `Torem ipsum dolor sit amet, consectetur adipisicing elitsed do eiusmo tempor incididunt ut labore Torem ipsum dolor sit amet, consectetur adipisicing elitsed do eiusmo tempor incididunt ut labore Torem ipsum dolor sit amet, consectetur adipisicing elitsed do
-    eiusmo tempor incididunt ut labore`,
+    quote:
+      "Deltospark transformed our online presence, bringing our vision to life. The website they built for us is not only visually stunning but also highly functional.",
+    name: "Jane Doe",
+    title: "CEO of TechWorld",
+
   },
   {
-    number: "02",
-    text: "Next, co-creation begins, with a site visit.",
-    describe: `Torem ipsum dolor sit amet, consectetur adipisicing elitsed do eiusmo tempor incididunt ut labore Torem ipsum dolor sit amet, consectetur adipisicing elitsed do eiusmo tempor incididunt ut labore Torem ipsum dolor sit amet, consectetur adipisicing elitsed do
-    eiusmo tempor incididunt ut labore`,
+    quote: "Deltospark has been amazing, handling our mobile app, web development, backend, and AI needs. We've collaborated for over 1.5 years, with great customer feedback.",
+    name: "Shaiquel Jilani",
+    title: "Founder of Pinksurfing",
+  },
+
+
+  {
+    quote: "Deltospark developed an excellent e-commerce site with multivendor functionality for us. There was no delay in image loading, and the website runs smoothly and efficiently.",
+    name: "Alex Johnson",
+    title: "CTO Furniture E-commerce",
+
+  },
+
+  {
+    quote:
+      "We have seen a significant increase in traffic and engagement since Deltospark revamped our site. Their team's expertise is unmatched.",
+    name: "John Smith",
+    title: "Marketing Director at SalesCorp",
   },
   {
-    number: "03",
-    text: "Finally the dream comes alive.",
-    describe: `Torem ipsum dolor sit amet, consectetur adipisicing elitsed do eiusmo tempor incididunt ut labore Torem ipsum dolor sit amet, consectetur adipisicing elitsed do eiusmo tempor incididunt ut labore Torem ipsum dolor sit amet, consectetur adipisicing elitsed do
-    eiusmo tempor incididunt ut labore`,
+    quote: "We've collaborated on numerous projects, primarily focused on website development and saas development. Deltospark consistently delivers outstanding results.",
+    name: "Susie Ayala",
+    title: "Founder of S&E Optimises",
   },
+
+  {
+    quote:
+      "We have seen a significant increase in traffic and engagement since Deltospark revamped our site. Their team's expertise is unmatched.",
+    name: "John Smith",
+    title: "Marketing Director at SalesCorp",
+  },
+  {
+    quote: "We've collaborated on numerous projects, primarily focused on website development and saas development. Deltospark consistently delivers outstanding results.",
+    name: "Susie Ayala",
+    title: "Founder of S&E Optimises",
+  },
+
+  {
+    quote:
+      "We have seen a significant increase in traffic and engagement since Deltospark revamped our site. Their team's expertise is unmatched.",
+    name: "John Smith",
+    title: "Marketing Director at SalesCorp",
+  },
+  {
+    quote: "We've collaborated on numerous projects, primarily focused on website development and saas development. Deltospark consistently delivers outstanding results.",
+    name: "Susie Ayala",
+    title: "Founder of S&E Optimises",
+  },
+
 ];
+
 const feature = [
   {
     icon: <TiWorld className=" text-[19px] " />,
@@ -251,8 +293,9 @@ const Home = () => {
   }, []);
 
   return (
-    <section className=" w-full bg-[#0E0F13] dark:text-white">
-      <Hero />
+    <section className=" w-full bg-[#0E0F13] text-white">
+      {/* <Hero /> */}
+      <HeroSlider slider={slider} />
       <Helmet>
         <title>{"Kazi Culture"} </title>
         <meta name="description" />
@@ -291,7 +334,63 @@ const Home = () => {
           </filter>
         </defs>
       </svg>
-      <div className="w-full grid gap-3 grid-cols-2 md:grid-cols-3 px-[2%] mb-10">
+      <div className="w-full h-[1px] bg-gray-600 my-24"></div>
+
+      <ScrollAnimation variants={scaleUpVariants}>
+        <div className="flex flex-col items-center   w-full sm:max-w-[1280px] mx-auto gap-10 relative ">
+          {/* <div className="absolute w-72 left-0 bottom-0 h-[350px] bg-gradient-to-r from-[#0f0f0f] to-transparent hidden lg:block z-20"></div> */}
+          <h2 className="text-center text-3xl font-semibold xl:w-[500px]">
+            <span className="text-[#808080]">Our</span> Testimonials
+          </h2>
+          <p className="text-sm text-[#808080] text-center xl:w-[900px] w-[90vw]">
+            Don't just take our word for it; hear what our satisfied clients have to say about their experience with KaziCulture. We take pride in building lasting relationships and delivering exceptional Events.
+          </p>
+          <div className="w-full  h-[300px]  no-scrollbar overflow-x-hidden">
+            <div className="flex gap-4 w-full animate-scroll"
+              style={{
+                animation: "scroll 15s linear infinite", // Smooth scrolling animation
+              }}
+            >
+              {testimonials.map((testimonial, index) => (
+                <div key={index} className="h-full w-[350px]">
+                  <div className="flex flex-col gap-6 sm:w-[350px] w-[300px] h-[150px] items-center border border-[#262626] rounded-2xl p-5 py-8 bg-gradient-to-b from-[#1a1a1a] to-transparent via-[#1a1a1a59]">
+                    <p className="md:text-sm text-[12px] text-center">
+                      {testimonial.quote}
+                    </p>
+                  </div>
+                  <div className="ml-5">
+                    <svg
+                      width="33"
+                      height="16"
+                      viewBox="0 0 33 16"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M21.3395 13.55C18.9421 16.3969 14.5579 16.3969 12.1605 13.55L0.75 0L32.75 2.74432e-06L21.3395 13.55Z"
+                        fill="#262626"
+                      />
+                    </svg>
+                  </div>
+                  <div className="mt-6 ml-2 flex items-center gap-2">
+                    <div className="flex flex-col justify-center">
+                      <h3 className="font-normal sm:text-base text-sm">
+                        {testimonial.name}
+                      </h3>
+                      <span className="text-[#808080] text-xs sm:text-sm">
+                        {testimonial.title}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="absolute w-72 right-0 bottom-0 h-[350px] bg-gradient-to-l from-[#0f0f0f] to-transparent hidden lg:block"></div>
+        </div>
+      </ScrollAnimation>
+
+      {/* <div className="w-full grid gap-3 grid-cols-2 md:grid-cols-3 px-[2%] mb-10">
         {categories
           ?.filter((i) => {
             return i?.selected === true;
@@ -318,14 +417,17 @@ const Home = () => {
               </Link>
             );
           })}
-      </div>
+      </div> */}
 
-      {/* Event Section */}
+<div className="w-full h-[1px] bg-gray-600 my-16"></div>
+
+
+      {/* Top Sponsers */}
 
       <div className=" dark:text-gray-400 flex flex-col items-center lg:grid xl:grid-cols-4 gap-6 px-[4%] xl:px-[8%] py-4 mt-5 ">
         <div className=" flex flex-col items-center col-span-4">
           <p className=" text-[24px] md:text-[28px] 2xl:text-[32px] plus-jakarta font-[700] text-white dark:text-gray-400 ">
-            Featured Events
+            Our Top Sponsers
           </p>
           <p className=" text-[#474747] text-center text-[13px] md:text-[14.5px] 2xl:text-[16px] mb-4 dark:text-gray-400 ">
             Torem ipsum dolor sit amet, consectetur adipisicing elitsed do
@@ -343,11 +445,9 @@ const Home = () => {
           className="relative inline-flex items-center justify-center px-6 py-3  font-bold text-white bg-gray-900 rounded-xl font-pj transition-all duration-200 focus:outline-none  focus:ring-offset-2 focus:ring-gray-900 md:px-6 md:py-3 text-xs"
           role="button"
         >
-          View All Events &rarr;
+          View All Sponsers &rarr;
         </a>
       </div>
-
-
       {loading ? (
         <div className=" w-full flex items-center justify-center py-3">
           <img
@@ -362,13 +462,66 @@ const Home = () => {
             <div className="w-full col-span-4 grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {newProducts.map((event) => (
                 console.log(event),
-                <EventCard event={event} key={event._id} />
+                <CuratorCard event={event} key={event._id} />
               ))}
             </div>
 
           </div>
         </>
       )}
+
+
+<div className="w-full h-[1px] bg-gray-600 my-16"></div>
+
+      {/* venue owners */}
+      <div className=" dark:text-gray-400 flex flex-col items-center lg:grid xl:grid-cols-4 gap-6 px-[4%] xl:px-[8%] py-4 mt-5 ">
+        <div className=" flex flex-col items-center col-span-4">
+          <p className=" text-[24px] md:text-[28px] 2xl:text-[32px] plus-jakarta font-[700] text-white dark:text-gray-400 ">
+            Our Top Venue Owners
+          </p>
+          <p className=" text-[#474747] text-center text-[13px] md:text-[14.5px] 2xl:text-[16px] mb-4 dark:text-gray-400 ">
+            Torem ipsum dolor sit amet, consectetur adipisicing elitsed do
+            eiusmo tempor incididunt ut labore
+          </p>
+        </div>
+      </div>
+      <div className="absolute right-0 mx-8 inline-flex group">
+        <div
+          className="absolute -inset-1 rounded-xl blur-lg opacity-70 bg-gradient-to-r from-[#44BCFF] via-[#FF44EC] to-[#FF675E] transition-all duration-300 group-hover:opacity-100 group-hover:blur-md"
+        />
+        <a
+          href="/events/all/all"
+          title="View all Events"
+          className="relative inline-flex items-center justify-center px-6 py-3  font-bold text-white bg-gray-900 rounded-xl font-pj transition-all duration-200 focus:outline-none  focus:ring-offset-2 focus:ring-gray-900 md:px-6 md:py-3 text-xs"
+          role="button"
+        >
+          View All Venue Owners &rarr;
+        </a>
+      </div>
+      {loading ? (
+        <div className=" w-full flex items-center justify-center py-3">
+          <img
+            src="/Images/loader.svg"
+            alt="loading..."
+            className=" object-contain w-[60px] h-[60px]"
+          />
+        </div>
+      ) : (
+        <>
+          <div className="w-full col-span-4 px-8 py-16">
+            <div className="w-full col-span-4 grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {newProducts.map((event) => (
+                console.log(event),
+                <CuratorCard event={event} key={event._id} />
+              ))}
+            </div>
+
+          </div>
+        </>
+      )}
+
+<div className="w-full h-[1px] bg-gray-600 my-16"></div>
+
       {/* curators section */}
       <div className=" dark:text-gray-400 flex flex-col items-center lg:grid xl:grid-cols-4 gap-6 px-[4%] xl:px-[8%] py-4 mt-5 ">
         <div className=" flex flex-col items-center col-span-4">
@@ -416,6 +569,113 @@ const Home = () => {
           </div>
         </>
       )}
+
+<div className="w-full h-[1px] bg-gray-600 my-16"></div>
+
+      {/* Event Section */}
+
+      <div className=" dark:text-gray-400 flex flex-col items-center lg:grid xl:grid-cols-4 gap-6 px-[4%] xl:px-[8%] py-4 mt-5 ">
+        <div className=" flex flex-col items-center col-span-4">
+          <p className=" text-[24px] md:text-[28px] 2xl:text-[32px] plus-jakarta font-[700] text-white dark:text-gray-400 ">
+            Featured CroudFunding Events
+          </p>
+          <p className=" text-[#474747] text-center text-[13px] md:text-[14.5px] 2xl:text-[16px] mb-4 dark:text-gray-400 ">
+            Torem ipsum dolor sit amet, consectetur adipisicing elitsed do
+            eiusmo tempor incididunt ut labore
+          </p>
+        </div>
+      </div>
+      <div className="absolute right-0 mx-8 inline-flex group">
+        <div
+          className="absolute -inset-1 rounded-xl blur-lg opacity-70 bg-gradient-to-r from-[#44BCFF] via-[#FF44EC] to-[#FF675E] transition-all duration-300 group-hover:opacity-100 group-hover:blur-md"
+        />
+        <a
+          href="/events/all/all"
+          title="View all Events"
+          className="relative inline-flex items-center justify-center px-6 py-3  font-bold text-white bg-gray-900 rounded-xl font-pj transition-all duration-200 focus:outline-none  focus:ring-offset-2 focus:ring-gray-900 md:px-6 md:py-3 text-xs"
+          role="button"
+        >
+          View All Events &rarr;
+        </a>
+      </div>
+
+
+      {loading ? (
+        <div className=" w-full flex items-center justify-center py-3">
+          <img
+            src="/Images/loader.svg"
+            alt="loading..."
+            className=" object-contain w-[60px] h-[60px]"
+          />
+        </div>
+      ) : (
+        <>
+          <div className="w-full col-span-4 px-8 py-16">
+            <div className="w-full col-span-4 grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {newProducts.map((event) => (
+                console.log(event),
+                <EventCard event={event} key={event._id} />
+              ))}
+            </div>
+
+          </div>
+        </>
+      )}
+
+<div className="w-full h-[1px] bg-gray-600 my-16"></div>
+
+
+      {/* Top Guests */}
+
+      <div className=" dark:text-gray-400 flex flex-col items-center lg:grid xl:grid-cols-4 gap-6 px-[4%] xl:px-[8%] py-4 mt-5 ">
+        <div className=" flex flex-col items-center col-span-4">
+          <p className=" text-[24px] md:text-[28px] 2xl:text-[32px] plus-jakarta font-[700] text-white dark:text-gray-400 ">
+            Top Guests/Fans
+          </p>
+          <p className=" text-[#474747] text-center text-[13px] md:text-[14.5px] 2xl:text-[16px] mb-4 dark:text-gray-400 ">
+            Torem ipsum dolor sit amet, consectetur adipisicing elitsed do
+            eiusmo tempor incididunt ut labore
+          </p>
+        </div>
+      </div>
+      <div className="absolute right-0 mx-8 inline-flex group">
+        <div
+          className="absolute -inset-1 rounded-xl blur-lg opacity-70 bg-gradient-to-r from-[#44BCFF] via-[#FF44EC] to-[#FF675E] transition-all duration-300 group-hover:opacity-100 group-hover:blur-md"
+        />
+        <a
+          href="/events/all/all"
+          title="View all Events"
+          className="relative inline-flex items-center justify-center px-6 py-3  font-bold text-white bg-gray-900 rounded-xl font-pj transition-all duration-200 focus:outline-none  focus:ring-offset-2 focus:ring-gray-900 md:px-6 md:py-3 text-xs"
+          role="button"
+        >
+          View All Fans &rarr;
+        </a>
+      </div>
+
+
+      {loading ? (
+        <div className=" w-full flex items-center justify-center py-3">
+          <img
+            src="/Images/loader.svg"
+            alt="loading..."
+            className=" object-contain w-[60px] h-[60px]"
+          />
+        </div>
+      ) : (
+        <>
+          <div className="w-full col-span-4 px-8 py-16">
+            <div className="w-full col-span-4 grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {newProducts.map((event) => (
+                console.log(event),
+                <CuratorCard event={event} key={event._id} />
+              ))}
+            </div>
+
+          </div>
+        </>
+      )}
+
+<div className="w-full h-[1px] bg-gray-600 my-16"></div>
 
       {/* Blogs Section */}
       <div className=" dark:text-gray-400 flex flex-col items-center lg:grid xl:grid-cols-4 gap-6 px-[4%] xl:px-[8%] py-4 mt-5 ">

@@ -1,204 +1,137 @@
-import { useAuth } from "@/context/AuthContext";
-import { MainAppContext } from "@/context/MainContext";
-import axios from "axios";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import {
-  RiAppleFill,
-  RiFacebookCircleFill,
-  RiGoogleFill,
-} from "react-icons/ri";
-import { Link, useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
 
-const Login = () => {
+const RegistrationForm = () => {
+  const [formData, setFormData] = useState({}); // State to store all form data
+  const [isPassVisible, setIsPassVisible] = useState(false); // State to toggle password visibility
   const navigate = useNavigate();
-  const [isPswdVisible, setIsPswdVisible] = useState(false);
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
-  const { email, password } = formData;
-  const { setUserLoggedIn } = useAuth();
-  const { user, setUser } = useContext(MainAppContext);
-  const { userData, setUserData } = useState({});
 
-  const onChange = (e) =>
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    const { name, value, type, files } = e.target;
+    setFormData({
+      ...formData,
+      [name]: type === "file" ? files : value, // Handle file inputs separately
+    });
+  };
 
-  const onSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-
-    try {
-      const res = await axios.post(
-        `${import.meta.env.VITE_SERVER_URL}/auth/local/login`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      // console.log(res.data);
-      if (res.data.user) {
-        localStorage.setItem("user", JSON.stringify(res.data.user));
-        setUserLoggedIn(true);
-        // setUserData(res.data.user);
-        toast.success(res.data.message);
-        navigate("/");
-      }
-    } catch (err) {
-      console.error("Login Error:", err.response.data);
-      toast.error("Incorrect email or password");
-    }
+    navigate("/");
   };
-
-  useEffect(() => {
-    // console.log(userData);
-    return setUser(userData);
-  }, [userData, setUserData]);
-
-  const loginWithGoogle = () => {
-    window.open(
-      `${import.meta.env.VITE_SERVER_URL}/auth/google/callback`,
-      "_self"
-    );
-  };
-
-  const loginWithFacebook = () => {
-    window.open(`${import.meta.env.VITE_SERVER_URL}/auth/facebook`, "_self");
-  };
-
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
 
   return (
-    <div className=" w-full h-full flex items-center justify-center ">
-      <div>
-        <div className=" flex flex-col ">
-          <h4 className=" text-[16px] md:text-[18px] 2xl:text-[20px] font-[700] plus-jakarta text-[#363F4D] dark:text-gray-400 underline underline-offset-3 mt-5 ">
-            Login
-          </h4>
-          <div className="  md:mt-2 ">
-            <div className=" w-full col-span-2">
-              <label
-                className=" text-[#7A7A7A] dark:text-gray-400 font-[700] plus-jakarta text-[12px] md:text-[13px] 2xl:text-[14.4px] mb-1 "
-                htmlFor="email"
-              >
-                Email Address*
-              </label>
-              <input
-                autoComplete="off"
-                required
-                name="email"
-                id="email"
-                type="email"
-                value={email}
-                className=" w-[100%] font-semibold 2xl:w-[100%] border-[1.4px] border-[#999999] p-2 bg-transparent text-[#666666] dark:text-gray-400 text-[14.4px]"
-                placeholder="Company Email"
-                onChange={onChange}
-              />
-            </div>
-          </div>
-          <div className=" md:mt-2 ">
-            <div className=" w-full col-span-2 flex flex-col">
-              <label
-                className=" text-[#7A7A7A] dark:text-gray-400 font-[700] plus-jakarta text-[12px] md:text-[13px] 2xl:text-[14.4px] mb-1 "
-                htmlFor="password"
-              >
-                Password*
-              </label>
-              <div className=" relative flex items-center justify-center">
-                <input
-                  autoComplete="off"
-                  required
-                  name="password"
-                  id="password"
-                  type={isPswdVisible ? "text" : "password"}
-                  value={password}
-                  className=" w-[100%] font-semibold 2xl:w-[100%] border-[1.4px] border-[#999999] p-2 bg-transparent text-[#666666] dark:text-gray-400 text-[14.4px]"
-                  placeholder="Password"
-                  onChange={onChange}
-                />
-                {!isPswdVisible ? (
-                  <FaEye
-                    onClick={() => {
-                      setIsPswdVisible(true);
-                    }}
-                    className=" absolute text-[#999999] right-2 text-[21px] cursor-pointer"
-                  />
-                ) : (
-                  <FaEyeSlash
-                    onClick={() => {
-                      setIsPswdVisible(false);
-                    }}
-                    className=" absolute text-[#999999]  right-2 text-[21px] cursor-pointer"
-                  />
-                )}
-              </div>
-            </div>
-          </div>
-          <div className=" flex items-center justify-between">
-            <div className=" flex items-center gap-2 ">
-              <input
-                name="State*"
-                id="State*"
-                type="checkbox"
-                className=" border-[1.4px] border-[#999999] p-2 bg-transparent text-[#7A7A7A] dark:text-gray-400 text-[14.4px]"
-                placeholder="State*"
-              />
-              <label
-                className=" text-[#7A7A7A] dark:text-gray-400 font-[700] plus-jakarta text-[12px] md:text-[13px] 2xl:text-[14.4px] mb-1 "
-                htmlFor="State*"
-              >
-                Remember me
-              </label>
-            </div>
-            <Link to="/forgot-password">
-              <p className=" text-[12px] md:text-[13px] 2xl:text-[14.4px] text-[#7A7A7A] dark:text-gray-400">
-                Forgot pasword?
-              </p>
-            </Link>
-          </div>
-          <button
-            disabled={email === "" || password === ""}
-            className=" bg-[#363F4D] px-4 py-2.5 disabled:bg-gray-400 disabled:text-gray-600 font-medium uppercase text-[11.2px] md:text-[13px] text-white mt-5 "
-            type="submit"
-            onClick={onSubmit}
+    <div className="min-h-screen bg-[#0E0F13] flex items-center justify-center px-4 py-6 relative">
+      {/* Decorative Glassmorphism Effect */}
+      <svg
+        className="fixed top-0 right-0 z-[0] pointer-events-none"
+        width="536"
+        height="1071"
+        viewBox="0 0 536 1071"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <g filter="url(#filter0_f_1_3190)">
+          <circle cx="535.5" cy="535.5" r="207.5" fill="#8B33FE" fillOpacity="0.4" />
+        </g>
+        <defs>
+          <filter
+            id="filter0_f_1_3190"
+            x="0"
+            y="0"
+            width="1071"
+            height="1071"
+            filterUnits="userSpaceOnUse"
+            colorInterpolationFilters="sRGB"
           >
-            Login
-          </button>
-          <p className="font-[400] mt-1.5 mb-3 text-right w-full text-[12px] md:text-[14px]">
-            Don't have an account ?
-            <Link to="/register" className=" font-semibold underline">
-              Register
-            </Link>
-          </p>
-          <div className=" flex items-center gap-1 my-3">
-            <span className=" h-[1px] flex-grow bg-black"></span>
-            <span className=" font-[600] plus-jakarta w-max text-[12px] md:text-[14px] ">
-              or use one of these options
-            </span>
-            <span className=" h-[1px] flex-grow bg-black"></span>
-          </div>
-          <div className=" flex items-center justify-center gap-5 mb-5 ">
-            <RiFacebookCircleFill
-              className="text-[#363F4D] text-[36px] md:text-[45px] py-2 cursor-pointer border border-black dark:text-gray-500"
-              onClick={loginWithFacebook}
-            />
+            <feFlood floodOpacity="0" result="BackgroundImageFix" />
+            <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape" />
+            <feGaussianBlur stdDeviation="164" result="effect1_foregroundBlur_1_3190" />
+          </filter>
+        </defs>
+      </svg>
 
-            <RiGoogleFill
-              className="text-[#363F4D] text-[36px] md:text-[45px] py-2 cursor-pointer border border-black dark:text-gray-500"
-              onClick={loginWithGoogle}
+      <div className="absolute top-0 right-0 left-0 h-full bg-gradient-to-br from-[#8b33fe66] to-[#ff5a8a33] opacity-30 blur-[200px] z-0"></div>
+
+      <div className="relative z-10 w-full max-w-xl backdrop-blur-lg  border border-gray-700 shadow-2xl rounded-3xl p-10 space-y-6">
+        <h2 className="text-4xl font-bold text-center text-gray-200 mb-6 font-playfair">
+          Welcome Back!
+        </h2>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <InputField
+            label="Email"
+            name="email"
+            value={formData.email || ""}
+            onChange={handleChange}
+          />
+
+          {/* Password Field */}
+          <div className="relative">
+            <InputField
+              label="Password"
+              name="password"
+              type={isPassVisible ? "text" : "password"}
+              value={formData.password || ""}
+              onChange={handleChange}
             />
-            <RiAppleFill className="text-[#363F4D] text-[36px] md:text-[45px] py-2 cursor-pointer border border-black dark:text-gray-500 " />
+            {isPassVisible ? (
+              <FaEye
+                onClick={() => setIsPassVisible(false)}
+                className="absolute text-gray-400 right-4 bottom-[3px] transform -translate-y-1/2 text-[21px] cursor-pointer hover:text-purple-400"
+              />
+            ) : (
+              <FaEyeSlash
+                onClick={() => setIsPassVisible(true)}
+                className="absolute text-gray-400 right-4 bottom-[3px] transform -translate-y-1/2 text-[21px] cursor-pointer hover:text-purple-400"
+              />
+            )}
           </div>
-        </div>
+
+          {/* Submit Button */}
+          <div className="flex justify-between">
+            <button
+              type="submit"
+              className="pt-4 "
+            >
+              <a href="#_" class="relative px-6 py-3 font-bold text-white rounded-full group">
+                <span class="absolute inset-0 w-full h-full transition duration-300 transform -translate-x-1 -translate-y-1 bg-purple-800 ease opacity-80 group-hover:translate-x-0 group-hover:translate-y-0"></span>
+                <span class="absolute inset-0 w-full h-full transition duration-300 transform translate-x-1 translate-y-1 bg-pink-800 ease opacity-80 group-hover:translate-x-0 group-hover:translate-y-0 mix-blend-screen"></span>
+                <span class="relative">Login</span>
+              </a>
+            </button>
+            <p className="text-gray-400 text-sm pt-4">
+              New User?{" "}
+              <a href="/register" className="text-white hover:text-gray-300">
+                Register
+              </a>
+            </p>
+          </div>
+
+        </form>
       </div>
     </div>
   );
 };
 
-export default Login;
+// Reusable Input Field Component
+const InputField = ({ label, name, type = "text", value, onChange }) => (
+  <div className="space-y-2">
+    <label
+      htmlFor={name}
+      className="block text-sm font-medium text-gray-300 tracking-wide"
+    >
+      {label}
+    </label>
+    <input
+      id={name}
+      name={name}
+      type={type}
+      value={value}
+      onChange={onChange}
+      className="w-full px-4 py-3 bg-inherit text-gray-200 border border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-200"
+    />
+  </div>
+);
+
+export default RegistrationForm;
