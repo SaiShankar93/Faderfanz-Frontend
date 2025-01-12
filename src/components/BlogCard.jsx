@@ -1,4 +1,3 @@
-"use client";;
 import React, { useContext } from "react";
 import { BackgroundGradient } from "./ui/background-gradient";
 import { Link, useParams } from "react-router-dom";
