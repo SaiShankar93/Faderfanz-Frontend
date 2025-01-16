@@ -35,12 +35,23 @@ export function EventCard({ event, key }) {
                     <p className="text-sm text-neutral-400 text-gray-500">
                         Experience the joy and Enjoy with your friends at our DJ event.
                     </p>
+                    <div className="mt-4">
+                            <p className="text-sm text-neutral-400 mb-1">
+                                <span className="font-bold text-white">670</span> donations
+                            </p>
+                            <div className="w-full bg-neutral-700 rounded-full h-2">
+                                <div
+                                    className="bg-[#8B33FE] h-2 rounded-full"
+                                    style={{ width: `${(79 / 89) * 100}%` }}
+                                ></div>
+                            </div>
+                            <p className="text-sm text-gray-300 mt-2">
+                                <span className="font-bold">12.8k $</span> raised
+                            </p>
+                        </div>
                     <button
-                        className="rounded-full pl-4 pr-1 py-1 text-white flex items-center space-x-1 bg-[#27272A] mt-4 text-xs font-bold dark:bg-zinc-800">
-                        <span>Book now </span>
-                        <span className="bg-[#3f3f46] rounded-full text-[0.6rem] px-2 py-0 text-white">
-                            ${event.price}
-                        </span>
+                        className="rounded-full p-2 text-white flex items-center  bg-[#27272A] mt-4 text-xs font-bold dark:bg-zinc-800">
+                        Contribute now
                     </button>
                 </BackgroundGradient>
             </Link>

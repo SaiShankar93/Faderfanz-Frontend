@@ -15,6 +15,7 @@ import Faq from "@/pages/Faq";
 import ForgotPassword from "@/pages/ForgotPassword";
 import Home from "@/pages/Home";
 import Login from "@/pages/Login";
+import MyFeed from "@/pages/MyFeed";
 import PrivacyPol from "@/pages/PrivacyPol";
 import ProductPage from "@/pages/ProductPage";
 import Profile from "@/pages/Profile";
@@ -69,6 +70,12 @@ export const userRoutes = [
     title: "All Blogs",
     component: <AllBlogs />,
     path: "/blogs/all",
+  },
+  {
+    name: "My Feed",
+    title: "My Feed",
+    component: <MyFeed />,
+    path: "/feed",
   },
   {
     name: "about",

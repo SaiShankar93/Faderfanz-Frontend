@@ -27,6 +27,8 @@ import Hero from "@/components/Hero";
 import { EventCard } from "@/components/EventCard";
 import { CuratorCard } from "@/components/CuratorCard";
 import { BlogCard } from "@/components/BlogCard";
+import { SponserCard } from "@/components/SponserCard";
+import { VenueOwnerCard } from "@/components/VenueOwnerCard";
 
 const box = [
   {
@@ -53,62 +55,66 @@ const box = [
 const testimonials = [
   {
     quote:
-      "Deltospark transformed our online presence, bringing our vision to life. The website they built for us is not only visually stunning but also highly functional.",
-    name: "Jane Doe",
-    title: "CEO of TechWorld",
-
+      "As a curator, working with this platform has been seamless. Managing events, tracking RSVPs, and engaging with attendees has never been this easy. It's a game-changer!",
+    name: "Sophia Carter",
+    title: "Event Curator",
   },
-  {
-    quote: "Deltospark has been amazing, handling our mobile app, web development, backend, and AI needs. We've collaborated for over 1.5 years, with great customer feedback.",
-    name: "Shaiquel Jilani",
-    title: "Founder of Pinksurfing",
-  },
-
-
-  {
-    quote: "Deltospark developed an excellent e-commerce site with multivendor functionality for us. There was no delay in image loading, and the website runs smoothly and efficiently.",
-    name: "Alex Johnson",
-    title: "CTO Furniture E-commerce",
-
-  },
-
   {
     quote:
-      "We have seen a significant increase in traffic and engagement since Deltospark revamped our site. Their team's expertise is unmatched.",
-    name: "John Smith",
-    title: "Marketing Director at SalesCorp",
+      "I attended the TechFest 2024 organized through this platform, and it was an unforgettable experience. The app kept me updated on sessions and activities, and the ticketing system was super convenient.",
+    name: "Michael Brown",
+    title: "Event Attendee",
   },
-  {
-    quote: "We've collaborated on numerous projects, primarily focused on website development and saas development. Deltospark consistently delivers outstanding results.",
-    name: "Susie Ayala",
-    title: "Founder of S&E Optimises",
-  },
-
   {
     quote:
-      "We have seen a significant increase in traffic and engagement since Deltospark revamped our site. Their team's expertise is unmatched.",
-    name: "John Smith",
-    title: "Marketing Director at SalesCorp",
+      "Partnering with this platform for our sponsorship was a great decision. The detailed analytics and visibility we received during the event helped us reach our target audience effectively.",
+    name: "Emily Wilson",
+    title: "Marketing Manager at BrandSphere",
   },
-  {
-    quote: "We've collaborated on numerous projects, primarily focused on website development and saas development. Deltospark consistently delivers outstanding results.",
-    name: "Susie Ayala",
-    title: "Founder of S&E Optimises",
-  },
-
   {
     quote:
-      "We have seen a significant increase in traffic and engagement since Deltospark revamped our site. Their team's expertise is unmatched.",
-    name: "John Smith",
-    title: "Marketing Director at SalesCorp",
+      "We hosted our annual conference at one of the venues listed on this platform. The booking process was straightforward, and the support team ensured everything ran smoothly on the event day.",
+    name: "Liam Johnson",
+    title: "Venue Manager",
   },
   {
-    quote: "We've collaborated on numerous projects, primarily focused on website development and saas development. Deltospark consistently delivers outstanding results.",
-    name: "Susie Ayala",
-    title: "Founder of S&E Optimises",
+    quote:
+      "Organizing my art exhibition was made easy with this platform. It helped me manage ticket sales, attendee lists, and promotions effortlessly. Highly recommended!",
+    name: "Amelia Thompson",
+    title: "Art Exhibition Curator",
   },
-
+  {
+    quote:
+      "The platform made it incredibly easy to find and book events. I loved how the reviews and ratings helped me choose the best ones to attend.",
+    name: "Chris Evans",
+    title: "Regular Event Attendee",
+  },
+  {
+    quote:
+      "As a sponsor, the platform allowed us to target the right audience and showcase our brand in the best possible way. The ROI exceeded our expectations.",
+    name: "Olivia Martinez",
+    title: "Sponsorship Coordinator at AdDynamics",
+  },
+  {
+    quote:
+      "Managing multiple venues can be overwhelming, but this platform simplified everything for us. From booking inquiries to real-time updates, it has streamlined our operations.",
+    name: "James Lee",
+    title: "Venue Owner",
+  },
+  {
+    quote:
+      "I joined a workshop through this platform, and it was an excellent experience. The reminders and updates kept me informed, and the session was very engaging.",
+    name: "Ava Taylor",
+    title: "Workshop Participant",
+  },
+  {
+    quote:
+      "This platform connected me with talented curators and enthusiastic attendees for our charity event. It made the entire process smooth and enjoyable.",
+    name: "Ethan Wright",
+    title: "Event Organizer",
+  },
 ];
+
 
 const feature = [
   {
@@ -308,7 +314,7 @@ const Home = () => {
       {/* <HeroSlider slider={slider} /> */}
       {/* <CategorySlider data={categories} /> */}
       <svg
-        className="fixed top-0 right-0 z-[0] pointer-events-none"
+        className="absolute top-[1300px] right-0 z-[0] pointer-events-none"
         width="536"
         height="1071"
         viewBox="0 0 536 1071"
@@ -334,10 +340,76 @@ const Home = () => {
           </filter>
         </defs>
       </svg>
-      <div className="w-full h-[1px] bg-gray-600 my-24"></div>
+      <svg
+        className="absolute top-[2300px] right-0 z-[0] pointer-events-none"
+        width="536"
+        height="1071"
+        viewBox="0 0 536 1071"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <g filter="url(#filter0_f_1_3190)">
+          <circle cx="535.5" cy="535.5" r="207.5" fill="#8B33FE" fillOpacity="0.4" />
+        </g>
+        <defs>
+          <filter
+            id="filter0_f_1_3190"
+            x="0"
+            y="0"
+            width="1071"
+            height="1071"
+            filterUnits="userSpaceOnUse"
+            colorInterpolationFilters="sRGB"
+          >
+            <feFlood floodOpacity="0" result="BackgroundImageFix" />
+            <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape" />
+            <feGaussianBlur stdDeviation="164" result="effect1_foregroundBlur_1_3190" />
+          </filter>
+        </defs>
+      </svg>
+      <svg
+        className="absolute top-[3300px] right-0 z-[0] pointer-events-none"
+        width="536"
+        height="1071"
+        viewBox="0 0 536 1071"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <g filter="url(#filter0_f_1_3190)">
+          <circle cx="535.5" cy="535.5" r="207.5" fill="#8B33FE" fillOpacity="0.4" />
+        </g>
+        <defs>
+          <filter
+            id="filter0_f_1_3190"
+            x="0"
+            y="0"
+            width="1071"
+            height="1071"
+            filterUnits="userSpaceOnUse"
+            colorInterpolationFilters="sRGB"
+          >
+            <feFlood floodOpacity="0" result="BackgroundImageFix" />
+            <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape" />
+            <feGaussianBlur stdDeviation="164" result="effect1_foregroundBlur_1_3190" />
+          </filter>
+        </defs>
+      </svg>
+      <svg width="601" height="1031" viewBox="0 0 601 1031" fill="none" xmlns="http://www.w3.org/2000/svg" className="absolute bottom-[500px] left-0 z-[0] pointer-events-none hidden lg:block">
+        <g filter="url(#filter0_f_1_3194)">
+          <circle cx="85.5" cy="515.5" r="207.5" fill="#8B33FE" fill-opacity="0.4" />
+        </g>
+        <defs>
+          <filter id="filter0_f_1_3194" x="-430" y="0" width="1031" height="1031" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+            <feFlood flood-opacity="0" result="BackgroundImageFix" />
+            <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape" />
+            <feGaussianBlur stdDeviation="154" result="effect1_foregroundBlur_1_3194" />
+          </filter>
+        </defs>
+      </svg>
+      {/* <div className="w-full h-[1px] bg-gray-600 my-24"></div> */}
 
       <ScrollAnimation variants={scaleUpVariants}>
-        <div className="flex flex-col items-center   w-full sm:max-w-[1280px] mx-auto gap-10 relative ">
+        <div className="flex flex-col items-center pt-24  w-full sm:max-w-[1280px] mx-auto gap-10 relative z-100 bg-[#0f0f0f]">
           {/* <div className="absolute w-72 left-0 bottom-0 h-[350px] bg-gradient-to-r from-[#0f0f0f] to-transparent hidden lg:block z-20"></div> */}
           <h2 className="text-center text-3xl font-semibold xl:w-[500px]">
             <span className="text-[#808080]">Our</span> Testimonials
@@ -419,7 +491,7 @@ const Home = () => {
           })}
       </div> */}
 
-<div className="w-full h-[1px] bg-gray-600 my-16"></div>
+      <div className="w-full h-[1px] bg-gray-600 my-16"></div>
 
 
       {/* Top Sponsers */}
@@ -462,7 +534,7 @@ const Home = () => {
             <div className="w-full col-span-4 grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {newProducts.map((event) => (
                 console.log(event),
-                <CuratorCard event={event} key={event._id} />
+                <SponserCard event={event} key={event._id} />
               ))}
             </div>
 
@@ -471,7 +543,7 @@ const Home = () => {
       )}
 
 
-<div className="w-full h-[1px] bg-gray-600 my-16"></div>
+      <div className="w-full h-[1px] bg-gray-600 my-16"></div>
 
       {/* venue owners */}
       <div className=" dark:text-gray-400 flex flex-col items-center lg:grid xl:grid-cols-4 gap-6 px-[4%] xl:px-[8%] py-4 mt-5 ">
@@ -512,7 +584,7 @@ const Home = () => {
             <div className="w-full col-span-4 grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {newProducts.map((event) => (
                 console.log(event),
-                <CuratorCard event={event} key={event._id} />
+                <VenueOwnerCard event={event} key={event._id} />
               ))}
             </div>
 
@@ -520,7 +592,7 @@ const Home = () => {
         </>
       )}
 
-<div className="w-full h-[1px] bg-gray-600 my-16"></div>
+      <div className="w-full h-[1px] bg-gray-600 my-16"></div>
 
       {/* curators section */}
       <div className=" dark:text-gray-400 flex flex-col items-center lg:grid xl:grid-cols-4 gap-6 px-[4%] xl:px-[8%] py-4 mt-5 ">
@@ -570,7 +642,7 @@ const Home = () => {
         </>
       )}
 
-<div className="w-full h-[1px] bg-gray-600 my-16"></div>
+      <div className="w-full h-[1px] bg-gray-600 my-16"></div>
 
       {/* Event Section */}
 
@@ -622,7 +694,7 @@ const Home = () => {
         </>
       )}
 
-<div className="w-full h-[1px] bg-gray-600 my-16"></div>
+      <div className="w-full h-[1px] bg-gray-600 my-16"></div>
 
 
       {/* Top Guests */}
@@ -675,7 +747,7 @@ const Home = () => {
         </>
       )}
 
-<div className="w-full h-[1px] bg-gray-600 my-16"></div>
+      <div className="w-full h-[1px] bg-gray-600 my-16"></div>
 
       {/* Blogs Section */}
       <div className=" dark:text-gray-400 flex flex-col items-center lg:grid xl:grid-cols-4 gap-6 px-[4%] xl:px-[8%] py-4 mt-5 ">
