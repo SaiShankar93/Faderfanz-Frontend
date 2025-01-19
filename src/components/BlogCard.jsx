@@ -2,6 +2,7 @@ import React, { useContext } from "react";
 import { BackgroundGradient } from "./ui/background-gradient";
 import { Link, useParams } from "react-router-dom";
 import { MainAppContext } from "@/context/MainContext";
+import { cn } from "@/lib/utils";
 
 export function BlogCard({ event, key }) {
     console.log(event);
@@ -20,28 +21,39 @@ export function BlogCard({ event, key }) {
                     seteventPageId(event?._id);
                 }}
             >
-                <BackgroundGradient className="rounded-[22px] p-4 sm:p-10 bg-[#181818]">
-                    <img
-                        src={event.mainImage}
-                        alt="jordans"
-                        height="400"
-                        width="400"
-                        className="object-contain h-[150px] md:h-[200px]" />
-                    <p
-                        className="text-base sm:text-xl mt-4 mb-2 text-gray-400">
-                        {event.title}
-                    </p>
-
-                    <p className="text-sm text-neutral-400 text-gray-500">
-                        Read this amazing blog about the so and so event
-                    </p>
-                    <button
-                        className="rounded-full pl-4 pr-1 py-1 text-white flex items-center space-x-1 bg-[#27272A] mt-4 text-xs font-bold dark:bg-zinc-800">
-                        <span>Read More </span>
-                        <span className="bg-[#3f3f46] rounded-full text-[0.6rem] px-2 py-0 text-white">
-                        </span>
-                    </button>
-                </BackgroundGradient>
+                <div className="max-w-xs w-full group/card">
+                    <div
+                        className={cn(
+                            " cursor-pointer overflow-hidden relative card h-96 rounded-md shadow-xl  max-w-sm mx-auto backgroundImage flex flex-col justify-between p-4",
+                            "bg-[url(https://images.unsplash.com/photo-1544077960-604201fe74bc?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1651&q=80)] bg-cover"
+                        )}
+                    >
+                        <div className="absolute w-full h-full top-0 left-0 transition duration-300 group-hover/card:bg-black opacity-60"></div>
+                        <div className="flex flex-row items-center space-x-4 z-10">
+                            <img
+                                height="100"
+                                width="100"
+                                alt="Avatar"
+                                src="http://localhost:5000/images/additionalImages-1735064142892.jpeg"
+                                className="h-10 w-10 rounded-full border-2 object-cover"
+                            />
+                            <div className="flex flex-col">
+                                <p className="font-normal text-base text-gray-50 relative z-10">
+                                    Sai Shankar
+                                </p>
+                                <p className="text-sm text-gray-400">2 min read</p>
+                            </div>
+                        </div>
+                        <div className="text content">
+                            <h1 className="font-bold text-xl md:text-2xl text-gray-50 relative z-10">
+                                Blog Title
+                            </h1>
+                            <p className="font-normal text-sm text-gray-50 relative z-10 my-4">
+                                Lorem ipsum dolor sit amet, consectetur adipisicing elit. Commodi sunt est praes...
+                            </p>
+                        </div>
+                    </div>
+                </div>
             </Link>
         </div >)
     );

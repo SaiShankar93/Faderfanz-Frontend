@@ -14,8 +14,8 @@ export default function Example() {
     { name: 'Curators', href: '/curator/all' },
     { name: 'Events', href: '/events/all/all' },
     { name: 'Blogs', href: '/blogs/all' },
-    { name: 'About Us', href: '/about' },
-    { name: 'Contact Us ', href: '/contact ' },
+    // { name: 'About Us', href: '/about' },
+    // { name: 'Contact Us ', href: '/contact ' },
   ];
 
   return (

@@ -16,6 +16,10 @@ import PopupModal from "@/components/PopupModal";
 import { Swiper, SwiperSlide } from "swiper/react";
 import ScrollAnimation from "../components/ScrollAnimation";
 import { variants, scaleUpVariants } from "../animations/variants";
+import { FaHeart, FaStar } from "react-icons/fa";
+import {
+  IoStarOutline,
+} from "react-icons/io5";
 
 import "swiper/css";
 import "swiper/css/pagination";
@@ -29,6 +33,7 @@ import { CuratorCard } from "@/components/CuratorCard";
 import { BlogCard } from "@/components/BlogCard";
 import { SponserCard } from "@/components/SponserCard";
 import { VenueOwnerCard } from "@/components/VenueOwnerCard";
+import { UserCard } from "@/components/UsersCard";
 
 const box = [
   {
@@ -285,7 +290,20 @@ const Home = () => {
     const truncatedText = words.slice(0, wordLimit).join(" ") + "...";
     return parse(truncatedText);
   };
-
+  const Stars = ({ stars }) => {
+    const ratingStars = Array.from({ length: 5 }, (elem, index) => {
+      return (
+        <div key={index}>
+          {stars >= index + 1 ? (
+            <FaStar className=" text-[#8B33FE]" />
+          ) : (
+            <IoStarOutline className="  text-{#8B33FE} " />
+          )}
+        </div>
+      );
+    });
+    return <div className=" flex items-center gap-0.5">{ratingStars}</div>;
+  };
   useEffect(() => {
     window.scrollTo(0, 0);
     getAllProducts();
@@ -394,41 +412,46 @@ const Home = () => {
           </filter>
         </defs>
       </svg>
-      <svg width="601" height="1031" viewBox="0 0 601 1031" fill="none" xmlns="http://www.w3.org/2000/svg" className="absolute bottom-[500px] left-0 z-[0] pointer-events-none hidden lg:block">
-        <g filter="url(#filter0_f_1_3194)">
-          <circle cx="85.5" cy="515.5" r="207.5" fill="#8B33FE" fill-opacity="0.4" />
-        </g>
-        <defs>
-          <filter id="filter0_f_1_3194" x="-430" y="0" width="1031" height="1031" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-            <feFlood flood-opacity="0" result="BackgroundImageFix" />
-            <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape" />
-            <feGaussianBlur stdDeviation="154" result="effect1_foregroundBlur_1_3194" />
-          </filter>
-        </defs>
-      </svg>
       {/* <div className="w-full h-[1px] bg-gray-600 my-24"></div> */}
 
       <ScrollAnimation variants={scaleUpVariants}>
         <div className="flex flex-col items-center pt-24  w-full sm:max-w-[1280px] mx-auto gap-10 relative z-100 bg-[#0f0f0f]">
           {/* <div className="absolute w-72 left-0 bottom-0 h-[350px] bg-gradient-to-r from-[#0f0f0f] to-transparent hidden lg:block z-20"></div> */}
-          <h2 className="text-center text-3xl font-semibold xl:w-[500px]">
-            <span className="text-[#808080]">Our</span> Testimonials
+          <h2 className="text-center text-3xl font-semibold xl:w-[500px] quicksand">
+            <span className="text-[#808080]"></span> Reviews
           </h2>
           <p className="text-sm text-[#808080] text-center xl:w-[900px] w-[90vw]">
             Don't just take our word for it; hear what our satisfied clients have to say about their experience with KaziCulture. We take pride in building lasting relationships and delivering exceptional Events.
           </p>
-          <div className="w-full  h-[300px]  no-scrollbar overflow-x-hidden">
+          <div className="w-full  h-[500px]  no-scrollbar overflow-x-hidden">
             <div className="flex gap-4 w-full animate-scroll"
               style={{
                 animation: "scroll 15s linear infinite", // Smooth scrolling animation
+                animationPlayState: "running", // Default to running
               }}
+              onMouseEnter={(e) => (e.currentTarget.style.animationPlayState = "paused")} // Pause scrolling on hover
+              onMouseLeave={(e) => (e.currentTarget.style.animationPlayState = "running")} // Resume scrolling on leave
             >
               {testimonials.map((testimonial, index) => (
                 <div key={index} className="h-full w-[350px]">
-                  <div className="flex flex-col gap-6 sm:w-[350px] w-[300px] h-[150px] items-center border border-[#262626] rounded-2xl p-5 py-8 bg-gradient-to-b from-[#1a1a1a] to-transparent via-[#1a1a1a59]">
+                  <div className="flex flex-col gap-6 sm:w-[350px] w-[300px] h-[400px] items-center border border-[#262626] rounded-2xl p-5 py-8 bg-gradient-to-b from-[#1a1a1a] to-transparent via-[#1a1a1a59]">
+                    <img
+                      src="http://localhost:5000/images/additionalImages-1735138631438.jpeg"
+                      alt=""
+                      className="w-[100px] h-[100px] rounded-full object-cover"
+                    />
+                    <div className="flex flex-col justify-center">
+                      <a className="font-normal sm:text-base text-sm underline" href="/profile">
+                        {testimonial.name}
+                      </a>
+                      <span className="text-[#808080] text-xs sm:text-sm">
+                        {testimonial.title}
+                      </span>
+                    </div>
                     <p className="md:text-sm text-[12px] text-center">
                       {testimonial.quote}
                     </p>
+                    <Stars stars={4} />
                   </div>
                   <div className="ml-5">
                     <svg
@@ -445,14 +468,20 @@ const Home = () => {
                     </svg>
                   </div>
                   <div className="mt-6 ml-2 flex items-center gap-2">
+                    <img
+                      src="http://localhost:5000/images/additionalImages-1735138631438.jpeg"
+                      alt=""
+                      className="w-[50px] h-[50px] rounded-full object-cover"
+                    />
                     <div className="flex flex-col justify-center">
-                      <h3 className="font-normal sm:text-base text-sm">
-                        {testimonial.name}
-                      </h3>
                       <span className="text-[#808080] text-xs sm:text-sm">
-                        {testimonial.title}
+                        Review By:
                       </span>
+                      <a className="font-normal sm:text-base text-sm underline" href="/profile">
+                        Sai Shankar
+                      </a>
                     </div>
+
                   </div>
                 </div>
               ))}
@@ -498,7 +527,7 @@ const Home = () => {
 
       <div className=" dark:text-gray-400 flex flex-col items-center lg:grid xl:grid-cols-4 gap-6 px-[4%] xl:px-[8%] py-4 mt-5 ">
         <div className=" flex flex-col items-center col-span-4">
-          <p className=" text-[24px] md:text-[28px] 2xl:text-[32px] plus-jakarta font-[700] text-white dark:text-gray-400 ">
+          <p className=" text-[24px] md:text-[28px] 2xl:text-[32px] quicksand font-[700] text-white dark:text-gray-400 ">
             Our Top Sponsers
           </p>
           <p className=" text-[#474747] text-center text-[13px] md:text-[14.5px] 2xl:text-[16px] mb-4 dark:text-gray-400 ">
@@ -530,15 +559,18 @@ const Home = () => {
         </div>
       ) : (
         <>
-          <div className="w-full col-span-4 px-8 py-16">
-            <div className="w-full col-span-4 grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {newProducts.map((event) => (
-                console.log(event),
-                <SponserCard event={event} key={event._id} />
-              ))}
+          <div className="w-full col-span-4 px-8 py-16 overflow-hidden">
+            {/* Horizontal Scrollable Container for Mobile Screens */}
+            <div className="w-full col-span-4 overflow-x-scroll">
+              {/* Flex Container for Horizontal Scrolling */}
+              <div className="flex space-x-6">
+                {newProducts.map((event) => (
+                  <SponserCard event={event} key={event._id} />
+                ))}
+              </div>
             </div>
-
           </div>
+
         </>
       )}
 
@@ -548,7 +580,7 @@ const Home = () => {
       {/* venue owners */}
       <div className=" dark:text-gray-400 flex flex-col items-center lg:grid xl:grid-cols-4 gap-6 px-[4%] xl:px-[8%] py-4 mt-5 ">
         <div className=" flex flex-col items-center col-span-4">
-          <p className=" text-[24px] md:text-[28px] 2xl:text-[32px] plus-jakarta font-[700] text-white dark:text-gray-400 ">
+          <p className=" text-[24px] md:text-[28px] 2xl:text-[32px] quicksand font-[700] text-white dark:text-gray-400 ">
             Our Top Venue Owners
           </p>
           <p className=" text-[#474747] text-center text-[13px] md:text-[14.5px] 2xl:text-[16px] mb-4 dark:text-gray-400 ">
@@ -580,14 +612,16 @@ const Home = () => {
         </div>
       ) : (
         <>
-          <div className="w-full col-span-4 px-8 py-16">
-            <div className="w-full col-span-4 grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {newProducts.map((event) => (
-                console.log(event),
-                <VenueOwnerCard event={event} key={event._id} />
-              ))}
+          <div className="w-full col-span-4 px-8 py-16 overflow-hidden">
+            {/* Horizontal Scrollable Container for Mobile Screens */}
+            <div className="w-full col-span-4 overflow-x-scroll ">
+              {/* Flex Container for Horizontal Scrolling */}
+              <div className="flex space-x-6">
+                {newProducts.map((event) => (
+                  <VenueOwnerCard event={event} key={event._id} />
+                ))}
+              </div>
             </div>
-
           </div>
         </>
       )}
@@ -597,7 +631,7 @@ const Home = () => {
       {/* curators section */}
       <div className=" dark:text-gray-400 flex flex-col items-center lg:grid xl:grid-cols-4 gap-6 px-[4%] xl:px-[8%] py-4 mt-5 ">
         <div className=" flex flex-col items-center col-span-4">
-          <p className=" text-[24px] md:text-[28px] 2xl:text-[32px] plus-jakarta font-[700] text-white dark:text-gray-400 ">
+          <p className=" text-[24px] md:text-[28px] 2xl:text-[32px] quicksand font-[700] text-white dark:text-gray-400 ">
             Featured Curators
           </p>
           <p className=" text-[#474747] text-center text-[13px] md:text-[14.5px] 2xl:text-[16px] mb-4 dark:text-gray-400 ">
@@ -630,14 +664,16 @@ const Home = () => {
         </div>
       ) : (
         <>
-          <div className="w-full col-span-4 px-8 py-16">
-            <div className="w-full col-span-4 grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {newProducts.map((event) => (
-                console.log(event),
-                <CuratorCard event={event} key={event._id} />
-              ))}
+          <div className="w-full col-span-4 px-8 py-16 overflow-hidden">
+            {/* Horizontal Scrollable Container for Mobile Screens */}
+            <div className="w-full col-span-4 overflow-x-scroll scrollbar-hide ">
+              {/* Flex Container for Horizontal Scrolling */}
+              <div className="flex space-x-6">
+                {newProducts.map((event) => (
+                  <CuratorCard event={event} key={event._id} />
+                ))}
+              </div>
             </div>
-
           </div>
         </>
       )}
@@ -648,7 +684,7 @@ const Home = () => {
 
       <div className=" dark:text-gray-400 flex flex-col items-center lg:grid xl:grid-cols-4 gap-6 px-[4%] xl:px-[8%] py-4 mt-5 ">
         <div className=" flex flex-col items-center col-span-4">
-          <p className=" text-[24px] md:text-[28px] 2xl:text-[32px] plus-jakarta font-[700] text-white dark:text-gray-400 ">
+          <p className=" text-[24px] md:text-[28px] 2xl:text-[32px] quicksand font-[700] text-white dark:text-gray-400 ">
             Featured CroudFunding Events
           </p>
           <p className=" text-[#474747] text-center text-[13px] md:text-[14.5px] 2xl:text-[16px] mb-4 dark:text-gray-400 ">
@@ -682,15 +718,18 @@ const Home = () => {
         </div>
       ) : (
         <>
-          <div className="w-full col-span-4 px-8 py-16">
-            <div className="w-full col-span-4 grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {newProducts.map((event) => (
-                console.log(event),
-                <EventCard event={event} key={event._id} />
-              ))}
+          <div className="w-full col-span-4 px-8 py-16 overflow-hidden">
+            {/* Horizontal Scrollable Container for Mobile Screens */}
+            <div className="w-full col-span-4 overflow-x-scroll scrollbar-hide ">
+              {/* Flex Container for Horizontal Scrolling */}
+              <div className="flex space-x-6">
+                {newProducts.map((event) => (
+                  <EventCard event={event} key={event._id} />
+                ))}
+              </div>
             </div>
-
           </div>
+
         </>
       )}
 
@@ -701,7 +740,7 @@ const Home = () => {
 
       <div className=" dark:text-gray-400 flex flex-col items-center lg:grid xl:grid-cols-4 gap-6 px-[4%] xl:px-[8%] py-4 mt-5 ">
         <div className=" flex flex-col items-center col-span-4">
-          <p className=" text-[24px] md:text-[28px] 2xl:text-[32px] plus-jakarta font-[700] text-white dark:text-gray-400 ">
+          <p className=" text-[24px] md:text-[28px] 2xl:text-[32px] quicksand font-[700] text-white dark:text-gray-400 ">
             Top Guests/Fans
           </p>
           <p className=" text-[#474747] text-center text-[13px] md:text-[14.5px] 2xl:text-[16px] mb-4 dark:text-gray-400 ">
@@ -739,7 +778,7 @@ const Home = () => {
             <div className="w-full col-span-4 grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {newProducts.map((event) => (
                 console.log(event),
-                <CuratorCard event={event} key={event._id} />
+                <UserCard event={event} key={event._id} />
               ))}
             </div>
 
@@ -752,7 +791,7 @@ const Home = () => {
       {/* Blogs Section */}
       <div className=" dark:text-gray-400 flex flex-col items-center lg:grid xl:grid-cols-4 gap-6 px-[4%] xl:px-[8%] py-4 mt-5 ">
         <div className=" flex flex-col items-center col-span-4">
-          <p className=" text-[24px] md:text-[28px] 2xl:text-[32px] plus-jakarta font-[700] text-white dark:text-gray-400 ">
+          <p className=" text-[24px] md:text-[28px] 2xl:text-[32px] quicksand font-[700] text-white dark:text-gray-400 ">
             Featured Blogs
           </p>
           <p className=" text-[#474747] text-center text-[13px] md:text-[14.5px] 2xl:text-[16px] mb-4 dark:text-gray-400 ">

@@ -3,6 +3,7 @@ import { BackgroundGradient } from "./ui/background-gradient";
 import { Link, useParams } from "react-router-dom";
 import { MainAppContext } from "@/context/MainContext";
 import { FaInstagram, FaTwitter, FaFacebook } from "react-icons/fa";
+import { CardBody, CardContainer, CardItem } from "./ui/3d-card";
 
 export function SponserCard({ event, key }) {
     console.log(event);
@@ -12,7 +13,7 @@ export function SponserCard({ event, key }) {
 
     return (
         (<div>
-            <Link to={`/curator/id`}
+            <Link to={`/sponser/id`}
             // onClick={() => {
             //     sessionStorage.setItem(
             //         "eventPageId",
@@ -21,72 +22,82 @@ export function SponserCard({ event, key }) {
             //     seteventPageId(event?._id);
             // }}
             >
-                <BackgroundGradient className="rounded-[22px]   p-4 sm:p-10 bg-[#181818]">
-                    <div className="flex justify-center">
-                        <img
-                            src={"http://localhost:5000/images/additionalImages-1735138631438.jpeg"}
-                            alt="jordans"
-                            height="400"
-                            width="400"
-                            // className="object-contain h-[150px] md:h-[200px]"
-                            className="w-24 h-24 rounded-full border-2 border-white shadow-md mb-4"
-
-                        />
-                    </div>
-                    <p
-                        className="flex justify-center text-center text-base sm:text-xl mt-4 mb-2 text-gray-400">
-                        Zomato
-                    </p>
-
-
-                    <div className="">
-                        <p className="flex justify-center text-center my-1 text-sm text-gray-400 mb-2">{event.contact ? event.contact : "ceo@zomato.com"}</p>
-                        <p className="flex justify-center text-center my-1 text-sm text-gray-500">Events Sponsered: {event.followers ? event.followers.toLocaleString() : 5}</p>
-                        <p className="flex justify-center text-center my-1 text-sm text-gray-500">Category: {event.followers ? event.followers.toLocaleString() : "Sports, Music"}</p>
-                    </div>
-                    <p className="text-sm text-neutral-400 text-gray-500 my-2">
-                        Iam an Avid Event Sponser and I love to sponser events.
-                    </p>
-                    <div className="flex flex-col md:flex-row justify-center items-center md:justify-between mt-4">
-                        {/* View Profile Button */}
-                        <button
-                            className="rounded-full pl-4 pr-1 py-1 text-white flex items-center space-x-1 bg-[#27272A] text-xs font-bold dark:bg-zinc-800 mb-4 md:mb-0"
+                <CardContainer className="inter-var no-scrollbar">
+                    <CardBody className=" relative group/card  hover:shadow-2xl hover:shadow-emerald-500/[0.1] bg-black/10 border-white/[0.2]  w-[20rem] sm:w-[25rem] h-auto rounded-xl p-4 border  ">
+                        <CardItem translateZ="100" className="w-full mt-4">
+                            <img
+                                src="http://localhost:5000/images/additionalImages-1735138631438.jpeg"
+                                height="1000"
+                                width="1000"
+                                className="h-60 w-full object-cover rounded-xl group-hover/card:shadow-xl"
+                                alt="thumbnail"
+                            />
+                        </CardItem>
+                        <CardItem
+                            translateZ="50"
+                            className="text-xl font-bold text-white mt-3 pl-4"
                         >
-                            <span>View Sponser</span>
-                            <span className="bg-[#27272A] rounded-full text-[0.6rem] px-2 py-0 text-white">
-                                {/* ${event.price} */}
-                            </span>
-                        </button>
+                            Zomato
+                        </CardItem>
+                        <CardItem
+                            as="p"
+                            translateZ="60"
+                            className=" text-sm max-w-sm mt-2 text-neutral-300 pl-4"
+                        >
+                            <p className=" my-1 text-sm text-gray-400 ">{event.contact ? event.contact : "ceo@zomato.com"}</p>
+                            <p className=" my-1 text-sm text-gray-500">Events Sponsered: {event.followers ? event.followers.toLocaleString() : 5}</p>
+                            <p className=" my-1 text-sm text-gray-500">Category: {event.followers ? event.followers.toLocaleString() : "Sports, Music"}</p>
+                        </CardItem>
+                        <CardItem
+                            as="p"
+                            translateZ="60"
+                            className=" text-sm max-w-sm mt-2 text-neutral-300 pl-4"
+                        >
+                            Iam an Avid Event Sponser and I love to sponser events.
+                        </CardItem>
+                        <div className="flex justify-between items-center mt-4">
+                            <CardItem
+                                translateZ={20}
+                                as={Link}
+                                href="https://twitter.com/mannupaaji"
+                                target="__blank"
+                                className="px-4 py-2 rounded-xl text-xs font-normal dark:text-white"
+                            >
+                                View Sponser →
+                            </CardItem>
+                            <div className="flex justify-center gap-4">
+                                <a
+                                    href="#"
+                                    className="text-gray-400 hover:text-white transition"
+                                    aria-label="Instagram"
+                                >
+                                    <FaInstagram />
+                                </a>
+                                <a
+                                    href="#"
+                                    className="text-gray-400 hover:text-white transition"
+                                    aria-label="Twitter"
+                                >
+                                    <FaTwitter />
+                                </a>
+                                <a
+                                    href="#"
+                                    className="text-gray-400 hover:text-white transition"
+                                    aria-label="Facebook"
+                                >
+                                    <FaFacebook />
+                                </a>
+                            </div>
 
-                        {/* Social Media Icons */}
-                        <div className="flex justify-center gap-4">
-                            <a
-                                href="#"
-                                className="text-gray-400 hover:text-white transition"
-                                aria-label="Instagram"
-                            >
-                                <FaInstagram />
-                            </a>
-                            <a
-                                href="#"
-                                className="text-gray-400 hover:text-white transition"
-                                aria-label="Twitter"
-                            >
-                                <FaTwitter />
-                            </a>
-                            <a
-                                href="#"
-                                className="text-gray-400 hover:text-white transition"
-                                aria-label="Facebook"
-                            >
-                                <FaFacebook />
-                            </a>
                         </div>
-                    </div>
+                        <div className="flex flex-col md:flex-row justify-center items-center md:justify-between mt-4">
 
+                        </div>
+                    </CardBody>
 
-                </BackgroundGradient>
+                </CardContainer>
             </Link>
         </div >)
     );
 }
+

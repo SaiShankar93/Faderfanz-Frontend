@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/navigation";
-
+import { FaSearch } from 'react-icons/fa'
 import { Autoplay, Pagination, Navigation } from "swiper/modules";
 
 export default function HeroSlider({ slider }) {
@@ -20,15 +20,12 @@ export default function HeroSlider({ slider }) {
           delay: 2500,
           disableOnInteraction: false,
         }}
-        // navigation={true}
         modules={[Autoplay, Pagination]}
         className="w-full h-[300px] sm:h-[400px] md:h-[500px] lg:h-[600px]"
       >
         {slider.map((slide, index) => (
-          console.log(slide),
           <SwiperSlide key={index}>
-          {
-            <div className=" relative  text-white w-full h-full flex flex-col  ">
+            <div className="relative text-white w-full h-full">
               <a href={slide.link}>
                 <img
                   className="w-full h-full object-fill lg:object-cover"
@@ -36,33 +33,35 @@ export default function HeroSlider({ slider }) {
                   alt={slide.name}
                 />
               </a>
-              {/* <div className=" absolute pl-7 md:pl-0 flex items-center justify-center flex-col">
-                {slide.title && (
-                  <p className=" text-[15px] md:text-[17px] 2xl-text-[20px] uppercase text-left ">
-                    {slide.title}
-                  </p>
-                )}
-                {slide.description && (
-                  <p className=" text-[20px] md:text-[40px] 2xl-text-[48px] w-[70%] leading-10 mt-1 mb-4 font-[700] plus-jakarta text-left -ml-1 ">
-                    {slide.description}
-                  </p>
-                )}
-                {slide.description && (
-                  <Link to={slide.link} className=" w-fit">
-                    <button className=" border border-white w-fit px-4 py-2 uppercase text-[11px] md:text-[13px]">
-                      {slide.buttonContent}
-                    </button>
-                  </Link>
-                )}
-              </div> */}
-                 {/* Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
 
+              {/* Overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+
+              {/* Text and Search Bar */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
+                <h1 className="text-4xl sm:text-4xl md:text-5xl lg:text-6xl font-playwrite">
+                  Explore Tons of Amazing Events
+                </h1>
+                <div className="relative mt-8 w-full  max-w-[400px] sm:max-w-[500px]">
+                  <input
+                    type="text"
+                    placeholder="Search events, venues, or curators"
+                    className="w-full px-4 py-2 text-gray-900 rounded-lg shadow-lg"
+                  />
+                  <button
+                    className="absolute right-0 top-0 h-full px-4 bg-black text-white rounded-full"
+                    type="button"
+                  >
+                    <FaSearch />
+                  </button>
+                </div>
+              </div>
             </div>
-          }
-        </SwiperSlide>
+          </SwiperSlide>
         ))}
       </Swiper>
+
+
       <div
         aria-hidden="true"
         className="absolute inset-x-0 top-[calc(100%-13rem)] -z-10 transform-gpu overflow-hidden blur-3xl sm:top-[calc(100%-30rem)]"
@@ -78,3 +77,29 @@ export default function HeroSlider({ slider }) {
     </div>
   );
 }
+{/* <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 md:px-10">
+{slide.title && (
+  <p className="text-[18px] md:text-[22px] lg:text-[26px] font-semibold uppercase tracking-wide"
+    style={{
+      fontFamily: "'Playfair Display'",
+    }}
+  >
+    {slide.title}
+  </p>
+)}
+{slide.description && (
+  <p className="text-[20px] md:text-[36px] lg:text-[48px] font-bold leading-snug mt-3 "
+    style={{
+      fontFamily: "'Playfair Display'",
+    }}>
+    {slide.description}
+  </p>
+)}
+{slide.buttonContent && (
+  <Link to={slide.link} className="mt-5">
+    <button className="border border-white px-6 py-3 text-[14px] md:text-[16px] uppercase tracking-wider hover:bg-white hover:text-black transition-all duration-300">
+      {slide.buttonContent}
+    </button>
+  </Link>
+)}
+</div> */}

@@ -1,6 +1,10 @@
 import React, { useState } from "react";
 import { EventCard } from "../components/EventCard"; // Ensure EventCard is imported correctly
 import { FaInstagram, FaTwitter, FaFacebook } from "react-icons/fa";
+import { CuratorCard } from "@/components/CuratorCard";
+import { SponserCard } from "@/components/SponserCard";
+import { VenueOwnerCard } from "@/components/VenueOwnerCard";
+import { BlogCard } from "@/components/BlogCard";
 
 const MyFeed = () => {
     const [loading, setLoading] = useState(true);
@@ -84,16 +88,18 @@ const MyFeed = () => {
                                     </filter>
                                 </defs>
                             </svg>
-                            <div className="max-w-5xl mx-auto py-10 px-5">
+                            <div className=" mx-auto p-10 ">
                                 {/* Header Section */}
-                                <div className="flex flex-col items-center text-center">
+                                <div className="flex  items-start text-start gap-5">
                                     <img
                                         src={curator.profilePhoto}
                                         alt="Profile"
-                                        className="w-32 h-32 rounded-full border-4 border-white shadow-lg"
+                                        className="w-16 h-16 rounded-full border-2 border-white shadow-lg"
                                     />
-                                    <h1 className="text-4xl font-bold mt-4">{curator.name}</h1>
-                                    <p className="text-gray-400 mt-2">{curator.contact}</p>
+                                    <div>
+                                        <h1 className="text-3xl font-playwrite">Hello,</h1>
+                                        <p className="text-2xl text-gray-400 playball">Raihan Khan</p>
+                                    </div>
                                 </div>
                                 <svg width="601" height="1031" viewBox="0 0 601 1031" fill="none" xmlns="http://www.w3.org/2000/svg" className="fixed top-0 left-0 z-[0] pointer-events-none hidden lg:block">
                                     <g filter="url(#filter0_f_1_3194)">
@@ -111,35 +117,100 @@ const MyFeed = () => {
                             </div>
                             <div className=" dark:text-gray-400 flex flex-col items-center lg:grid xl:grid-cols-4 gap-6 px-[4%] xl:px-[8%] py-4 mt-5 ">
                                 <div className=" flex flex-col items-center col-span-4">
-                                    <p className=" text-[24px] md:text-[28px] 2xl:text-[32px] plus-jakarta font-[700] text-white dark:text-gray-400 ">
-                                        My Upcoming Events
+                                    <p className=" text-[24px] md:text-[28px] 2xl:text-[32px] open-sans font-[700] text-white dark:text-gray-400 ">
+                                        Explore Your Personalized Feed
                                     </p>
                                 </div>
                             </div>
-                            <div className="w-full col-span-4 px-8 py-16">
-                                <div className="w-full col-span-4 grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                                    {curator.events.map((event) => (
-                                        console.log(event),
-                                        <EventCard event={event} key={event._id} />
-                                    ))}
-                                </div>
-
-                            </div>
-                            <div className=" dark:text-gray-400 flex flex-col items-center lg:grid xl:grid-cols-4 gap-6 px-[4%] xl:px-[8%] py-4 mt-5 ">
-                                <div className=" flex flex-col items-center col-span-4">
-                                    <p className=" text-[24px] md:text-[28px] 2xl:text-[32px] plus-jakarta font-[700] text-white dark:text-gray-400 ">
-                                        Past Events
+                            <div className=" text-gray-400 flex flex-col items-start lg:grid xl:grid-cols-4 gap-6 px-10 xl:px-10 py-4 mt-5 ">
+                                <div className=" flex flex-col items-start col-span-4">
+                                    <p className=" text-[24px] md:text-[28px] 2xl:text-[32px] quicksand font-[700] text-white dark:text-gray-400 ">
+                                        Sponsers You Follow
                                     </p>
                                 </div>
                             </div>
-                            <div className="w-full col-span-4 px-8 py-16">
-                                <div className="w-full col-span-4 grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                                    {curator.events.map((event) => (
-                                        console.log(event),
-                                        <EventCard event={event} key={event._id} />
-                                    ))}
+                            <div className="w-full col-span-4 px-8  overflow-hidden">
+                                {/* Horizontal Scrollable Container for Mobile Screens */}
+                                <div className="w-full col-span-4 overflow-x-scroll scrollbar-hide">
+                                    {/* Flex Container for Horizontal Scrolling */}
+                                    <div className="flex space-x-6">
+                                        {curator.events.map((event) => (
+                                            <SponserCard event={event} key={event._id} />
+                                        ))}
+                                    </div>
                                 </div>
-
+                            </div>
+                            <div className=" text-gray-400 flex flex-col items-start lg:grid xl:grid-cols-4 gap-6 px-10 xl:px-10 py-4 mt-5 ">
+                                <div className=" flex flex-col items-start col-span-4">
+                                    <p className=" text-[24px] md:text-[28px] 2xl:text-[32px] quicksand font-[700] text-white dark:text-gray-400 ">
+                                        Curators You Follow
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="w-full col-span-4 px-8  overflow-hidden">
+                                {/* Horizontal Scrollable Container for Mobile Screens */}
+                                <div className="w-full col-span-4 overflow-x-scroll scrollbar-hide">
+                                    {/* Flex Container for Horizontal Scrolling */}
+                                    <div className="flex space-x-6">
+                                        {curator.events.map((event) => (
+                                            <CuratorCard event={event} key={event._id} />
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                            <div className=" text-gray-400 flex flex-col items-start lg:grid xl:grid-cols-4 gap-6 px-10 xl:px-10 py-4 mt-5 ">
+                                <div className=" flex flex-col items-start col-span-4">
+                                    <p className=" text-[24px] md:text-[28px] 2xl:text-[32px] quicksand font-[700] text-white dark:text-gray-400 ">
+                                        Crowdfunding Events Contributed So far
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="w-full col-span-4 px-8 py-16 overflow-hidden">
+                                {/* Horizontal Scrollable Container for Mobile Screens */}
+                                <div className="w-3/4 col-span-4 overflow-x-scroll scrollbar-hide ">
+                                    {/* Flex Container for Horizontal Scrolling */}
+                                    <div className="flex space-x-6">
+                                        {curator.events.map((event) => (
+                                            <EventCard event={event} key={event._id} />
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                            <div className=" text-gray-400 flex flex-col items-start lg:grid xl:grid-cols-4 gap-6 px-10 xl:px-10 py-4 mt-5 ">
+                                <div className=" flex flex-col items-start col-span-4">
+                                    <p className=" text-[24px] md:text-[28px] 2xl:text-[32px] quicksand font-[700] text-white dark:text-gray-400 ">
+                                        Venue Owners You Follow
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="w-full col-span-4 px-8  overflow-hidden">
+                                {/* Horizontal Scrollable Container for Mobile Screens */}
+                                <div className="w-full col-span-4 overflow-x-scroll scrollbar-hide">
+                                    {/* Flex Container for Horizontal Scrolling */}
+                                    <div className="flex space-x-6">
+                                        {curator.events.map((event) => (
+                                            <VenueOwnerCard event={event} key={event._id} />
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                            <div className=" text-gray-400 flex flex-col items-start lg:grid xl:grid-cols-4 gap-6 px-10 xl:px-10 py-4 mt-5 ">
+                                <div className=" flex flex-col items-start col-span-4">
+                                    <p className=" text-[24px] md:text-[28px] 2xl:text-[32px] quicksand font-[700] text-white dark:text-gray-400 ">
+                                        Liked Blogs
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="w-full col-span-4 px-8  overflow-hidden">
+                                {/* Horizontal Scrollable Container for Mobile Screens */}
+                                <div className="w-full col-span-4 overflow-x-scroll scrollbar-hide">
+                                    {/* Flex Container for Horizontal Scrolling */}
+                                    <div className="flex space-x-6">
+                                        {curator.events.map((event) => (
+                                            <BlogCard event={event} key={event._id} />
+                                        ))}
+                                    </div>
+                                </div>
                             </div>
                         </div>
 

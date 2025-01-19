@@ -1,14 +1,50 @@
-import React, { useContext } from "react";
+import React, {useState, useContext } from "react";
 import { BackgroundGradient } from "./ui/background-gradient";
 import { Link, useParams } from "react-router-dom";
 import { MainAppContext } from "@/context/MainContext";
 
-export function EventCard({ event, key }) {
+export function NormalEvent({ event, key }) {
     console.log(event);
     const {
         seteventPageId,
     } = useContext(MainAppContext);
+    const [comments, setComments] = useState([]); // Reviews as comments
+      const [newComment, setNewComment] = useState("");
+    
+    const Stars = ({ stars }) => {
+        const ratingStars = Array.from({ length: 5 }, (elem, index) => {
+            return (
+                <div key={index}>
+                    {stars >= index + 1 ? (
+                        <FaStar className=" text-[#8B33FE]" />
+                    ) : (
+                        <IoStarOutline className="  text-{#8B33FE} " />
+                    )}
+                </div>
+            );
+        });
+        return <div className=" flex items-center gap-0.5">{ratingStars}</div>;
+    };
 
+    const handleLike = () => {
+        handleLiked(!liked);
+    };
+
+    const handleAddComment = () => {
+        if (newComment.trim()) {
+            setComments([
+                ...comments,
+                {
+                    title: "User Comment",
+                    comment: newComment,
+                    rating: 5, // Example rating
+                    userId: { name: "Anonymous" },
+                    createdAt: new Date().toISOString(),
+                },
+            ]);
+            setNewComment("");
+        }
+    };
     return (
         (<div>
             <Link to={`/event/${event?.title.replace(/\s+/g, "-")}`}
@@ -35,7 +71,7 @@ export function EventCard({ event, key }) {
                     <p className="text-sm text-neutral-400 text-gray-500">
                         Experience the joy and Enjoy with your friends at our DJ event.
                     </p>
-                    <div className="mt-4">
+                    {/* <div className="mt-4">
                             <p className="text-sm text-neutral-400 mb-1">
                                 <span className="font-bold text-white">670</span> donations
                             </p>
@@ -48,16 +84,17 @@ export function EventCard({ event, key }) {
                             <p className="text-sm text-gray-300 mt-2">
                                 <span className="font-bold">12.8k $</span> raised
                             </p>
-                        </div>
+                        </div> */}
                     <button
                         className="rounded-full p-2 text-white flex items-center  bg-[#27272A] mt-4 text-xs font-bold dark:bg-zinc-800">
                         Contribute now
                     </button>
                     <p className="text-sm text-gray-400 mt-2">
-                    Listed By : Raihan Khan
+                        Listed By : Raihan Khan
                     </p>
                 </BackgroundGradient>
             </Link>
+
         </div >)
     );
 }

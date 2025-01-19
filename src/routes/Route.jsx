@@ -22,6 +22,7 @@ import Profile from "@/pages/Profile";
 import Register from "@/pages/Register";
 import SearchPage from "@/pages/Search";
 import Shop from "@/pages/Shop";
+import SponserPage from "@/pages/SponserPage";
 import SuccessTransactionPage from "@/pages/SuccessTransactionPage";
 import AddProduct from "@/pages/Vendordashboard/AddProduct";
 import Dashboard from "@/pages/Vendordashboard/Dashboard";
@@ -32,6 +33,7 @@ import Reviews from "@/pages/Vendordashboard/Reviews";
 import Settings from "@/pages/Vendordashboard/Settings";
 import VendorLogin from "@/pages/VendorLogin";
 import VendorRegister from "@/pages/VendorRegister";
+import VenueOwnerPage from "@/pages/VenueOwnerPage";
 import WishList from "@/pages/Wishlist";
 
 export const userRoutes = [
@@ -61,15 +63,39 @@ export const userRoutes = [
   },
   {
     name: "Blog page",
-    title: "Curators Page",
+    title: "Blog Page",
     component: <BlogPage />,
     path: "/blog/:id",
+  },
+  {
+    name: "All Sponsers",
+    title: "Sponsers Page",
+    component: <AllCurators />,
+    path: "/sponser/all",
+  },
+  {
+    name: "Sponser page",
+    title: "Sponsers Page",
+    component: <SponserPage />,
+    path: "/sponser/:id",
+  },
+  {
+    name: "All Venue Owners",
+    title: "Venue Owners Page",
+    component: <AllCurators />,
+    path: "/sponser/all",
+  },
+  {
+    name: "Venue Owners page",
+    title: "Venue Owners Page",
+    component: <VenueOwnerPage />,
+    path: "/venue/:id",
   },
   {
     name: "All Blogs",
     title: "All Blogs",
     component: <AllBlogs />,
-    path: "/blogs/all",
+    path: "/venue/all",
   },
   {
     name: "My Feed",
