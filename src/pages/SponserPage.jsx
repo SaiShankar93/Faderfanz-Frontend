@@ -166,7 +166,7 @@ const SponserPage = () => {
                 <img src="/Images/loader.svg" alt="loading..." className="object-contain w-[60px] h-[60px]" />
             </div>
         ) : (
-            <div className="bg-[#0E0F13] min-h-screen text-white">
+            <div className="bg-[#0E0F13] min-h-screen text-white pt-24">
                 {/* Profile Section */}
                 <div className="relative">
                     {/* Banner Section */}
@@ -200,11 +200,11 @@ const SponserPage = () => {
                                         }}
                                     />
                                     <div className="flex flex-col gap-2">
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-sm font-medium bg-white/10 px-3 py-1 rounded-full">
+                                        <div className="flex items-center gap-2 flex-nowrap">
+                                            <span className="text-xs font-medium bg-white/10 px-2 py-1 rounded-full whitespace-nowrap">
                                                 Verified Sponsor
                                             </span>
-                                            <span className="text-sm font-medium bg-green-500/20 text-green-400 px-3 py-1 rounded-full">
+                                            <span className="text-xs font-medium bg-green-500/20 text-green-400 px-2 py-1 rounded-full whitespace-nowrap">
                                                 GST Verified
                                             </span>
                                         </div>
