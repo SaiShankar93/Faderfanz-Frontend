@@ -18,11 +18,32 @@ module.exports = withMT({
 					'100%': {
 						transform: 'translateX(-100%)'
 					}
-				}
+				},
+				'tilt': {
+					'0%, 50%, 100%': {
+						transform: 'rotate(0deg)',
+					},
+					'25%': {
+						transform: 'rotate(0.5deg)',
+					},
+					'75%': {
+						transform: 'rotate(-0.5deg)',
+					},
+				},
+				'twinkle': {
+					'0%': {
+						opacity: 0.1,
+					},
+					'100%': {
+						opacity: 0.3,
+					},
+				},
 			},
 			animation: {
 				marquee: 'marquee 10s linear infinite',
 				spin: 'spin 2s linear infinite',
+				'tilt': 'tilt 10s infinite linear',
+				'twinkle': 'twinkle 4s infinite linear alternate',
 			},
 			fontFamily: {
 				playfair: [
