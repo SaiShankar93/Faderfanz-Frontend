@@ -1,0 +1,160 @@
+/* Beam Light Effects */
+.beam {
+  position: absolute;
+  width: 2px;
+  height: calc(100% - 300px);
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(139, 51, 254, 0.3),
+    rgba(255, 68, 236, 0.3),
+    transparent
+  );
+  animation: moveBeam 8s infinite;
+  transform-origin: top;
+  opacity: 0.5;
+  max-height: calc(100vh - 300px);
+}
+
+.beam-1 {
+  left: 15%;
+  animation-delay: 0s;
+}
+
+.beam-2 {
+  left: 50%;
+  animation-delay: -2s;
+}
+
+.beam-3 {
+  left: 85%;
+  animation-delay: -4s;
+}
+
+@keyframes moveBeam {
+  0% {
+    transform: translateX(-50px) rotate(15deg);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translateX(50px) rotate(-15deg);
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateX(-50px) rotate(15deg);
+    opacity: 0.3;
+  }
+}
+
+/* Glitter Effects */
+.glitter {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: white;
+  border-radius: 50%;
+  animation: glitter 6s infinite;
+  bottom: 300px;
+}
+
+@keyframes glitter {
+  0%, 100% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(var(--tx), var(--ty)) scale(1);
+  }
+}
+
+/* Generate 20 unique glitter positions and animations */
+.glitter {
+  --tx: 0px;
+  --ty: 0px;
+}
+
+/* Generate random positions for each glitter */
+.glitter-1 { --tx: 100px; --ty: -50px; animation-delay: -0.5s; left: 10%; top: 20%; max-bottom: calc(100vh - 300px); }
+.glitter-2 { --tx: -80px; --ty: 70px; animation-delay: -1s; left: 20%; top: 40%; max-bottom: calc(100vh - 300px); }
+.glitter-3 { --tx: 120px; --ty: 90px; animation-delay: -1.5s; left: 30%; top: 60%; max-bottom: calc(100vh - 300px); }
+.glitter-4 { --tx: -60px; --ty: -80px; animation-delay: -2s; left: 40%; top: 30%; max-bottom: calc(100vh - 300px); }
+.glitter-5 { --tx: 90px; --ty: 60px; animation-delay: -2.5s; left: 50%; top: 50%; max-bottom: calc(100vh - 300px); }
+/* ... add more positions for remaining glitters ... */
+
+/* Gradient Overlay - Stop before footer */
+.background-effects-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 300px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* Update the gradient overlay to fade out before footer */
+.gradient-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(14, 15, 19, 0.5) 70%,
+    #0E0F13 100%
+  );
+  z-index: 10;
+}
+
+/* Add a subtle pulse effect to the containers */
+.bg-gradient-to-br {
+  animation: pulse 4s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(139, 51, 254, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(255, 68, 236, 0.2);
+  }
+}
+
+/* Add hover effects to interactive elements */
+button {
+  transition: all 0.3s ease;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(139, 51, 254, 0.3);
+}
+
+/* Add a subtle floating animation to the donation cards */
+.lg\:sticky {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* Add a gradient animation to the progress bar */
+.bg-gradient-to-r {
+  background-size: 200% 100%;
+  animation: gradientMove 3s linear infinite;
+}
+
+@keyframes gradientMove {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+} 

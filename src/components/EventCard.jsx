@@ -3,7 +3,7 @@ import { BackgroundGradient } from "./ui/background-gradient";
 import { Link, useParams } from "react-router-dom";
 import { MainAppContext } from "@/context/MainContext";
 
-export function EventCard({ event, key }) {
+export function EventCard({ event, key, isCrowdfunding }) {
     console.log(event);
     const {
         seteventPageId,
@@ -11,7 +11,7 @@ export function EventCard({ event, key }) {
 
     return (
         (<div>
-            <Link to={`/event/${event?.title.replace(/\s+/g, "-")}`}
+            <Link to={isCrowdfunding ? `/crowdfunding/${event?._id}` : `/event/${event?.title.replace(/\s+/g, "-")}`}
                 onClick={() => {
                     sessionStorage.setItem(
                         "eventPageId",
@@ -36,25 +36,35 @@ export function EventCard({ event, key }) {
                         Experience the joy and Enjoy with your friends at our DJ event.
                     </p>
                     <div className="mt-4">
-                            <p className="text-sm text-neutral-400 mb-1">
-                                <span className="font-bold text-white">670</span> donations
-                            </p>
-                            <div className="w-full bg-neutral-700 rounded-full h-2">
-                                <div
-                                    className="bg-[#8B33FE] h-2 rounded-full"
-                                    style={{ width: `${(79 / 89) * 100}%` }}
-                                ></div>
-                            </div>
-                            <p className="text-sm text-gray-300 mt-2">
-                                <span className="font-bold">12.8k $</span> raised
-                            </p>
+                        <p className="text-sm text-neutral-400 mb-1">
+                            <span className="font-bold text-white">670</span> donations
+                        </p>
+                        <div className="w-full bg-neutral-700 rounded-full h-2">
+                            <div
+                                className="bg-[#8B33FE] h-2 rounded-full"
+                                style={{ width: `${(79 / 89) * 100}%` }}
+                            ></div>
                         </div>
-                    <button
-                        className="rounded-full p-2 text-white flex items-center  bg-[#27272A] mt-4 text-xs font-bold dark:bg-zinc-800">
-                        Contribute now
-                    </button>
+                        <p className="text-sm text-gray-300 mt-2">
+                            <span className="font-bold">12.8k $</span> raised
+                        </p>
+                    </div>
+                    {isCrowdfunding ? (
+                        <Link
+                            to={`/crowdfunding/${event?._id}`}
+                            className="rounded-full p-2 text-white flex items-center bg-[#27272A] mt-4 text-xs font-bold dark:bg-zinc-800"
+                        >
+                            Contribute now
+                        </Link>
+                    ) : (
+                        <button
+                            className="rounded-full p-2 text-white flex items-center bg-[#27272A] mt-4 text-xs font-bold dark:bg-zinc-800"
+                        >
+                            View Event
+                        </button>
+                    )}
                     <p className="text-sm text-gray-400 mt-2">
-                    Listed By : Raihan Khan
+                        Listed By : Raihan Khan
                     </p>
                 </BackgroundGradient>
             </Link>

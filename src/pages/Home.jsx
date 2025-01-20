@@ -718,18 +718,17 @@ const Home = () => {
         </div>
       ) : (
         <>
-          <div className="w-full col-span-4 px-8 py-16 overflow-hidden">
-            {/* Horizontal Scrollable Container for Mobile Screens */}
-            <div className="w-full col-span-4 overflow-x-scroll scrollbar-hide ">
-              {/* Flex Container for Horizontal Scrolling */}
-              <div className="flex space-x-6">
-                {newProducts.map((event) => (
-                  <EventCard event={event} key={event._id} />
-                ))}
-              </div>
+          <div className="w-full col-span-4 px-4 md:px-8 py-16">
+            <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {newProducts.map((event) => (
+                <EventCard
+                  event={event}
+                  key={event._id}
+                  isCrowdfunding={true}
+                />
+              ))}
             </div>
           </div>
-
         </>
       )}
 

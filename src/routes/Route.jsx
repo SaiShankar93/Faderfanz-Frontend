@@ -35,6 +35,7 @@ import VendorLogin from "@/pages/VendorLogin";
 import VendorRegister from "@/pages/VendorRegister";
 import VenueOwnerPage from "@/pages/VenueOwnerPage";
 import WishList from "@/pages/Wishlist";
+import CrowdfundingDetail from "@/pages/CrowdfundingDetail";
 
 export const userRoutes = [
   {
@@ -227,6 +228,12 @@ export const userRoutes = [
     title: "privacy-policy",
     component: <PrivacyPol />,
     path: "/privacy-policy",
+  },
+  {
+    name: "crowdfunding-detail",
+    title: "Crowdfunding Detail",
+    component: <CrowdfundingDetail />,
+    path: "/crowdfunding/:id",
   },
 ];
 
