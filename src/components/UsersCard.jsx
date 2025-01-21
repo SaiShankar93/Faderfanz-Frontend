@@ -14,7 +14,7 @@ export function UserCard({ event, key }) {
 
     return (
         (<div>
-            <Link to={`/blog/${event?.title.replace(/\s+/g, "-")}`}
+            <Link to={`/profile`}
                 onClick={() => {
                     sessionStorage.setItem(
                         "blogPageId",
@@ -23,7 +23,7 @@ export function UserCard({ event, key }) {
                     seteventPageId(event?._id);
                 }}
             >
-                <div className="border  border-white/[0.2] flex flex-col justify-between max-w-sm mx-auto p-4 relative h-[380px]">
+                <div className="border  border-white/[0.2] flex flex-col justify-between max-w-sm mx-auto p-4 relative h-auto ">
                     <Icon className="absolute h-6 w-6 -top-3 -left-3 text-white " />
                     <Icon className="absolute h-6 w-6 -bottom-3 -left-3 text-white " />
                     <Icon className="absolute h-6 w-6 -top-3 -right-3 text-white " />
