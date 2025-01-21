@@ -147,13 +147,13 @@ const MyFeed = () => {
                                     </p>
                                 </div>
                             </div>
-                            <div className="w-full col-span-4 px-8  overflow-hidden">
-                                {/* Horizontal Scrollable Container for Mobile Screens */}
+                            <div className="w-full col-span-4 px-8 overflow-hidden">
                                 <div className="w-full col-span-4 overflow-x-scroll scrollbar-hide">
-                                    {/* Flex Container for Horizontal Scrolling */}
                                     <div className="flex space-x-6">
                                         {curator.events.map((event) => (
-                                            <CuratorCard event={event} key={event._id} />
+                                            <div className="min-w-[280px] w-[280px]">
+                                                <CuratorCard event={event} key={event._id} />
+                                            </div>
                                         ))}
                                     </div>
                                 </div>
@@ -165,13 +165,13 @@ const MyFeed = () => {
                                     </p>
                                 </div>
                             </div>
-                            <div className="w-full col-span-4 px-8 py-16 overflow-hidden">
-                                {/* Horizontal Scrollable Container for Mobile Screens */}
-                                <div className="w-3/4 col-span-4 overflow-x-scroll scrollbar-hide ">
-                                    {/* Flex Container for Horizontal Scrolling */}
+                            <div className="w-full col-span-4 px-8 overflow-hidden">
+                                <div className="w-full col-span-4 overflow-x-scroll scrollbar-hide">
                                     <div className="flex space-x-6">
                                         {curator.events.map((event) => (
-                                            <EventCard event={event} key={event._id} />
+                                            <div className="min-w-[280px] w-[280px]">
+                                                <EventCard event={event} key={event._id} />
+                                            </div>
                                         ))}
                                     </div>
                                 </div>
@@ -201,13 +201,13 @@ const MyFeed = () => {
                                     </p>
                                 </div>
                             </div>
-                            <div className="w-full col-span-4 px-8  overflow-hidden">
-                                {/* Horizontal Scrollable Container for Mobile Screens */}
+                            <div className="w-full col-span-4 px-8 overflow-hidden">
                                 <div className="w-full col-span-4 overflow-x-scroll scrollbar-hide">
-                                    {/* Flex Container for Horizontal Scrolling */}
                                     <div className="flex space-x-6">
                                         {curator.events.map((event) => (
-                                            <BlogCard event={event} key={event._id} />
+                                            <div className="min-w-[280px] w-[280px]">
+                                                <BlogCard event={event} key={event._id} />
+                                            </div>
                                         ))}
                                     </div>
                                 </div>

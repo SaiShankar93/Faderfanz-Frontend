@@ -1,16 +1,33 @@
 import React from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Link } from "react-router-dom";
+import { IoSearchOutline } from 'react-icons/io5';
 
 import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/navigation";
-import { FaSearch } from 'react-icons/fa'
 import { Autoplay, Pagination, Navigation } from "swiper/modules";
 
 export default function HeroSlider({ slider }) {
   return (
     <div className="relative w-full pt-32 md:px-14 px-0">
+      {/* Search Bar - Moved outside of Swiper */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 w-full flex flex-col items-center">
+        <h1 className="text-4xl sm:text-4xl md:text-5xl lg:text-6xl font-playwrite text-white text-center mb-8">
+          Explore Tons of Amazing Events
+        </h1>
+        <div className="relative w-full max-w-[280px] sm:max-w-[400px] md:max-w-[500px]">
+          <input
+            type="text"
+            placeholder="Search events, venues, or curators"
+            className="w-full px-4 py-2.5 text-sm sm:text-base text-gray-900 rounded-lg shadow-lg pr-12"
+          />
+          <div className="absolute right-2 top-1/2 -translate-y-1/2 p-2">
+            <IoSearchOutline className="w-5 h-5 text-gray-600" />
+          </div>
+        </div>
+      </div>
+
       <Swiper
         loop={true}
         pagination={{
@@ -36,32 +53,12 @@ export default function HeroSlider({ slider }) {
 
               {/* Overlay */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-
-              {/* Text and Search Bar */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
-                <h1 className="text-4xl sm:text-4xl md:text-5xl lg:text-6xl font-playwrite">
-                  Explore Tons of Amazing Events
-                </h1>
-                <div className="relative mt-8 w-full  max-w-[400px] sm:max-w-[500px]">
-                  <input
-                    type="text"
-                    placeholder="Search events, venues, or curators"
-                    className="w-full px-4 py-2 text-gray-900 rounded-lg shadow-lg"
-                  />
-                  <button
-                    className="absolute right-0 top-0 h-full px-4 bg-black text-white rounded-full"
-                    type="button"
-                  >
-                    <FaSearch />
-                  </button>
-                </div>
-              </div>
             </div>
           </SwiperSlide>
         ))}
       </Swiper>
 
-
+      {/* Background gradient */}
       <div
         aria-hidden="true"
         className="absolute inset-x-0 top-[calc(100%-13rem)] -z-10 transform-gpu overflow-hidden blur-3xl sm:top-[calc(100%-30rem)]"

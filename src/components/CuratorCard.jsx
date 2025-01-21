@@ -40,52 +40,52 @@ export function CuratorCard({ event, key }) {
                             {event.name}
                         </p>
                     </p>
-                    </CardSpotlight>
+                </CardSpotlight>
 
 
-                    <div className="z-20 ">
-                        <p className="flex justify-center text-center my-1 text-sm text-neutral-400 mb-2">{event.contact ? event.contact : "djblaze@example.com"}</p>
-                        <p className="flex justify-center text-center my-1 text-sm text-neutral-400">Followers: {event.followers ? event.followers.toLocaleString() : 143}</p>
-                    </div>
-                    <p className="text-sm text-neutral-400 text-gray-500 my-2">
-                        Experience the joy and Enjoy with your friends at our DJ event.
-                    </p>
-                    <div className="flex flex-col md:flex-row justify-center items-center md:justify-between mt-4">
-                        {/* View Profile Button */}
-                        <button
-                            className="rounded-full pl-4 pr-1 py-1 text-white flex items-center space-x-1 bg-[#27272A] text-xs font-bold dark:bg-zinc-800 mb-4 md:mb-0"
+                <div className="z-20 ">
+                    <p className="flex justify-center text-center my-1 text-sm text-neutral-400 mb-2">{event.contact ? event.contact : "djblaze@example.com"}</p>
+                    <p className="flex justify-center text-center my-1 text-sm text-neutral-400">Followers: {event.followers ? event.followers.toLocaleString() : 143}</p>
+                </div>
+                <p className="text-sm text-neutral-400 text-gray-500 my-2">
+                    Experience the joy and Enjoy with your friends at our DJ event.
+                </p>
+                <div className="flex flex-col md:flex-row justify-center items-center md:justify-between mt-4">
+                    {/* View Profile Button */}
+                    <button
+                        className="rounded-full pl-4 pr-1 py-1 text-white flex items-center space-x-1 bg-[#27272A] text-xs font-bold dark:bg-zinc-800 mb-4 md:mb-0"
+                    >
+                        <span>View Profile</span>
+                        <span className="bg-[#27272A] rounded-full text-[0.6rem] px-2 py-0 text-white">
+                            {/* ${event.price} */}
+                        </span>
+                    </button>
+
+                    {/* Social Media Icons */}
+                    <div className="flex justify-center gap-4">
+                        <a
+                            href="#"
+                            className="text-gray-400 hover:text-white transition"
+                            aria-label="Instagram"
                         >
-                            <span>View Profile</span>
-                            <span className="bg-[#27272A] rounded-full text-[0.6rem] px-2 py-0 text-white">
-                                {/* ${event.price} */}
-                            </span>
-                        </button>
-
-                        {/* Social Media Icons */}
-                        <div className="flex justify-center gap-4">
-                            <a
-                                href="#"
-                                className="text-gray-400 hover:text-white transition"
-                                aria-label="Instagram"
-                            >
-                                <FaInstagram />
-                            </a>
-                            <a
-                                href="#"
-                                className="text-gray-400 hover:text-white transition"
-                                aria-label="Twitter"
-                            >
-                                <FaTwitter />
-                            </a>
-                            <a
-                                href="#"
-                                className="text-gray-400 hover:text-white transition"
-                                aria-label="Facebook"
-                            >
-                                <FaFacebook />
-                            </a>
-                        </div>
+                            <FaInstagram />
+                        </a>
+                        <a
+                            href="#"
+                            className="text-gray-400 hover:text-white transition"
+                            aria-label="Twitter"
+                        >
+                            <FaTwitter />
+                        </a>
+                        <a
+                            href="#"
+                            className="text-gray-400 hover:text-white transition"
+                            aria-label="Facebook"
+                        >
+                            <FaFacebook />
+                        </a>
                     </div>
+                </div>
             </Link>
         </div >)
     );

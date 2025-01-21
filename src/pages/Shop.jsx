@@ -410,8 +410,8 @@ const Shop = () => {
                             ? "flex flex-col items-center justify-between"
                             : "col-span-2 gap-3 flex border border-gray-300 dark:border-gray-700 rounded-md p-3"
                             } shadow shadow-black/30`}
-                        >                          
-                          <EventCard event={item}  key={item._id}/>
+                        >
+                          <EventCard event={item} key={item._id} />
                         </div>
                       ))}
                   </div>
@@ -442,12 +442,12 @@ const Shop = () => {
                   })?.length > itemsPerPage ? (
                     <div
                       onClick={() => setItemsPerPage((prev) => prev + 8)}
-                      className="p-3 cursor-pointer border-t bg-gray-200 text-gray-700 font-semibold border-b border-gray-300 my-2 flex items-center justify-center gap-3"
+                      className="p-3 cursor-pointer border-t bg-gray-200 text-gray-700 font-semibold border-gray-300 my-2 flex items-center justify-center gap-3"
                     >
                       See More
                     </div>
                   ) : (
-                    <p className="mt-10 text-center">
+                    <p className="mt-10 text-center text-gray-400">
                       No More Events Available
                     </p>
                   )}

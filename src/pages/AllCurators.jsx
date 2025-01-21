@@ -86,14 +86,14 @@ const AllCurators = () => {
                     </div >
                 ) : (
                     <>
-                        <div className="w-full col-span-4 px-8 py-16">
-                            <div className="w-full col-span-4 grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                                {curators.map((event) => (
-                                    console.log(event),
-                                    <CuratorCard event={event} key={event._id} />
+                        <div className="w-full col-span-4 px-4 sm:px-8 py-8 sm:py-16">
+                            <div className="w-full col-span-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+                                {curators.map((curator) => (
+                                    <div className="min-h-[380px] sm:min-h-[420px]">
+                                        <CuratorCard event={curator} key={curator._id} />
+                                    </div>
                                 ))}
                             </div>
-
                         </div>
                     </>
                 )}
