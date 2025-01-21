@@ -67,7 +67,7 @@ const Blogs = () => {
           <div className="flex flex-col md:gap-1">
             <img
               className="w-full h-[230px] md:h-[390px] object-cover"
-              src={blog?.imageLink}
+              src="{blog?.imageLink}"
               alt="blog"
             />
             <div className="flex flex-col">

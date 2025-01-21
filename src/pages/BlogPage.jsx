@@ -15,8 +15,8 @@ const BlogPage = () => {
         setLoading(false);
     }, 1000);
     const allImages = [
-        "http://localhost:5000/images/additionalImages-1735064142892.jpeg",
-        "http://localhost:5000/images/additionalImages-1735064142892.jpeg"
+        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQmwJKXOAOJ_f2jlwhnlINidcfUo9qnhEAANg",
+        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQmwJKXOAOJ_f2jlwhnlINidcfUo9qnhEAANg"
     ]
     const curator = {
         title: "DJ Blaze",

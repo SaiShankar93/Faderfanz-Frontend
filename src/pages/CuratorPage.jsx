@@ -65,7 +65,7 @@ const CuratorPage = () => {
     const curator = {
         name: "DJ Blaze",
         stageName: "The Blaze Master",
-        profilePhoto: "http://localhost:5000/images/additionalImages-1735064142892.jpeg",
+        profilePhoto: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQmwJKXOAOJ_f2jlwhnlINidcfUo9qnhEAANg",
         contact: "djblaze@example.com",
         followers: 5234,
         about: "DJ Blaze is a renowned music curator known for electrifying performances and unforgettable events.",
@@ -75,7 +75,7 @@ const CuratorPage = () => {
             facebook: "https://facebook.com/djblaze",
         },
         mediaGallery: [
-            { type: 'image', url: 'http://localhost:5000/images/additionalImages-1735064142892.jpeg' },
+            { type: 'image', url: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQmwJKXOAOJ_f2jlwhnlINidcfUo9qnhEAANg' },
             { type: 'video', url: 'http://example.com/video1.mp4' },
             { type: 'audio', url: 'http://example.com/audio1.mp3' },
         ],

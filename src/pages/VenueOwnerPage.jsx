@@ -11,7 +11,7 @@ const VenueOwnerPage = () => {
     // Updated data structure for venue owner
     const venueOwner = {
         venueName: "Skyline Lounge",
-        profilePhoto: "http://localhost:5000/images/venue-profile.jpg",
+        profilePhoto: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQmwJKXOAOJ_f2jlwhnlINidcfUo9qnhEAANg&s",
         location: {
             address: "123 Party Street, Downtown",
             coordinates: "40.7128° N, 74.0060° W",
@@ -32,9 +32,9 @@ const VenueOwnerPage = () => {
             highlights: ["Signature Cocktails", "Premium Spirits", "Bar Snacks"],
         },
         images: [
-            "http://localhost:5000/images/venue-1.jpg",
-            "http://localhost:5000/images/venue-2.jpg",
-            "http://localhost:5000/images/venue-3.jpg",
+            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQmwJKXOAOJ_f2jlwhnlINidcfUo9qnhEAANg",
+            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ0Fo5AySkxq5FtCRUniikZ_9MZjAQ0k4nNdw&s",
+            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ0Fo5AySkxq5FtCRUniikZ_9MZjAQ0k4nNdw&s",
         ],
         regularEvents: [
             {

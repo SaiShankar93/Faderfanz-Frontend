@@ -29,7 +29,7 @@ export function UserCard({ event, key }) {
                     <Icon className="absolute h-6 w-6 -top-3 -right-3 text-white " />
                     <Icon className="absolute h-6 w-6 -bottom-3 -right-3 text-white " />
 
-                    <EvervaultCard link="http://localhost:5000/images/additionalImages-1735138631438.jpeg" />
+                    <EvervaultCard link="https://thumbs.dreamstime.com/b/dj-performing-neon-lit-club-high-end-mixer-dark-surrounded-vibrant-lights-skillfully-mixing-music-audio-creating-333111795.jpg" />
                     <p
                         className="flex justify-center text-center text-base sm:text-xl  text-gray-400">
                         Sai Shankar

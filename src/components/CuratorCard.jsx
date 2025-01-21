@@ -26,7 +26,7 @@ export function CuratorCard({ event, key }) {
                     <p className="text-xl font-bold relative z-20 mt-2 text-white">
                         <div className="flex justify-center">
                             <img
-                                src={"http://localhost:5000/images/additionalImages-1735138631438.jpeg"}
+                                src={"https://thumbs.dreamstime.com/b/dj-performing-neon-lit-club-high-end-mixer-dark-surrounded-vibrant-lights-skillfully-mixing-music-audio-creating-333111795.jpg"}
                                 alt="jordans"
                                 height="400"
                                 width="400"

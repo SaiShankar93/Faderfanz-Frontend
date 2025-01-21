@@ -22,7 +22,7 @@ export function EventCard({ event, key, isCrowdfunding }) {
             >
                 <BackgroundGradient className="rounded-[22px]   p-4 sm:p-10 bg-[#181818]">
                     <img
-                        src={event.mainImage}
+                        src={"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSm9Z9vP0ryzbptT0RmJQpgIvVV0F1HGFW-CA&s"}
                         alt="jordans"
                         height="400"
                         width="400"

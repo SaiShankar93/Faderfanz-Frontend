@@ -74,8 +74,8 @@ const SponserPage = () => {
             name: "Balayya",
             role: "Marketing Director"
         },
-        profilePhoto: "http://localhost:5000/images/additionalImages-1735064142892.jpeg",
-        bannerImage: "http://localhost:5000/images/additionalImages-1735064142892.jpeg",
+        profilePhoto: "https://t3.ftcdn.net/jpg/01/10/11/00/360_F_110110063_4kxHX5YKcqrKqFz9udsaqmjkTCoOhKHc.jpg",
+        bannerImage: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQfyXyWt38DuDNgLaD8jvYSJ96TNTj3aFC6Bg&s",
         categories: ["Music", "Sports", "Art"],
         expectations: ["Brand Exposure", "Sales Growth", "Market Reach"],
         contact: "sponsorships@sponsor.com",

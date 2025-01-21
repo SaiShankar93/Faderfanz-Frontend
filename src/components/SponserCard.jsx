@@ -26,7 +26,7 @@ export function SponserCard({ event, key }) {
                     <CardBody className=" relative group/card  hover:shadow-2xl hover:shadow-emerald-500/[0.1] bg-black/10 border-white/[0.2]  w-[20rem] sm:w-[25rem] h-auto rounded-xl p-4 border  ">
                         <CardItem translateZ="100" className="w-full mt-4">
                             <img
-                                src="http://localhost:5000/images/additionalImages-1735138631438.jpeg"
+                                src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQEFopnFlNFLKsRKLcwLXyUDnsxIfFQv3yz8g&s"
                                 height="1000"
                                 width="1000"
                                 className="h-60 w-full object-cover rounded-xl group-hover/card:shadow-xl"

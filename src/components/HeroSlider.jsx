@@ -29,7 +29,7 @@ export default function HeroSlider({ slider }) {
               <a href={slide.link}>
                 <img
                   className="w-full h-full object-fill lg:object-cover"
-                  src={slide.image}
+                  src={"https://t3.ftcdn.net/jpg/01/10/11/00/360_F_110110063_4kxHX5YKcqrKqFz9udsaqmjkTCoOhKHc.jpg"}
                   alt={slide.name}
                 />
               </a>

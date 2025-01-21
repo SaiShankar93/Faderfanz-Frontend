@@ -172,7 +172,63 @@ const Home = () => {
 
   const [filteredCategory, setFilteredCategory] = useState("New Arrivals");
   const [filteredProducts, setFilteredProducts] = useState([]);
-  const [newProducts, setNewProducts] = useState([]);
+  const [newProducts, setNewProducts] = useState([
+    {
+      title: "Tech Conference 2025", // Event Title
+      description: "An annual gathering of tech enthusiasts, developers, and innovators to discuss the future of technology.",
+      discounts: true,
+      discountValue: 20, // Discount for early bird
+      price: 4999, // Ticket price
+      currency: "USD",
+      available: 500, // Total tickets available
+      pieces: 500, // Remaining tickets
+      promotional: "Early Bird Offer",
+      editorContent:
+        "<p>Join the most awaited technology conference of the year and get exclusive insights into the world of innovation.</p>", // Event promotional content
+      width: 0, // Not applicable for events
+      height: 0, // Not applicable for events
+      weight: 0, // Not applicable for events
+      status: "available",
+      sku: "EVENT12345", // Unique event code
+      mainImage:
+        "https://example.com/images/tech-conference-2025.jpg", // Banner image of the event
+      additionalImages: [
+        "https://example.com/images/venue.jpg",
+        "https://example.com/images/speakers.jpg",
+      ],
+      mainCategory: ["Events"],
+      subCategory: ["Technology", "Innovation"],
+      series: ["Annual Tech Conferences"],
+      tags: ["Tech", "Conference", "2025", "Innovation"],
+      vendorId: "63fdd34a98123b4c12345678", // Example vendor ID (organizer)
+      approved: true,
+      createdAt: new Date(),
+      attributes: [
+        {
+          type: "VIP Access", // Event ticket type
+          value: "Includes access to all sessions and VIP seating.",
+          price: "7999", // Price for VIP access
+          attributeImage: "https://example.com/images/vip-pass.jpg",
+        },
+        {
+          type: "Standard Access",
+          value: "Includes access to all sessions.",
+          price: "4999",
+          attributeImage: "https://example.com/images/standard-pass.jpg",
+        },
+      ],
+      featured: true,
+      isStock: true,
+      threeDiaLinkHor: "",
+      threeDiaLinkVer: "",
+      arFilePath: "",
+      metaTitle: "Tech Conference 2025 - Leading Innovation in Technology",
+      metaDescription:
+        "Join Tech Conference 2025 to explore innovations, network with experts, and experience the future of technology.",
+      metaTags: "tech, conference, innovation, 2025, technology",
+    },
+  ]);
+
   const [banners, setBanners] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -198,7 +254,7 @@ const Home = () => {
         chunkedArray.push(response?.data?.slice(i, i + 10));
       }
       console.log(chunkedArray);
-      setNewProducts(chunkedArray[0]);
+      // setNewProducts(chunkedArray[0]);
     } catch (error) {
       console.error("Error fetching products:", error);
     }
@@ -385,7 +441,7 @@ const Home = () => {
           </filter>
         </defs>
       </svg>
-      <svg
+      {/* <svg
         className="absolute top-[3300px] right-0 z-[0] pointer-events-none"
         width="536"
         height="1071"
@@ -411,7 +467,7 @@ const Home = () => {
             <feGaussianBlur stdDeviation="164" result="effect1_foregroundBlur_1_3190" />
           </filter>
         </defs>
-      </svg>
+      </svg> */}
       {/* <div className="w-full h-[1px] bg-gray-600 my-24"></div> */}
 
       <ScrollAnimation variants={scaleUpVariants}>
@@ -436,7 +492,7 @@ const Home = () => {
                 <div key={index} className="h-full w-[350px]">
                   <div className="flex flex-col gap-6 sm:w-[350px] w-[300px] h-[400px] items-center border border-[#262626] rounded-2xl p-5 py-8 bg-gradient-to-b from-[#1a1a1a] to-transparent via-[#1a1a1a59]">
                     <img
-                      src="http://localhost:5000/images/additionalImages-1735138631438.jpeg"
+                      src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSoo4nBuzAbDEozya5g9w5RfNVDx7XwmUdSug&s"
                       alt=""
                       className="w-[100px] h-[100px] rounded-full object-cover"
                     />
@@ -469,7 +525,7 @@ const Home = () => {
                   </div>
                   <div className="mt-6 ml-2 flex items-center gap-2">
                     <img
-                      src="http://localhost:5000/images/additionalImages-1735138631438.jpeg"
+                      src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSoo4nBuzAbDEozya5g9w5RfNVDx7XwmUdSug&s"
                       alt=""
                       className="w-[50px] h-[50px] rounded-full object-cover"
                     />
@@ -561,12 +617,12 @@ const Home = () => {
         <>
           <div className="w-full col-span-4 px-8 py-16 overflow-hidden">
             {/* Horizontal Scrollable Container for Mobile Screens */}
-            <div className="w-full col-span-4 overflow-x-scroll">
+            <div className="w-full col-span-4 overflow-x-scroll scrollbar-hide">
               {/* Flex Container for Horizontal Scrolling */}
               <div className="flex space-x-6">
-                {newProducts.map((event) => (
+                {newProducts ? newProducts.map((event) => (
                   <SponserCard event={event} key={event._id} />
-                ))}
+                )) : "No Sponsers Available"}
               </div>
             </div>
           </div>
@@ -614,12 +670,12 @@ const Home = () => {
         <>
           <div className="w-full col-span-4 px-8 py-16 overflow-hidden">
             {/* Horizontal Scrollable Container for Mobile Screens */}
-            <div className="w-full col-span-4 overflow-x-scroll ">
+            <div className="w-full col-span-4 overflow-x-scroll scrollbar-hide ">
               {/* Flex Container for Horizontal Scrolling */}
               <div className="flex space-x-6">
-                {newProducts.map((event) => (
+                {newProducts ? newProducts.map((event) => (
                   <VenueOwnerCard event={event} key={event._id} />
-                ))}
+                )) : "No Venue Owners Available"}
               </div>
             </div>
           </div>
@@ -669,9 +725,9 @@ const Home = () => {
             <div className="w-full col-span-4 overflow-x-scroll scrollbar-hide ">
               {/* Flex Container for Horizontal Scrolling */}
               <div className="flex space-x-6">
-                {newProducts.map((event) => (
+                {newProducts ? newProducts.map((event) => (
                   <CuratorCard event={event} key={event._id} />
-                ))}
+                )) : "No Curators Available"}
               </div>
             </div>
           </div>
@@ -720,13 +776,13 @@ const Home = () => {
         <>
           <div className="w-full col-span-4 px-4 md:px-8 py-16">
             <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {newProducts.map((event) => (
+              {newProducts ? newProducts.map((event) => (
                 <EventCard
                   event={event}
                   key={event._id}
                   isCrowdfunding={true}
                 />
-              ))}
+              )) : "No Events Available"}
             </div>
           </div>
         </>
@@ -775,10 +831,10 @@ const Home = () => {
         <>
           <div className="w-full col-span-4 px-8 py-16">
             <div className="w-full col-span-4 grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {newProducts.map((event) => (
+              {newProducts ? newProducts.map((event) => (
                 console.log(event),
                 <UserCard event={event} key={event._id} />
-              ))}
+              )) : "No Users Available"}
             </div>
 
           </div>
@@ -825,10 +881,10 @@ const Home = () => {
         <>
           <div className="w-full col-span-4 px-8 py-16">
             <div className="w-full col-span-4 grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {newProducts.map((event) => (
+              {newProducts ? newProducts.map((event) => (
                 console.log(event),
                 <BlogCard event={event} key={event._id} />
-              ))}
+              )) : "No Blogs Available"}
             </div>
           </div>
         </>
