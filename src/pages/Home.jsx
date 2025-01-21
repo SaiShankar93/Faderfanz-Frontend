@@ -829,14 +829,12 @@ const Home = () => {
         </div>
       ) : (
         <>
-          <div className="w-full col-span-4 px-8 py-16">
-            <div className="w-full col-span-4 grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="w-full col-span-4 px-4 md:px-8 py-16">
+            <div className="w-full col-span-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {newProducts ? newProducts.map((event) => (
-                console.log(event),
                 <UserCard event={event} key={event._id} />
               )) : "No Users Available"}
             </div>
-
           </div>
         </>
       )}
@@ -879,10 +877,9 @@ const Home = () => {
         </div>
       ) : (
         <>
-          <div className="w-full col-span-4 px-8 py-16">
-            <div className="w-full col-span-4 grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="w-full col-span-4 px-4 md:px-8 py-16">
+            <div className="w-full col-span-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {newProducts ? newProducts.map((event) => (
-                console.log(event),
                 <BlogCard event={event} key={event._id} />
               )) : "No Blogs Available"}
             </div>

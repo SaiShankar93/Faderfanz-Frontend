@@ -25,13 +25,13 @@ export function SponserCard({ event, key }) {
                 <CardContainer className="inter-var no-scrollbar">
                     <CardBody className=" relative group/card  hover:shadow-2xl hover:shadow-emerald-500/[0.1] bg-black/10 border-white/[0.2]  w-[15rem] sm:w-[25rem] h-auto rounded-xl p-4 border  ">
                         <CardItem translateZ="100" className="w-full mt-4">
-                            <img
-                                src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQEFopnFlNFLKsRKLcwLXyUDnsxIfFQv3yz8g&s"
-                                height="1000"
-                                width="1000"
-                                className="h-60 w-full object-cover rounded-xl group-hover/card:shadow-xl"
-                                alt="thumbnail"
-                            />
+                            <div className="w-full h-48 rounded-lg overflow-hidden">
+                                <img
+                                    src={"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQEFopnFlNFLKsRKLcwLXyUDnsxIfFQv3yz8g&s"}
+                                    alt={event.title}
+                                    className="w-full h-full object-contain bg-white"
+                                />
+                            </div>
                         </CardItem>
                         <CardItem
                             translateZ="50"

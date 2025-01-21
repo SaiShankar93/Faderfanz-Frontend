@@ -4,70 +4,82 @@ import { Link, useParams } from "react-router-dom";
 import { MainAppContext } from "@/context/MainContext";
 
 export function EventCard({ event, key, isCrowdfunding }) {
-    console.log(event);
-    const {
-        seteventPageId,
-    } = useContext(MainAppContext);
+    const { seteventPageId } = useContext(MainAppContext);
 
     return (
-        (<div>
-            <Link to={isCrowdfunding ? `/crowdfunding/${event?._id}` : `/event/${event?.title.replace(/\s+/g, "-")}`}
+        <div>
+            <Link
+                to={isCrowdfunding ? `/crowdfunding/${event?._id}` : `/event/${event?.title.replace(/\s+/g, "-")}`}
                 onClick={() => {
-                    sessionStorage.setItem(
-                        "eventPageId",
-                        JSON.stringify(event?._id)
-                    );
+                    sessionStorage.setItem("eventPageId", JSON.stringify(event?._id));
                     seteventPageId(event?._id);
                 }}
+                className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-900 to-black border border-gray-800 hover:border-purple-500/50 transition-all duration-300 block"
             >
-                <BackgroundGradient className="rounded-[22px]   p-4 sm:p-10 bg-[#181818]">
+                {/* Image Container */}
+                <div className="relative h-64 overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent z-10"></div>
                     <img
                         src={"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSm9Z9vP0ryzbptT0RmJQpgIvVV0F1HGFW-CA&s"}
-                        alt="jordans"
-                        height="400"
-                        width="400"
-                        className="object-contain h-[200px] md:h-[200px]" />
-                    <p
-                        className="text-base sm:text-xl mt-4 mb-2 text-gray-400">
-                        {event.title}
+                        alt={event?.title}
+                        className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
+                    />
+                </div>
+
+                {/* Content */}
+                <div className="p-6">
+                    <h3 className="text-xl font-bold text-white mb-2 group-hover:text-purple-400 transition-colors">
+                        {event?.title}
+                    </h3>
+
+                    <p className="text-sm text-gray-400 mb-4">
+                        {event?.description || "Experience the joy and Enjoy with your friends at our DJ event."}
                     </p>
 
-                    <p className="text-sm text-neutral-400 text-gray-500">
-                        Experience the joy and Enjoy with your friends at our DJ event.
-                    </p>
+                    {/* Funding Progress */}
                     <div className="mt-4">
-                        <p className="text-sm text-neutral-400 mb-1">
-                            <span className="font-bold text-white">670</span> donations
-                        </p>
-                        <div className="w-full bg-neutral-700 rounded-full h-2">
+                        <div className="flex justify-between text-sm mb-1">
+                            <span className="text-gray-400">Current Funding</span>
+                            <span className="text-purple-400 font-semibold">
+                                75%
+                            </span>
+                        </div>
+                        <div className="w-full bg-gray-800 rounded-full h-2 overflow-hidden">
                             <div
-                                className="bg-[#8B33FE] h-2 rounded-full"
-                                style={{ width: `${(79 / 89) * 100}%` }}
+                                className="h-full bg-gradient-to-r from-purple-600 to-pink-500 rounded-full transition-all duration-300"
+                                style={{ width: '75%' }}
                             ></div>
                         </div>
-                        <p className="text-sm text-gray-300 mt-2">
-                            <span className="font-bold">12.8k $</span> raised
+                        <div className="flex justify-between mt-2 text-sm">
+                            <span className="text-white font-semibold">12.8k $</span>
+                            <span className="text-gray-400">15k $</span>
+                        </div>
+                    </div>
+
+                    {/* Listed By section */}
+                    <div className="mt-4 pt-4 border-t border-gray-800">
+                        <p className="text-sm text-gray-400">
+                            Listed By: {event?.listedBy || "Raihan Khan"}
                         </p>
                     </div>
-                    {isCrowdfunding ? (
-                        <Link
-                            to={`/crowdfunding/${event?._id}`}
-                            className="rounded-full p-2 text-white flex items-center bg-[#27272A] mt-4 text-xs font-bold dark:bg-zinc-800"
-                        >
-                            Contribute now
-                        </Link>
-                    ) : (
-                        <button
-                            className="rounded-full p-2 text-white flex items-center bg-[#27272A] mt-4 text-xs font-bold dark:bg-zinc-800"
-                        >
-                            View Event
-                        </button>
-                    )}
-                    <p className="text-sm text-gray-400 mt-2">
-                        Listed By : Raihan Khan
-                    </p>
-                </BackgroundGradient>
+
+                    {/* Action Button */}
+                    <div className="flex justify-between items-center mt-4">
+                        <span className="text-gray-400 text-sm">
+                            Deadline: FEB 1, 2025
+                        </span>
+                        {isCrowdfunding ? (
+                            <button className="px-4 py-2 bg-purple-500/10 rounded-full text-purple-400 text-sm hover:bg-purple-500/20 transition-colors">
+                                Contribute now
+                            </button>
+                        ) : (
+                            <button className="px-4 py-2 bg-purple-500/10 rounded-full text-purple-400 text-sm hover:bg-purple-500/20 transition-colors">
+                                View Event
+                            </button>
+                        )}
+                    </div>
+                </div>
             </Link>
-        </div >)
+        </div>
     );
 }
