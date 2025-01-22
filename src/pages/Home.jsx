@@ -615,14 +615,14 @@ const Home = () => {
         </div>
       ) : (
         <>
-          <div className="w-full col-span-4 px-8 py-16 overflow-hidden">
-            {/* Horizontal Scrollable Container for Mobile Screens */}
+          <div className="w-full col-span-4 py-16">
             <div className="w-full col-span-4 overflow-x-scroll scrollbar-hide">
-              {/* Flex Container for Horizontal Scrolling */}
-              <div className="flex space-x-6">
-                {newProducts ? newProducts.map((event) => (
-                  <SponserCard event={event} key={event._id} />
-                )) : "No Sponsers Available"}
+              <div className="flex space-x-6 lg:grid lg:grid-cols-3 lg:gap-16 lg:space-x-0 px-8 lg:px-16">
+                {[...newProducts, ...newProducts, ...newProducts].map((event, index) => (
+                  <div key={index} className="min-w-[280px] w-[280px] lg:w-full lg:min-w-0">
+                    <SponserCard event={event} />
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -668,14 +668,14 @@ const Home = () => {
         </div>
       ) : (
         <>
-          <div className="w-full col-span-4 px-8 py-16 overflow-hidden">
-            {/* Horizontal Scrollable Container for Mobile Screens */}
-            <div className="w-full col-span-4 overflow-x-scroll scrollbar-hide ">
-              {/* Flex Container for Horizontal Scrolling */}
-              <div className="flex space-x-6">
-                {newProducts ? newProducts.map((event) => (
-                  <VenueOwnerCard event={event} key={event._id} />
-                )) : "No Venue Owners Available"}
+          <div className="w-full col-span-4 py-16">
+            <div className="w-full col-span-4 overflow-x-scroll scrollbar-hide">
+              <div className="flex space-x-6 lg:grid lg:grid-cols-4 lg:gap-6 lg:space-x-0 px-8">
+                {[...newProducts, ...newProducts, ...newProducts].map((event, index) => (
+                  <div key={index} className="min-w-[280px] w-[280px] lg:w-full lg:min-w-0 p-[1px]">
+                    <VenueOwnerCard event={event} />
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -720,14 +720,14 @@ const Home = () => {
         </div>
       ) : (
         <>
-          <div className="w-full col-span-4 px-8 py-16 overflow-hidden">
-            {/* Horizontal Scrollable Container for Mobile Screens */}
-            <div className="w-full col-span-4 overflow-x-scroll scrollbar-hide ">
-              {/* Flex Container for Horizontal Scrolling */}
-              <div className="flex space-x-6">
-                {newProducts ? newProducts.map((event) => (
-                  <CuratorCard event={event} key={event._id} />
-                )) : "No Curators Available"}
+          <div className="w-full col-span-4 py-16">
+            <div className="w-full col-span-4 overflow-x-scroll scrollbar-hide">
+              <div className="flex space-x-6 lg:grid lg:grid-cols-4 lg:gap-6 lg:space-x-0 px-8">
+                {[...newProducts, ...newProducts, ...newProducts].map((event, index) => (
+                  <div key={index} className="min-w-[280px] w-[280px] lg:w-full lg:min-w-0 p-[1px]">
+                    <CuratorCard event={event} />
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -774,15 +774,19 @@ const Home = () => {
         </div>
       ) : (
         <>
-          <div className="w-full col-span-4 px-4 md:px-8 py-16">
-            <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {newProducts ? newProducts.map((event) => (
-                <EventCard
-                  event={event}
-                  key={event._id}
-                  isCrowdfunding={true}
-                />
-              )) : "No Events Available"}
+          <div className="w-full col-span-4 py-16">
+            <div className="w-full col-span-4 overflow-x-scroll scrollbar-hide">
+              <div className="flex space-x-6 lg:grid lg:grid-cols-4 lg:gap-6 lg:space-x-0 px-8">
+                {[...newProducts, ...newProducts, ...newProducts].map((event, index) => (
+                  <div key={index} className="min-w-[280px] w-[280px] lg:w-full lg:min-w-0 p-[1px]">
+                    <EventCard 
+                      event={event} 
+                      key={event._id}
+                      isCrowdfunding={true}
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </>
@@ -829,11 +833,15 @@ const Home = () => {
         </div>
       ) : (
         <>
-          <div className="w-full col-span-4 px-4 md:px-8 py-16">
-            <div className="w-full col-span-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {newProducts ? newProducts.map((event) => (
-                <UserCard event={event} key={event._id} />
-              )) : "No Users Available"}
+          <div className="w-full col-span-4 py-16">
+            <div className="w-full col-span-4 overflow-x-scroll scrollbar-hide">
+              <div className="flex space-x-6 lg:grid lg:grid-cols-4 lg:gap-6 lg:space-x-0 px-8">
+                {[...newProducts, ...newProducts, ...newProducts].map((event, index) => (
+                  <div key={index} className="min-w-[280px] w-[280px] lg:w-full lg:min-w-0 p-[1px]">
+                    <UserCard event={event} />
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </>
@@ -877,11 +885,15 @@ const Home = () => {
         </div>
       ) : (
         <>
-          <div className="w-full col-span-4 px-4 md:px-8 py-16">
-            <div className="w-full col-span-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {newProducts ? newProducts.map((event) => (
-                <BlogCard event={event} key={event._id} />
-              )) : "No Blogs Available"}
+          <div className="w-full col-span-4 py-16">
+            <div className="w-full col-span-4 overflow-x-scroll scrollbar-hide">
+              <div className="flex space-x-6 lg:grid lg:grid-cols-4 lg:gap-6 lg:space-x-0 px-8">
+                {[...newProducts, ...newProducts, ...newProducts].map((event, index) => (
+                  <div key={index} className="min-w-[280px] w-[280px] lg:w-full lg:min-w-0 p-[1px]">
+                    <BlogCard event={event} />
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </>
