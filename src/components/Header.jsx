@@ -12,11 +12,11 @@ export default function Header() {
 
   const navigation = [
     { name: 'Home', href: '/' },
-    { name: 'Events', href: '/events' },
-    { name: 'Curators', href: '/curators' },
-    { name: 'Sponsors', href: '/sponsors' },
-    { name: 'Crowd Funding', href: '/crowdfunding' },
-    { name: 'Blog', href: '/blog' },
+    { name: 'Events', href: '/events/all/all' },
+    { name: 'Curators', href: '/curator/all' },
+    { name: 'Sponsors', href: '/sponser/all' },
+    { name: 'Crowd Funding', href: '/crowdfunding/:id' },
+    { name: 'Blog', href: '/venue/all' },
   ];
 
   const isActiveRoute = (path) => {
@@ -53,8 +53,8 @@ export default function Header() {
                 key={item.name}
                 href={item.href}
                 className={`text-sm font-semibold leading-6 transition-colors ${isActiveRoute(item.href)
-                    ? "text-[#00FFB2]"
-                    : "text-gray-400 hover:text-white"
+                  ? "text-[#00FFB2]"
+                  : "text-gray-400 hover:text-white"
                   }`}
               >
                 {item.name}
