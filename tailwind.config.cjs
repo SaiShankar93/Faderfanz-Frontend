@@ -100,6 +100,11 @@ module.exports = withMT({
 					'3': 'hsl(var(--chart-3))',
 					'4': 'hsl(var(--chart-4))',
 					'5': 'hsl(var(--chart-5))'
+				},
+				primary: '#00FFB2',
+				dark: {
+					DEFAULT: '#0E0F13',
+					lighter: '#1C1D24',
 				}
 			}
 		}

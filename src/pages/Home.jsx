@@ -34,6 +34,8 @@ import { BlogCard } from "@/components/BlogCard";
 import { SponserCard } from "@/components/SponserCard";
 import { VenueOwnerCard } from "@/components/VenueOwnerCard";
 import { UserCard } from "@/components/UsersCard";
+import ExploreCategories from "@/components/ExploreCategories";
+import PopularEvents from "@/components/PopularEvents";
 
 const box = [
   {
@@ -374,8 +376,9 @@ const Home = () => {
 
   return (
     <section className=" w-full bg-[#0E0F13] text-white">
-      {/* <Hero /> */}
       <HeroSlider slider={slider} />
+      <ExploreCategories />
+      <PopularEvents events={filteredProducts} />
       <Helmet>
         <title>{"Kazi Culture"} </title>
         <meta name="description" />
@@ -779,8 +782,8 @@ const Home = () => {
               <div className="flex space-x-6 lg:grid lg:grid-cols-4 lg:gap-6 lg:space-x-0 px-8">
                 {[...newProducts, ...newProducts, ...newProducts].map((event, index) => (
                   <div key={index} className="min-w-[280px] w-[280px] lg:w-full lg:min-w-0 p-[1px]">
-                    <EventCard 
-                      event={event} 
+                    <EventCard
+                      event={event}
                       key={event._id}
                       isCrowdfunding={true}
                     />
