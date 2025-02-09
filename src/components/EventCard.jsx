@@ -1,85 +1,107 @@
 import React, { useContext } from "react";
 import { BackgroundGradient } from "./ui/background-gradient";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import { MainAppContext } from "@/context/MainContext";
 
 export function EventCard({ event, key, isCrowdfunding }) {
     const { seteventPageId } = useContext(MainAppContext);
+    const navigate = useNavigate();
+
+    if (!isCrowdfunding) return null; // Return original event card if not crowdfunding
+
+    // Calculate progress percentage
+    const raisedAmount = 16900; // Default amount
+    const targetAmount = 35000; // Default target
+    const progressPercentage = Math.min(Math.round((raisedAmount / targetAmount) * 100), 100);
+
+    const handleContribute = () => {
+        // You can generate a unique ID for each campaign or use an existing one
+        const campaignId = event?.id || 'default-campaign';
+        navigate(`/crowdfunding/${campaignId}`);
+    };
 
     return (
-        <div>
-            <Link
-                to={isCrowdfunding ? `/crowdfunding/${event?._id}` : `/event/${event?.title.replace(/\s+/g, "-")}`}
-                onClick={() => {
-                    sessionStorage.setItem("eventPageId", JSON.stringify(event?._id));
-                    seteventPageId(event?._id);
-                }}
-                className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-900 to-black border border-gray-800 hover:border-purple-500/50 transition-all duration-300 block"
-            >
-                {/* Image Container */}
-                <div className="relative h-64 overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent z-10"></div>
-                    <img
-                        src={"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSm9Z9vP0ryzbptT0RmJQpgIvVV0F1HGFW-CA&s"}
-                        alt={event?.title}
-                        className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
-                    />
-                </div>
+        <div className="bg-[#0E0E0E]/80 backdrop-blur-sm rounded-2xl overflow-hidden">
+            {/* Image Container */}
+            <div className="relative h-48">
+                <img
+                    src={event?.image || "/Images/Crowdcard.png"}
+                    alt={event?.title}
+                    className="w-full h-full object-cover"
+                />
+            </div>
 
-                {/* Content */}
-                <div className="p-6">
-                    <h3 className="text-xl font-bold text-white mb-2 group-hover:text-purple-400 transition-colors">
-                        {event?.title}
+            {/* Content */}
+            <div className="p-6">
+                {/* Title and Description */}
+                <div className="mb-6">
+                    <h3 className="text-white text-xl font-semibold mb-2">
+                        {event?.title || "Street Training"}
                     </h3>
-
-                    <p className="text-sm text-gray-400 mb-4">
-                        {event?.description || "Experience the joy and Enjoy with your friends at our DJ event."}
+                    <p className="text-[#808191] text-sm">
+                        {event?.description || "We are raising money for the people in the street to have a good training opportunity"}
                     </p>
+                </div>
 
-                    {/* Funding Progress */}
-                    <div className="mt-4">
-                        <div className="flex justify-between text-sm mb-1">
-                            <span className="text-gray-400">Current Funding</span>
-                            <span className="text-purple-400 font-semibold">
-                                75%
-                            </span>
-                        </div>
-                        <div className="w-full bg-gray-800 rounded-full h-2 overflow-hidden">
-                            <div
-                                className="h-full bg-gradient-to-r from-purple-600 to-pink-500 rounded-full transition-all duration-300"
-                                style={{ width: '75%' }}
-                            ></div>
-                        </div>
-                        <div className="flex justify-between mt-2 text-sm">
-                            <span className="text-white font-semibold">12.8k $</span>
-                            <span className="text-gray-400">15k $</span>
-                        </div>
-                    </div>
-
-                    {/* Listed By section */}
-                    <div className="mt-4 pt-4 border-t border-gray-800">
-                        <p className="text-sm text-gray-400">
-                            Listed By: {event?.listedBy || "Raihan Khan"}
-                        </p>
-                    </div>
-
-                    {/* Action Button */}
-                    <div className="flex justify-between items-center mt-4">
-                        <span className="text-gray-400 text-sm">
-                            Deadline: FEB 1, 2025
+                {/* Funding Progress */}
+                <div className="mb-6">
+                    <div className="flex justify-between items-center mb-2">
+                        <span className="text-white font-medium">
+                            ${raisedAmount.toLocaleString()} raised
                         </span>
-                        {isCrowdfunding ? (
-                            <button className="px-4 py-2 bg-purple-500/10 rounded-full text-purple-400 text-sm hover:bg-purple-500/20 transition-colors">
-                                Contribute now
-                            </button>
-                        ) : (
-                            <button className="px-4 py-2 bg-purple-500/10 rounded-full text-purple-400 text-sm hover:bg-purple-500/20 transition-colors">
-                                View Event
-                            </button>
-                        )}
+                        <span className="text-white">
+                            {progressPercentage}%
+                        </span>
+                    </div>
+                    <div className="relative w-full h-1 bg-[#1A1A1A] rounded-full">
+                        <div
+                            className="absolute left-0 h-full bg-[#00FFB2] rounded-full"
+                            style={{ width: `${progressPercentage}%` }}
+                        >
+                            <div
+                                className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 bg-white rounded-full"
+                            />
+                        </div>
                     </div>
                 </div>
-            </Link>
+
+                {/* Target Amount */}
+                <div className="mb-6">
+                    <div className="flex items-center justify-between text-sm">
+                        <span className="text-[#808191]">Target</span>
+                        <span className="text-white font-medium">
+                            ${targetAmount.toLocaleString()}
+                        </span>
+                    </div>
+                </div>
+
+                {/* Contribute Button */}
+                <button
+                    onClick={handleContribute}
+                    className="w-full py-3 bg-[#C5FF32] text-black rounded-lg font-medium hover:bg-[#b3ff00] transition-colors mb-4"
+                >
+                    Contribute now
+                </button>
+
+                {/* Footer Info */}
+                <div className="flex justify-between text-sm">
+                    <div className="flex flex-col gap-1">
+                        <span className="text-[#808191]">Created by</span>
+                        <div className="flex items-center gap-2">
+                            <img
+                                src={event?.creatorImage || "/Images/default-avatar.jpg"}
+                                alt="Creator"
+                                className="w-6 h-6 rounded-full"
+                            />
+                            <span className="text-white">{event?.creator || "Sannidhan Katta"}</span>
+                        </div>
+                    </div>
+                    <div className="flex flex-col gap-1 text-right">
+                        <span className="text-[#808191]">Deadline</span>
+                        <span className="text-white">{event?.deadline || "23rd March, 2025"}</span>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 }

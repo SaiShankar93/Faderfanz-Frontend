@@ -1,92 +1,78 @@
-import React, { useContext } from "react";
-import { BackgroundGradient } from "./ui/background-gradient";
-import { Link, useParams } from "react-router-dom";
-import { MainAppContext } from "@/context/MainContext";
-import { FaInstagram, FaTwitter, FaFacebook } from "react-icons/fa";
-import { CardSpotlight } from "./ui/card-spotlight";
+import React from "react";
+import { Link } from "react-router-dom";
+import { FaFacebook, FaTwitter, FaInstagram } from "react-icons/fa";
+import { BsCalendarEvent, BsPeople } from "react-icons/bs";
+import { AiFillStar } from "react-icons/ai";
 
-export function CuratorCard({ event, key }) {
-    console.log(event);
-    const {
-        seteventPageId,
-    } = useContext(MainAppContext);
-
+export function CuratorCard({ event }) {
     return (
-        (<div className="bg-black/20 border border-gray-500 p-4 rounded-lg shadow-lg">
-            <Link to={`/curator/id`}
-            // onClick={() => {
-            //     sessionStorage.setItem(
-            //         "eventPageId",
-            //         JSON.stringify(event?._id)
-            //     );
-            //     seteventPageId(event?._id);
-            // }}
-            >
-                <CardSpotlight className="h-42 w-42">
-                    <p className="text-xl font-bold relative z-20 mt-2 text-white">
-                        <div className="flex justify-center">
-                            <img
-                                src={"https://thumbs.dreamstime.com/b/dj-performing-neon-lit-club-high-end-mixer-dark-surrounded-vibrant-lights-skillfully-mixing-music-audio-creating-333111795.jpg"}
-                                alt="jordans"
-                                height="400"
-                                width="400"
-                                // className="object-contain h-[150px] md:h-[200px]"
-                                className="w-24 h-24 rounded-full border-2 border-white shadow-md mb-4"
+        <div className="bg-[#0E0E0E]/80 backdrop-blur-sm rounded-2xl overflow-hidden">
+            {/* Profile Image - Larger size */}
+            <div className="relative w-full h-64">
+                <img
+                    src={event?.image || "/Images/CuratorCard.png"}
+                    alt={event?.name}
+                    className="w-full h-full object-cover"
+                />
+            </div>
 
-                            />
-                        </div>
-                        <p
-                            className="flex justify-center text-center text-base sm:text-xl mt-4 mb-2 text-gray-400">
-                            {event.name}
-                        </p>
-                    </p>
-                </CardSpotlight>
+            {/* Content */}
+            <div className="p-6 flex flex-col gap-4">
+                {/* Name */}
+                <h3 className="text-white text-2xl font-semibold text-center">DJ Kazi</h3>
 
-
-                <div className="z-20 ">
-                    <p className="flex justify-center text-center my-1 text-sm text-neutral-400 mb-2">{event.contact ? event.contact : "djblaze@example.com"}</p>
-                    <p className="flex justify-center text-center my-1 text-sm text-neutral-400">Followers: {event.followers ? event.followers.toLocaleString() : 143}</p>
-                </div>
-                <p className="text-sm text-neutral-400 text-gray-500 my-2">
-                    Experience the joy and Enjoy with your friends at our DJ event.
-                </p>
-                <div className="flex flex-col md:flex-row justify-center items-center md:justify-between mt-4">
-                    {/* View Profile Button */}
-                    <button
-                        className="rounded-full pl-4 pr-1 py-1 text-white flex items-center space-x-1 bg-[#27272A] text-xs font-bold dark:bg-zinc-800 mb-4 md:mb-0"
-                    >
-                        <span>View Profile</span>
-                        <span className="bg-[#27272A] rounded-full text-[0.6rem] px-2 py-0 text-white">
-                            {/* ${event.price} */}
-                        </span>
-                    </button>
-
-                    {/* Social Media Icons */}
-                    <div className="flex justify-center gap-4">
-                        <a
-                            href="#"
-                            className="text-gray-400 hover:text-white transition"
-                            aria-label="Instagram"
-                        >
-                            <FaInstagram />
-                        </a>
-                        <a
-                            href="#"
-                            className="text-gray-400 hover:text-white transition"
-                            aria-label="Twitter"
-                        >
-                            <FaTwitter />
-                        </a>
-                        <a
-                            href="#"
-                            className="text-gray-400 hover:text-white transition"
-                            aria-label="Facebook"
-                        >
-                            <FaFacebook />
-                        </a>
+                {/* Stats */}
+                <div className="grid grid-cols-3 gap-4">
+                    <div className="flex flex-col items-center">
+                        <BsCalendarEvent className="text-[#C5FF32] text-xl" />
+                        <p className="text-[#C5FF32] text-2xl font-bold mt-2">235</p>
+                        <p className="text-gray-400 text-sm">Performances</p>
+                    </div>
+                    <div className="flex flex-col items-center">
+                        <BsPeople className="text-[#C5FF32] text-xl" />
+                        <p className="text-[#C5FF32] text-2xl font-bold mt-2">235</p>
+                        <p className="text-gray-400 text-sm">Followers</p>
+                    </div>
+                    <div className="flex flex-col items-center">
+                        <AiFillStar className="text-[#C5FF32] text-xl" />
+                        <p className="text-[#C5FF32] text-2xl font-bold mt-2">4.6</p>
+                        <p className="text-gray-400 text-sm">Rating</p>
                     </div>
                 </div>
-            </Link>
-        </div >)
+
+                {/* Social Links and View Profile Button */}
+                <div className="flex items-center justify-between mt-2">
+                    {/* Social Links */}
+                    <div className="flex gap-3">
+                        <Link
+                            to="#"
+                            className="w-10 h-10 rounded-full bg-[#1A1A1A] flex items-center justify-center text-[#00FFB2] hover:bg-[#2A2A2A] transition-colors"
+                        >
+                            <FaFacebook size={20} />
+                        </Link>
+                        <Link
+                            to="#"
+                            className="w-10 h-10 rounded-full bg-[#1A1A1A] flex items-center justify-center text-[#00FFB2] hover:bg-[#2A2A2A] transition-colors"
+                        >
+                            <FaInstagram size={20} />
+                        </Link>
+                        <Link
+                            to="#"
+                            className="w-10 h-10 rounded-full bg-[#1A1A1A] flex items-center justify-center text-[#00FFB2] hover:bg-[#2A2A2A] transition-colors"
+                        >
+                            <FaTwitter size={20} />
+                        </Link>
+                    </div>
+
+                    {/* View Profile Button */}
+                    <Link
+                        to={`/curator/${event?.id}`}
+                        className="px-6 py-2 bg-[#C5FF32] text-black rounded-lg text-center font-medium hover:bg-[#b3ff00] transition-colors"
+                    >
+                        View Profile
+                    </Link>
+                </div>
+            </div>
+        </div>
     );
 }

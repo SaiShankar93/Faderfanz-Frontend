@@ -62,40 +62,63 @@ export default function PopularEvents() {
     });
 
     return (
-        <div className="w-full max-w-7xl mx-auto px-4 py-16">
-            <div className="flex flex-col md:flex-row items-center gap-2 mb-8">
-                <h2 className="text-3xl md:text-4xl font-semibold text-white">Popular</h2>
-                <div className="flex items-center gap-2">
-                    <span className="text-3xl md:text-4xl font-semibold text-[#C5FF32]">Events</span>
-                    <span className="text-3xl md:text-4xl font-semibold text-white">Near you</span>
+        <div className="w-full max-w-7xl mx-auto px-4 py-16 relative overflow-hidden">
+            {/* Background Gradient */}
+            <div
+                className="absolute inset-0 z-0"
+                style={{
+                    pointerEvents: 'none',
+                    width: '100%',
+                    height: '100%',
+                }}
+            >
+                <img
+                    src="/Images/bg-grad-pevents.svg"
+                    alt=""
+                    className="absolute top-1/2 left-0 -translate-y-1/2 w-full h-auto opacity-40"
+                    style={{
+                        maxWidth: '1323px',
+                        transform: 'translateY(-50%) translateX(-30%)', // Adjusted to position from left side
+                    }}
+                />
+            </div>
+
+            {/* Content with relative positioning */}
+            <div className="relative z-10">
+                <div className="flex flex-col md:flex-row items-center gap-2 mb-8">
+                    <h2 className="text-3xl md:text-4xl font-semibold text-white">Popular</h2>
+                    <div className="flex items-center gap-2">
+                        <span className="text-3xl md:text-4xl font-semibold text-[#C5FF32]">Events</span>
+                        <span className="text-3xl md:text-4xl font-semibold text-white">Near you</span>
+                    </div>
                 </div>
-            </div>
 
-            <div className="flex flex-wrap gap-3 mb-8">
-                {timeFilters.map((filter) => (
-                    <button
-                        key={filter.value}
-                        onClick={() => setActiveFilter(filter.value)}
-                        className={`px-4 py-2 rounded-full text-sm font-medium transition-colors
-              ${activeFilter === filter.value
-                                ? 'bg-[#00FFB2] text-black'
-                                : 'bg-[#1C1D24] text-gray-400 hover:bg-[#262626]'
-                            }`}
-                    >
-                        {filter.label}
-                    </button>
-                ))}
-            </div>
+                <div className="flex flex-wrap gap-3 mb-8">
+                    {timeFilters.map((filter) => (
+                        <button
+                            key={filter.value}
+                            onClick={() => setActiveFilter(filter.value)}
+                            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors
+                                ${activeFilter === filter.value
+                                    ? 'bg-[#00FFB2] text-black'
+                                    : 'bg-[#1C1D24] text-gray-400 hover:bg-[#262626]'
+                                }`}
+                        >
+                            {filter.label}
+                        </button>
+                    ))}
+                </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredEvents.map((event) => (
-                    <PopularEventCard key={event.id} event={event} />
-                ))}
-            </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredEvents.map((event) => (
+                        <PopularEventCard key={event.id} event={event} />
+                    ))}
+                </div>
 
-            <button className="w-full mt-8 py-4 bg-[#1C1D24] text-gray-400 rounded-xl hover:bg-[#262626] transition-colors">
-                See More
-            </button>
+                <button className="w-full mt-8 py-4 bg-[#1C1D24] text-gray-400 rounded-xl hover:bg-[#262626] transition-colors">
+                    See More
+                </button>
+            </div>
         </div>
     );
 } 

@@ -22,6 +22,7 @@ import Orders from "./pages/dashboard/Orders";
 import Vendors from "./pages/dashboard/Vendors";
 import "@google/model-viewer/dist/model-viewer.min.js";
 import ScrollToTop from "./components/ScrollToTop";
+import CrowdfundingDetail from './pages/CrowdfundingDetail';
 
 const App = () => {
   const { userData } = useState({});
@@ -73,7 +74,7 @@ const App = () => {
                   element={
                     <>
                       <AppProvider>
-                        <ScrollToTop/>
+                        <ScrollToTop />
                         <Header />
                         {item.component}
                         {/* <Newsletter /> */}
@@ -108,6 +109,7 @@ const App = () => {
 
             <Route path="/spin" element={<Smv />} />
             <Route path="/admindashboard/*" element={<AdminDashboard />} />
+            <Route path="/crowdfunding/:id" element={<CrowdfundingDetail />} />
           </Routes>
         </div>
       )}
