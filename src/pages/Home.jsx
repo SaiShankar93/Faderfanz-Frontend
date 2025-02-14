@@ -25,6 +25,8 @@ import { VenueOwnerCard } from '../components/VenueOwnerCard';
 import RegisterVenueBanner from '../components/RegisterVenueBanner';
 import BecomeCuratorBanner from '@/components/BecomeCuratorBanner';
 import RaiseFundBanner from '../components/RaiseFundBanner';
+import GuestCard from '../components/GuestCard';
+import TestimonialCard from '../components/TestimonialCard';
 
 import "swiper/css";
 import "swiper/css/pagination";
@@ -65,65 +67,59 @@ const box = [
 // ];
 const testimonials = [
   {
-    quote:
-      "As a curator, working with this platform has been seamless. Managing events, tracking RSVPs, and engaging with attendees has never been this easy. It's a game-changer!",
-    name: "Sophia Carter",
-    title: "Event Curator",
+    name: "Jesica Okonkwo - CEO",
+    location: "California",
+    image: "/Images/testimonial.png",
+    text: "This platform allow me to know trending events in my area and also follow up on the activities around them. I never get to miss any hot events since I know about Kazi-Culture"
   },
   {
-    quote:
-      "I attended the TechFest 2024 organized through this platform, and it was an unforgettable experience. The app kept me updated on sessions and activities, and the ticketing system was super convenient.",
-    name: "Michael Brown",
-    title: "Event Attendee",
+    name: "Michael Chen - Event Planner",
+    location: "New York",
+    image: "/Images/testimonial.png",
+    text: "As an event planner, Kazi-Culture has revolutionized how I discover and manage events. The platform's intuitive interface and comprehensive features make it a game-changer."
   },
   {
-    quote:
-      "Partnering with this platform for our sponsorship was a great decision. The detailed analytics and visibility we received during the event helped us reach our target audience effectively.",
-    name: "Emily Wilson",
-    title: "Marketing Manager at BrandSphere",
+    name: "Sarah Johnson - Artist",
+    location: "London",
+    image: "/Images/testimonial.png",
+    text: "Finding the right venues and connecting with the right audience was always a challenge until I found Kazi-Culture. Now I can focus more on my art and less on logistics."
   },
   {
-    quote:
-      "We hosted our annual conference at one of the venues listed on this platform. The booking process was straightforward, and the support team ensured everything ran smoothly on the event day.",
-    name: "Liam Johnson",
-    title: "Venue Manager",
+    name: "David Rodriguez - Venue Owner",
+    location: "Miami",
+    image: "/Images/testimonial.png",
+    text: "Since listing my venue on Kazi-Culture, I've seen a significant increase in bookings. The platform makes it easy to showcase my space and connect with event organizers."
   },
   {
-    quote:
-      "Organizing my art exhibition was made easy with this platform. It helped me manage ticket sales, attendee lists, and promotions effortlessly. Highly recommended!",
-    name: "Amelia Thompson",
-    title: "Art Exhibition Curator",
+    name: "Emma Wilson - Music Producer",
+    location: "Nashville",
+    image: "/Images/testimonial.png",
+    text: "The community on Kazi-Culture is incredible. I've found amazing collaboration opportunities and my events always get great engagement through the platform."
   },
   {
-    quote:
-      "The platform made it incredibly easy to find and book events. I loved how the reviews and ratings helped me choose the best ones to attend.",
-    name: "Chris Evans",
-    title: "Regular Event Attendee",
+    name: "Alex Thompson - Tech Entrepreneur",
+    location: "San Francisco",
+    image: "/Images/testimonial.png",
+    text: "What sets Kazi-Culture apart is its focus on quality and user experience. It's become my go-to platform for both hosting and discovering unique events."
   },
   {
-    quote:
-      "As a sponsor, the platform allowed us to target the right audience and showcase our brand in the best possible way. The ROI exceeded our expectations.",
-    name: "Olivia Martinez",
-    title: "Sponsorship Coordinator at AdDynamics",
+    name: "Lisa Zhang - Cultural Director",
+    location: "Toronto",
+    image: "/Images/testimonial.png",
+    text: "Kazi-Culture has helped us reach diverse audiences and promote cultural events more effectively. The platform truly understands the needs of event organizers."
   },
   {
-    quote:
-      "Managing multiple venues can be overwhelming, but this platform simplified everything for us. From booking inquiries to real-time updates, it has streamlined our operations.",
-    name: "James Lee",
-    title: "Venue Owner",
+    name: "Marcus Brown - DJ",
+    location: "Berlin",
+    image: "/Images/testimonial.png",
+    text: "The exposure I've gotten through Kazi-Culture is phenomenal. The platform connects me with the right venues and helps me build my brand in the industry."
   },
   {
-    quote:
-      "I joined a workshop through this platform, and it was an excellent experience. The reminders and updates kept me informed, and the session was very engaging.",
-    name: "Ava Taylor",
-    title: "Workshop Participant",
-  },
-  {
-    quote:
-      "This platform connected me with talented curators and enthusiastic attendees for our charity event. It made the entire process smooth and enjoyable.",
-    name: "Ethan Wright",
-    title: "Event Organizer",
-  },
+    name: "Sophia Patel - Festival Organizer",
+    location: "Mumbai",
+    image: "/Images/testimonial.png",
+    text: "Managing large-scale events becomes much easier with Kazi-Culture. The tools and support they provide are invaluable for event organizers."
+  }
 ];
 
 
@@ -260,6 +256,27 @@ const Home = () => {
 
   const [activeFundingFilter, setActiveFundingFilter] = useState('All');
   const [showAllCrowdfunding, setShowAllCrowdfunding] = useState(false);
+
+  const [activeGuestFilter, setActiveGuestFilter] = useState('All');
+  const [showAllGuests, setShowAllGuests] = useState(false);
+
+  const [activeFilter, setActiveFilter] = useState('All');
+
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
+
+  // Auto-scroll effect
+  useEffect(() => {
+    if (isHovered) return; // Don't auto-scroll while user is interacting
+
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) =>
+        prev < Math.ceil(testimonials.length / 3) - 1 ? prev + 1 : 0
+      );
+    }, 5000); // Change slide every 5 seconds
+
+    return () => clearInterval(interval);
+  }, [isHovered, testimonials.length]);
 
   const getFilteredVenueOwners = () => {
     switch (activeVenueFilter) {
@@ -439,6 +456,43 @@ const Home = () => {
     return showAllCurators ? filtered : filtered.slice(0, 3);
   };
 
+  const guests = [
+    {
+      id: 1,
+      name: "Wellings Ali",
+      image: "/Images/guestcard.png",
+      attended: 235,
+      counterRaised: 2235,
+    },
+    {
+      id: 2,
+      name: "Sarah Johnson",
+      image: "/Images/guestcard.png",
+      attended: 189,
+      counterRaised: 1875,
+    },
+    {
+      id: 3,
+      name: "Michael Chen",
+      image: "/Images/guestcard.png",
+      attended: 312,
+      counterRaised: 3450,
+    },
+    {
+      id: 4,
+      name: "Emma Davis",
+      image: "/Images/guestcard.png",
+      attended: 156,
+      counterRaised: 1590,
+    },
+    // Add more guests as needed
+  ];
+
+  const filteredGuests = guests.filter(guest => {
+    // Add your filtering logic here based on activeFilter
+    return activeFilter === 'All' || guest.attended > 200; // Example filter
+  });
+
   return (
     <section className="w-full bg-[#0E0F13] text-white relative overflow-hidden">
       {/* Header + Hero + Categories Background Wrapper */}
@@ -537,115 +591,6 @@ const Home = () => {
           <RegisterVenueBanner />
         </div>
 
-        {/*
-        <ScrollAnimation variants={scaleUpVariants}>
-          <div className="flex flex-col items-center pt-24 w-full sm:max-w-[1280px] mx-auto gap-10 relative z-100 bg-[#0f0f0f]">
-            <h2 className="text-center text-3xl font-semibold xl:w-[500px] quicksand">
-              <span className="text-[#808080]"></span> Reviews
-            </h2>
-            <p className="text-sm text-[#808080] text-center xl:w-[900px] w-[90vw]">
-              Don't just take our word for it; hear what our satisfied clients have to say about their experience with KaziCulture. We take pride in building lasting relationships and delivering exceptional Events.
-            </p>
-            <div className="w-full h-[500px] no-scrollbar overflow-x-hidden">
-              <div className="flex gap-4 w-full animate-scroll"
-                style={{
-                  animation: "scroll 15s linear infinite", // Smooth scrolling animation
-                  animationPlayState: "running", // Default to running
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.animationPlayState = "paused")} // Pause scrolling on hover
-                onMouseLeave={(e) => (e.currentTarget.style.animationPlayState = "running")} // Resume scrolling on leave
-              >
-                {testimonials.map((testimonial, index) => (
-                  <div key={index} className="h-full w-[350px]">
-                    <div className="flex flex-col gap-6 sm:w-[350px] w-[300px] h-[400px] items-center border border-[#262626] rounded-2xl p-5 py-8 bg-gradient-to-b from-[#1a1a1a] to-transparent via-[#1a1a1a59]">
-                      <img
-                        src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSoo4nBuzAbDEozya5g9w5RfNVDx7XwmUdSug&s"
-                        alt=""
-                        className="w-[100px] h-[100px] rounded-full object-cover"
-                      />
-                      <div className="flex flex-col justify-center">
-                        <a className="font-normal sm:text-base text-sm underline" href="/profile">
-                          {testimonial.name}
-                        </a>
-                        <span className="text-[#808080] text-xs sm:text-sm">
-                          {testimonial.title}
-                        </span>
-                      </div>
-                      <p className="md:text-sm text-[12px] text-center">
-                        {testimonial.quote}
-                      </p>
-                      <Stars stars={4} />
-                    </div>
-                    <div className="ml-5">
-                      <svg
-                        width="33"
-                        height="16"
-                        viewBox="0 0 33 16"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M21.3395 13.55C18.9421 16.3969 14.5579 16.3969 12.1605 13.55L0.75 0L32.75 2.74432e-06L21.3395 13.55Z"
-                          fill="#262626"
-                        />
-                      </svg>
-                    </div>
-                    <div className="mt-6 ml-2 flex items-center gap-2">
-                      <img
-                        src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSoo4nBuzAbDEozya5g9w5RfNVDx7XwmUdSug&s"
-                        alt=""
-                        className="w-[50px] h-[50px] rounded-full object-cover"
-                      />
-                      <div className="flex flex-col justify-center">
-                        <span className="text-[#808080] text-xs sm:text-sm">
-                          Review By:
-                        </span>
-                        <a className="font-normal sm:text-base text-sm underline" href="/profile">
-                          Sai Shankar
-                        </a>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </ScrollAnimation>
-        */}
-
-        {/* <div className="w-full grid gap-3 grid-cols-2 md:grid-cols-3 px-[2%] mb-10">
-          {categories
-            ?.filter((i) => {
-              return i?.selected === true;
-            })
-            .slice(0, 6)
-            ?.map((item, index) => {
-              return (
-                <Link to={`/shop/${item?.fileName}/all`} key={index}>
-                  <div className=" pl-2 md:pl-2 pb-2 md:pb-2">
-                    <div className=" relative shade_image">
-                      <p
-                        style={{ writingMode: "vertical-rl" }}
-                        className="text-[#353535] absolute -left-0 md:-left-0 top-4 rotate-180 plus-jakarta font-[600] text-[10px] md:text-2xl capitalize flex items-center justify-center"
-                      >
-                        {item?.fileName}
-                      </p>
-                      <img
-                        className=" object-cover object-center h-[116px] lg:h-[302px] "
-                        src={item?.imageLink}
-                        alt={item.param}
-                      />
-                    </div>
-                  </div>
-                </Link>
-              );
-            })}
-        </div> */}
-
-        {/* <div className="w-full h-[1px] bg-gray-600 my-16"></div> */}
-
-
-
         {/* curators section */}
         <div className="w-full max-w-7xl mx-auto px-4 py-16 relative overflow-hidden">
           {/* Background Gradient */}
@@ -693,7 +638,7 @@ const Home = () => {
               </div>
 
               {/* Cards Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 px-2 sm:px-0">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                 {getFilteredCurators().map((curator) => (
                   <div key={curator.id} className="w-full">
                     <CuratorCard event={curator} />
@@ -791,443 +736,193 @@ const Home = () => {
           <RaiseFundBanner />
         </div>
 
-        {/* Top Sponsers */}
+        {/* Popular Fans/Guests Section */}
+        <div className="w-full max-w-7xl mx-auto px-4 py-16 relative overflow-hidden">
+          {/* Section Header */}
+          <div className="flex flex-col gap-8 mb-12">
+            <h2 className="text-[32px] font-semibold text-white">
+              Popular <span className="text-[#C5FF32]">Fans/Guests</span>
+            </h2>
 
-        <div className=" dark:text-gray-400 flex flex-col items-center lg:grid xl:grid-cols-4 gap-6 px-[4%] xl:px-[8%] py-4 mt-5 ">
-          <div className=" flex flex-col items-center col-span-4">
-            <p className=" text-[24px] md:text-[28px] 2xl:text-[32px] quicksand font-[700] text-white dark:text-gray-400 ">
-              Our Top Sponsers
-            </p>
-            <p className=" text-[#474747] text-center text-[13px] md:text-[14.5px] 2xl:text-[16px] mb-4 dark:text-gray-400 ">
-              Torem ipsum dolor sit amet, consectetur adipisicing elitsed do
-              eiusmo tempor incididunt ut labore
-            </p>
+            {/* Filter Tabs */}
+            <div className="flex flex-wrap gap-4">
+              {['All', 'Most Active', 'Top Contributors'].map((filter) => (
+                <button
+                  key={filter}
+                  onClick={() => setActiveFilter(filter)}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-colors
+                    ${activeFilter === filter
+                      ? 'bg-[#C5FF32] text-black'
+                      : 'text-white hover:bg-[#1A1A1A]'}`}
+                >
+                  {filter}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
-        <div className="absolute right-0 mx-8 inline-flex group">
-          <div
-            className="absolute -inset-1 rounded-xl blur-lg opacity-70 bg-gradient-to-r from-[#44BCFF] via-[#FF44EC] to-[#FF675E] transition-all duration-300 group-hover:opacity-100 group-hover:blur-md"
-          />
-          <a
-            href="/events/all/all"
-            title="View all Events"
-            className="relative inline-flex items-center justify-center px-6 py-3  font-bold text-white bg-gray-900 rounded-xl font-pj transition-all duration-200 focus:outline-none  focus:ring-offset-2 focus:ring-gray-900 md:px-6 md:py-3 text-xs"
-            role="button"
+
+          {/* Cards Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {filteredGuests.slice(0, showAllGuests ? filteredGuests.length : 3).map((guest) => (
+              <GuestCard key={guest.id} guest={guest} />
+            ))}
+          </div>
+
+          {/* See More Button */}
+          <button
+            onClick={() => setShowAllGuests(!showAllGuests)}
+            className="w-full py-4 text-[#00FFB2] border border-[#1A1A1A] rounded-xl hover:bg-[#1A1A1A]/50 transition-colors mt-8"
           >
-            View All Sponsers &rarr;
-          </a>
+            {showAllGuests ? 'Show Less' : 'See More'}
+          </button>
         </div>
-        {loading ? (
-          <div className=" w-full flex items-center justify-center py-3">
+
+        {/* Blogs Section with Background Gradient */}
+        <div className="relative">
+          {/* Blog Background Gradient */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden">
             <img
-              src="/Images/loader.svg"
-              alt="loading..."
-              className=" object-contain w-[60px] h-[60px]"
+              src="/Images/bg-grad-blog.svg"
+              alt="background gradient"
+              className="absolute -left-[30%] w-[966px] h-[1613px] object-cover rotate-[82.53deg]"
+              style={{
+                top: '50%',
+                transform: 'translateY(-50%)',
+                mixBlendMode: 'normal',
+                opacity: 0.6,
+              }}
             />
           </div>
-        ) : (
-          <>
-            <div className="w-full col-span-4 py-16">
-              <div className="w-full col-span-4 overflow-x-scroll scrollbar-hide">
-                <div className="flex space-x-6 lg:grid lg:grid-cols-3 lg:gap-16 lg:space-x-0 px-8 lg:px-16">
-                  {[...newProducts, ...newProducts, ...newProducts].map((event, index) => (
-                    <div key={index} className="min-w-[280px] w-[280px] lg:w-full lg:min-w-0">
-                      <SponserCard event={event} />
-                    </div>
-                  ))}
-                </div>
-              </div>
+
+          {/* Blogs Content */}
+          <div className="w-full max-w-7xl mx-auto px-4 py-16 relative">
+            {/* Section Header */}
+            <div className="flex flex-col gap-8 mb-12">
+              <h2 className="text-[32px] font-semibold text-white">
+                Featured <span className="text-[#C5FF32]">Blogs</span>
+              </h2>
             </div>
 
-          </>
-        )}
-
-
-
-        <div className="w-full h-[1px] bg-gray-600 my-16"></div>
-
-        {/* Event Section
-
-        <div className=" dark:text-gray-400 flex flex-col items-center lg:grid xl:grid-cols-4 gap-6 px-[4%] xl:px-[8%] py-4 mt-5 ">
-          <div className=" flex flex-col items-center col-span-4">
-            <p className=" text-[24px] md:text-[28px] 2xl:text-[32px] quicksand font-[700] text-white dark:text-gray-400 ">
-              Featured CroudFunding Events
-            </p>
-            <p className=" text-[#474747] text-center text-[13px] md:text-[14.5px] 2xl:text-[16px] mb-4 dark:text-gray-400 ">
-              Torem ipsum dolor sit amet, consectetur adipisicing elitsed do
-              eiusmo tempor incididunt ut labore
-            </p>
-          </div>
-        </div>
-        <div className="absolute right-0 mx-8 inline-flex group">
-          <div
-            className="absolute -inset-1 rounded-xl blur-lg opacity-70 bg-gradient-to-r from-[#44BCFF] via-[#FF44EC] to-[#FF675E] transition-all duration-300 group-hover:opacity-100 group-hover:blur-md"
-          />
-          <a
-            href="/events/all/all"
-            title="View all Events"
-            className="relative inline-flex items-center justify-center px-6 py-3  font-bold text-white bg-gray-900 rounded-xl font-pj transition-all duration-200 focus:outline-none  focus:ring-offset-2 focus:ring-gray-900 md:px-6 md:py-3 text-xs"
-            role="button"
-          >
-            View All Events &rarr;
-          </a>
-        </div>
-
-
-        {loading ? (
-          <div className=" w-full flex items-center justify-center py-3">
-            <img
-              src="/Images/loader.svg"
-              alt="loading..."
-              className=" object-contain w-[60px] h-[60px]"
-            />
-          </div>
-        ) : (
-          <>
-            <div className="w-full col-span-4 py-16">
-              <div className="w-full col-span-4 overflow-x-scroll scrollbar-hide">
-                <div className="flex space-x-6 lg:grid lg:grid-cols-4 lg:gap-6 lg:space-x-0 px-8">
-                  {[...newProducts, ...newProducts, ...newProducts].map((event, index) => (
-                    <div key={index} className="min-w-[280px] w-[280px] lg:w-full lg:min-w-0 p-[1px]">
-                      <EventCard
-                        event={event}
-                        key={event._id}
-                        isCrowdfunding={true}
+            {/* Blogs Horizontal Scroll */}
+            <div className="relative">
+              {/* Blogs Container */}
+              <div className="overflow-x-auto scrollbar-hide">
+                <div className="flex gap-6 pb-4" style={{ width: 'max-content' }}>
+                  {[1, 2, 3, 4, 5].map((_, index) => (
+                    <div key={index} className="w-[400px]">
+                      <BlogCard
+                        event={{
+                          title: "BestSeller Book Bootcamp",
+                          date: "Saturday, March 18, 9:30PM",
+                          author: "Admin",
+                          image: "/Images/blogcard.jpg"
+                        }}
                       />
                     </div>
                   ))}
                 </div>
               </div>
+
+              {/* See More Button */}
+              <Link
+                to="/blogs"
+                className="w-full py-4 text-[#00FFB2] border border-[#1A1A1A] rounded-xl hover:bg-[#1A1A1A]/50 transition-colors mt-8 block text-center"
+              >
+                See More
+              </Link>
             </div>
-          </>
-        )}
-
-        <div className="w-full h-[1px] bg-gray-600 my-16"></div> */}
-
-
-        {/* Top Guests */}
-
-        <div className=" dark:text-gray-400 flex flex-col items-center lg:grid xl:grid-cols-4 gap-6 px-[4%] xl:px-[8%] py-4 mt-5 ">
-          <div className=" flex flex-col items-center col-span-4">
-            <p className=" text-[24px] md:text-[28px] 2xl:text-[32px] quicksand font-[700] text-white dark:text-gray-400 ">
-              Top Guests/Fans
-            </p>
-            <p className=" text-[#474747] text-center text-[13px] md:text-[14.5px] 2xl:text-[16px] mb-4 dark:text-gray-400 ">
-              Torem ipsum dolor sit amet, consectetur adipisicing elitsed do
-              eiusmo tempor incididunt ut labore
-            </p>
           </div>
         </div>
-        <div className="absolute right-0 mx-8 inline-flex group">
-          <div
-            className="absolute -inset-1 rounded-xl blur-lg opacity-70 bg-gradient-to-r from-[#44BCFF] via-[#FF44EC] to-[#FF675E] transition-all duration-300 group-hover:opacity-100 group-hover:blur-md"
-          />
-          <a
-            href="/events/all/all"
-            title="View all Events"
-            className="relative inline-flex items-center justify-center px-6 py-3  font-bold text-white bg-gray-900 rounded-xl font-pj transition-all duration-200 focus:outline-none  focus:ring-offset-2 focus:ring-gray-900 md:px-6 md:py-3 text-xs"
-            role="button"
-          >
-            View All Fans &rarr;
-          </a>
-        </div>
 
-
-        {loading ? (
-          <div className=" w-full flex items-center justify-center py-3">
+        {/* Testimonials Section with Background Gradient */}
+        <div className="relative">
+          {/* Testimonial Background Gradient */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden">
             <img
-              src="/Images/loader.svg"
-              alt="loading..."
-              className=" object-contain w-[60px] h-[60px]"
+              src="/Images/bg-grad-test.svg"
+              alt="background gradient"
+              className="absolute right-0 w-[940.82px] h-[940.82px] object-cover"
+              style={{
+                top: '50%',
+                transform: 'translateY(-50%) rotate(82.53deg)',
+                mixBlendMode: 'normal',
+                opacity: 0.6,
+              }}
             />
           </div>
-        ) : (
-          <>
-            <div className="w-full col-span-4 py-16">
-              <div className="w-full col-span-4 overflow-x-scroll scrollbar-hide">
-                <div className="flex space-x-6 lg:grid lg:grid-cols-4 lg:gap-6 lg:space-x-0 px-8">
-                  {[...newProducts, ...newProducts, ...newProducts].map((event, index) => (
-                    <div key={index} className="min-w-[280px] w-[280px] lg:w-full lg:min-w-0 p-[1px]">
-                      <UserCard event={event} />
+
+          {/* Testimonials Content */}
+          <div className="w-full max-w-7xl mx-auto px-4 py-16 relative overflow-hidden">
+            {/* Section Title */}
+            <div className="text-center mb-16">
+              <p className="text-[#C5FF32] text-sm uppercase mb-4">TESTIMONIALS</p>
+              <h2 className="text-4xl font-semibold text-white mb-4">
+                What people says about us
+              </h2>
+              <p className="text-gray-400 text-sm">
+                This is what our users have to say about their experience using Kazi-Culture
+              </p>
+            </div>
+
+            {/* Testimonials Slider */}
+            <div
+              className="relative"
+              onMouseEnter={() => setIsHovered(true)}
+              onMouseLeave={() => setIsHovered(false)}
+            >
+              {/* Testimonials Container */}
+              <div className="overflow-hidden">
+                <div
+                  className="flex transition-transform duration-500 ease-in-out"
+                  style={{
+                    transform: `translateX(-${currentSlide * 100}%)`,
+                  }}
+                >
+                  {/* Split testimonials into groups of 3 */}
+                  {Array.from({ length: Math.ceil(testimonials.length / 3) }, (_, i) => (
+                    <div key={i} className="min-w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-4">
+                      {testimonials.slice(i * 3, (i + 1) * 3).map((testimonial, index) => (
+                        <TestimonialCard key={index} testimonial={testimonial} />
+                      ))}
                     </div>
                   ))}
                 </div>
               </div>
-            </div>
-          </>
-        )}
 
-        <div className="w-full h-[1px] bg-gray-600 my-16"></div>
+              {/* Navigation Arrows */}
+              <button
+                onClick={() => setCurrentSlide(prev => (prev > 0 ? prev - 1 : 0))}
+                className={`absolute -left-5 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-full bg-[#1A1A1A] text-white hover:bg-[#2A2A2A] transition-colors ${currentSlide === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                disabled={currentSlide === 0}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <button
+                onClick={() => setCurrentSlide(prev => (prev < Math.ceil(testimonials.length / 3) - 1 ? prev + 1 : prev))}
+                className={`absolute -right-5 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-full bg-[#1A1A1A] text-white hover:bg-[#2A2A2A] transition-colors ${currentSlide === Math.ceil(testimonials.length / 3) - 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                disabled={currentSlide === Math.ceil(testimonials.length / 3) - 1}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
 
-        {/* Blogs Section */}
-        <div className=" dark:text-gray-400 flex flex-col items-center lg:grid xl:grid-cols-4 gap-6 px-[4%] xl:px-[8%] py-4 mt-5 ">
-          <div className=" flex flex-col items-center col-span-4">
-            <p className=" text-[24px] md:text-[28px] 2xl:text-[32px] quicksand font-[700] text-white dark:text-gray-400 ">
-              Featured Blogs
-            </p>
-            <p className=" text-[#474747] text-center text-[13px] md:text-[14.5px] 2xl:text-[16px] mb-4 dark:text-gray-400 ">
-              Torem ipsum dolor sit amet, consectetur adipisicing elitsed do
-              eiusmo tempor incididunt ut labore
-            </p>
-          </div>
-        </div>
-        <div className="absolute right-0 mx-8 inline-flex group">
-          <div
-            className="absolute -inset-1 rounded-xl blur-lg opacity-70 bg-gradient-to-r from-[#44BCFF] via-[#FF44EC] to-[#FF675E] transition-all duration-300 group-hover:opacity-100 group-hover:blur-md"
-          />
-          <a
-            href="/blogs/all"
-            title="View all Events"
-            className="relative inline-flex items-center justify-center px-6 py-3  font-bold text-white bg-gray-900 rounded-xl font-pj transition-all duration-200 focus:outline-none  focus:ring-offset-2 focus:ring-gray-900 md:px-6 md:py-3 text-xs"
-            role="button"
-          >
-            View All Blogs &rarr;
-          </a>
-        </div>
-
-        {loading ? (
-          <div className=" w-full flex items-center justify-center py-3">
-            <img
-              src="/Images/loader.svg"
-              alt="loading..."
-              className=" object-contain w-[60px] h-[60px]"
-            />
-          </div>
-        ) : (
-          <>
-            <div className="w-full col-span-4 py-16">
-              <div className="w-full col-span-4 overflow-x-scroll scrollbar-hide">
-                <div className="flex space-x-6 lg:grid lg:grid-cols-4 lg:gap-6 lg:space-x-0 px-8">
-                  {[...newProducts, ...newProducts, ...newProducts].map((event, index) => (
-                    <div key={index} className="min-w-[280px] w-[280px] lg:w-full lg:min-w-0 p-[1px]">
-                      <BlogCard event={event} />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </>
-        )}
-
-        {/* <div className=" dark:text-gray-400 flex flex-col items-center lg:grid xl:grid-cols-4 gap-6 px-[4%] xl:px-[8%] py-4 mt-2 ">
-          <div className=" flex flex-col items-center py-10 col-span-4">
-            <p className=" text-[24px] plus-jakarta md:text-[28px] 2xl:text-[35px] font-[700] text-[#212121] dark:text-gray-400 ">
-              The Process
-            </p>
-            <p className=" text-[#474747] text-center text-[13px] md:text-[14px] 2xl:text-[15px] md:w-[40%] mb-4 dark:text-gray-400 ">
-              Torem ipsum dolor sit amet, consectetur adipisicing elitsed do
-              eiusmo tempor incididunt ut labore
-            </p>
-            <div className=" grid grid-cols-1 gap-5 md:grid-cols-3">
-              {Process.map((item, index) => {
-                return (
+              {/* Slider Dots */}
+              <div className="flex justify-center gap-2 mt-8">
+                {[...Array(Math.ceil(testimonials.length / 3))].map((_, index) => (
                   <div
                     key={index}
-                    className=" text-gray-700 relative flex flex-col items-center  gap-3 p-2 px-3"
-                  >
-                    <p className="  text-[30px] plus-jakarta md:text-[59px] font-bold plus-jakarta text-[#212121] dark:text-gray-400  capitalize ">
-                      {item.number}
-                    </p>
-                    <p className="  font-semibold plus-jakarta  text-[15.6px] md:h-[60px] text-center md:text-[17.5px] text-[#212121] dark:text-gray-400 capitalize ">
-                      {item.text}
-                    </p>
-                    <p className="  text-[12.4px] md:text-[13.4px] font-medium text-[#474747] dark:text-gray-400 text-center capitalize ">
-                      {item.describe}
-                    </p>
-                  </div>
-                );
-              })}
+                    className={`w-2 h-2 rounded-full cursor-pointer transition-colors
+                                  ${currentSlide === index ? 'bg-[#C5FF32]' : 'bg-gray-600'}`}
+                    onClick={() => setCurrentSlide(index)}
+                  />
+                ))}
+              </div>
             </div>
           </div>
-        </div> */}
-
-        {/* <div className="dark:text-gray-400 bg-gray-100 flex flex-col items-center">
-          <p className=" text-[24px] plus-jakarta py-10 md:text-[28px] 2xl:text-[35px] font-[700] text-[#212121] dark:text-gray-400 ">
-            Testimonial
-          </p>
-          <div className="flex space-x-16 px-[4%] xl:px-[8%] py-4 mt-2 relative">
-            {testimonialsData?.description && (
-              <div className="flex flex-col w-50">
-                <p className="text-[#363F4D] font-bold plus-jakarta text-[20px] md:text-[30px] 2xl:text-[32px] mb-4">
-                  {testimonialsData.title}
-                </p>
-                {truncateContent(testimonialsData?.description, 50)}
-              </div>
-            )}
-            <div className="flex relative xl:col-span-1 w-50">
-              <div className="absolute inset-0 flex items-center justify-center">
-                <Swiper
-                  spaceBetween={10}
-                  slidesPerView={1}
-                  loop={true}
-                  autoplay={{
-                    delay: 3000,
-                    disableOnInteraction: false,
-                  }}
-                  pagination={{ clickable: true }}
-                  navigation={true}
-                  modules={[Autoplay, Pagination, Navigation]}
-                  className="testimonial-slider"
-                >
-                  {testimonialsData?.testimonials?.map((item, index) => (
-                    <SwiperSlide key={index}>
-                      <div className="text-white text-center p-4 bg-gray-800 bg-opacity-50 rounded-md">
-                        <p>{item}</p>
-                      </div>
-                    </SwiperSlide>
-                  ))}
-                </Swiper>
-              </div>
-              {testimonialsData.imagePath && (
-                <img
-                  src={testimonialsData.imagePath}
-                  alt="Testimonial Image"
-                  className="rounded-md w-full h-full object-cover"
-                />
-              )}
-            </div>
-          </div>
-        </div> */}
-
-        {/* <div className=" relative text-white overflow-x-hidden w-full h-[300px] md:h-[530px] flex flex-col items-center justify-center ">
-          <img
-            className=" w-full h-full object-cover"
-            src={`${catalogueImage}`}
-            // src="/main/mainBanner2.svg"
-            alt="slide-Image"
-          />
-
-          <div className=" absolute flex flex-col items-center justify-center gap-20 bg-black/50 w-full h-full top-0 left-0">
-            <p className=" playball text-[15px] md:text-[17px] 2xl-text-[30px] scale-[1.5] 2xl:scale-[3] uppercase text-left ">
-              Discover Our
-            </p>
-            <p className=" uppercase poppins text-[20px] md:text-[40px] font-semibold plus-jakarta 2xl-text-[500px] scale-[2] 2xl:scale-[3.5] ">
-              CATALOGUE
-            </p>
-            <div className=" w-full flex items-center justify-around ">
-              <Link target="_blank"
-                className="font-semibold plus-jakarta underline w-fit px-4 py-2 uppercase text-[11px] md:text-xl"
-                onClick={() => (window.location.href = catalogueLinks[0], '_blank')}
-              >
-                View Catalogue 1
-              </Link>
-              <a
-                href={catalogueLinks[0]}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-semibold plus-jakarta underline w-fit px-4 py-2 uppercase text-[11px] md:text-xl"
-              >
-                View Catalogue 1
-              </a>
-              <a
-                href={catalogueLinks[1]}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-semibold plus-jakarta underline w-fit px-4 py-2 uppercase text-[11px] md:text-xl"
-              >
-                View Catalogue 2
-              </a>
-              <a
-                href={catalogueLinks[2]}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-semibold plus-jakarta underline w-fit px-4 py-2 uppercase text-[11px] md:text-xl"
-              >
-                View Catalogue 3
-              </a>
-              <Link target="_blank"
-                className="font-semibold plus-jakarta underline w-fit px-4 py-2 uppercase text-[11px] md:text-xl"
-                onClick={() => (window.location.href = catalogueLinks[2], '_blank')}
-              >
-                View Catalogue 3
-              </Link>
-            </div>
-          </div>
-        </div> */}
-        {/* <div className="dark:text-gray-400 flex flex-col items-center col-span-4 mt-10">
-          <p className=" text-[24px] md:text-[28px] 2xl:text-[32px] font-playfair plus-jakarta font-[700] text-[#212121] dark:text-gray-400">
-            Latest News
-          </p>
-          <p className="font-playfair dark:text-gray-400 text-[#474747] w-[90%] md:w-[50%] text-center text-[13px] md:text-[14.5px] 2xl:text-[16px] mb-4 ">
-            Torem ipsum dolor sit amet, consectetur adipisicing elitsed do eiusmo
-            tempor incididunt ut labore eiusmo tempor incididunt ut labore
-          </p>
-        </div> */}
-        {/* <NewsSlider blogs={blogs} /> */}
-        {/* <div className="w-full flex px-[8%] mx-auto relative">
-          {banners.find((banner) => banner.fileName === "Banner1") && (
-            <div className="relative w-full flex justify-center items-center shade_image">
-              <img
-                className="h-full object-contain"
-                src={
-                  banners.find((banner) => banner.fileName === "Banner1")
-                    ?.filePath
-                    ? banners.find((banner) => banner.fileName === "Banner1")
-                      .filePath
-                    : "/main/discount_banner.jpg"
-                }
-                alt="slide-Image"
-              />
-              <div className="absolute bottom-30 left-0 right-0 p-4 flex justify-between items-end w-full">
-                <div className="p-2 rounded">
-                  <h2 className="text-xl md:text-2xl font-bold text-black">
-                    {
-                      banners.find((banner) => banner.fileName === "Banner1")
-                        .title
-                    }
-                  </h2>
-                  <p className="text-sm md:text-base text-black pb-3">
-                    {
-                      banners.find((banner) => banner.fileName === "Banner1")
-                        .description
-                    }
-                  </p>
-                  <a
-                    href={
-                      banners
-                        .find((banner) => banner.fileName === "Banner1")
-                        .redirectUrl.startsWith("http")
-                        ? banners.find((banner) => banner.fileName === "Banner1")
-                          .redirectUrl
-                        : `${banners.find(
-                          (banner) => banner.fileName === "Banner1"
-                        ).redirectUrl
-                    }
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="bg-orange-600 text-white px-4 py-2 rounded shadow-md hover:bg-orange-700 transition duration-300"
-                  >
-                    {
-                      banners.find((banner) => banner.fileName === "Banner1")
-                        .buttonContent
-                    }
-                  </a>
-                </div>
-              </div>
-            </div>
-          )}
-        </div> */}
-
-        {/* <div className="w-full bg-[#F6F6F6] flex items-center flex-wrap justify-center px-[4%] mt-10 pb-[20px] pt-[45px]">
-          {feature.map((item, index) => {
-            return (
-              <div
-                key={index}
-                className=" text-gray-700 relative flex items-center  w-[300px] gap-3 border border-gray-500 p-2 px-3"
-              >
-                <div className=" border border-gray-700 rounded-full p-1.5">
-                  {item.icon}
-                </div>
-                <div className=" flex flex-col">
-                  <p className="  font-semibold text-xs md:text-[13px]  capitalize ">
-                    {item.text}
-                  </p>
-                  <p className="  text-[12.5px]  capitalize ">{item.describe}</p>
-                </div>
-              </div>
-            );
-          })}
-        </div> */}
+        </div>
       </div>
     </section>
   );

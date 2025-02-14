@@ -513,11 +513,11 @@ ul.listing_disc li {
   border-radius: 10px;
 } */
 @keyframes scroll {
-  from {
+  0% {
     transform: translateX(0);
   }
-  to {
-    transform: translateX(-100%);
+  100% {
+    transform: translateX(calc(-400px * 3)); /* Adjust based on card width and number */
   }
 }
 
@@ -526,4 +526,14 @@ ul.listing_disc li {
   .animate-scroll {
     animation: scroll 20s linear infinite;
   }
+}
+
+/* Hide scrollbar but keep functionality */
+.scrollbar-hide {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;  /* Chrome, Safari and Opera */
 }
