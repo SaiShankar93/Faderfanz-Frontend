@@ -1,39 +1,84 @@
-import { Fragment, useContext, useEffect, useState } from "react";
+import { Fragment, useContext } from "react";
 import { Dialog, Transition } from "@headlessui/react";
-
 import { RiCloseCircleFill } from "react-icons/ri";
 import { AppContext } from "../context/AppContext";
-import axios from "axios";
-import { Menu } from "@headlessui/react";
-import { ChevronDownIcon } from "@heroicons/react/24/solid";
-import { Link } from "react-router-dom";
 
 export default function MobileShopFilter() {
-  const { isMobileFilterOpen, SetIsMobileFilterOpen } = useContext(AppContext);
+  const {
+    isMobileFilterOpen,
+    SetIsMobileFilterOpen,
+    filters,
+    handleFilterChange,
+    expandedSections,
+    toggleSection
+  } = useContext(AppContext);
 
-  const [categories, setCategories] = useState([]);
+  // Define all filter options
+  const allCategories = [
+    'Adventure Travel',
+    'Art Exhibitions',
+    'Auctions & Fundraisers',
+    'Beer Festivals',
+    'Benefit Concerts',
+    'Cultural Festivals',
+    'Dance Events',
+    'Food & Wine',
+    'Gaming Events',
+    'Music Festivals'
+  ];
 
-  const getAllCategories = async () => {
-    try {
-      const response = await axios.get(
-        `${import.meta.env.VITE_SERVER_URL}/admin/category`
-      );
-      setCategories(response.data?.categories);
-    } catch (error) {
-      console.error("Error fetching categories:", error);
-    }
-  };
+  const allFormats = [
+    'Community Engagement',
+    'Concerts & Performances',
+    'Conferences',
+    'Experiential Events',
+    'Festivals & Fairs',
+    'Workshops',
+    'Seminars',
+    'Virtual Events',
+    'Hybrid Events',
+    'Networking Events'
+  ];
 
-  useEffect(() => {
-    getAllCategories();
-  }, [isMobileFilterOpen]);
+  const renderFilterSection = (title, items, type, showMore = true) => (
+    <div className="mb-6">
+      <h3 className="text-white text-base mb-4">{title}</h3>
+      <div className="space-y-3">
+        {items.slice(0, expandedSections[type] ? items.length : 5).map((item) => (
+          <label key={item} className="flex items-center group cursor-pointer">
+            <div className="relative w-5 h-5 mr-3 border border-gray-600 rounded group-hover:border-[#C5FF32] transition-colors">
+              <input
+                type="checkbox"
+                className="absolute inset-0 opacity-0 cursor-pointer"
+                checked={filters[type].includes(item.toLowerCase())}
+                onChange={() => handleFilterChange(type, item.toLowerCase())}
+              />
+              <div className="absolute inset-1 rounded-sm bg-[#C5FF32] opacity-0 group-hover:opacity-10"></div>
+              {filters[type].includes(item.toLowerCase()) && (
+                <div className="absolute inset-1 rounded-sm bg-[#C5FF32]"></div>
+              )}
+            </div>
+            <span className="text-gray-400 group-hover:text-white transition-colors">{item}</span>
+          </label>
+        ))}
+      </div>
+      {showMore && items.length > 5 && (
+        <button
+          onClick={() => toggleSection(type)}
+          className="text-[#00FFB3] text-sm mt-3 hover:text-[#00FFB3]/80"
+        >
+          {expandedSections[type] ? 'Less' : 'More'}
+        </button>
+      )}
+    </div>
+  );
 
   return (
     <Transition.Root show={isMobileFilterOpen} as={Fragment}>
       <Dialog
         as="div"
-        className="relative dark z-50"
-        onClose={SetIsMobileFilterOpen}
+        className="relative z-50"
+        onClose={() => SetIsMobileFilterOpen(false)}
       >
         <Transition.Child
           as={Fragment}
@@ -52,57 +97,93 @@ export default function MobileShopFilter() {
             <div className="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10">
               <Transition.Child
                 as={Fragment}
-                enter="transform transition ease-in-out duration-500 sm:duration-700"
+                enter="transform transition ease-in-out duration-500"
                 enterFrom="translate-x-full"
                 enterTo="translate-x-0"
-                leave="transform transition ease-in-out duration-500 sm:duration-700"
+                leave="transform transition ease-in-out duration-500"
                 leaveFrom="translate-x-0"
                 leaveTo="translate-x-full"
               >
                 <Dialog.Panel className="pointer-events-auto w-screen max-w-md">
-                  <div className="flex h-full flex-col overflow-y-scroll bg-white shadow-xl">
-                    <div className="flex-1 overflow-y-auto px-4 py-6 sm:px-6">
-                      <div className="relative flex items-start justify-between">
-                        <RiCloseCircleFill
+                  <div className="flex h-full flex-col overflow-y-scroll bg-[#0E0F13]">
+                    <div className="sticky top-0 z-10 bg-[#0E0F13] px-4 py-4 border-b border-gray-800">
+                      <div className="flex items-center justify-between">
+                        <Dialog.Title className="text-xl font-semibold text-white">
+                          Filters
+                        </Dialog.Title>
+                        <button
                           onClick={() => SetIsMobileFilterOpen(false)}
-                          className="z-30 absolute -top-4 text-[30px] text-[#FF7004]"
-                        />
+                          className="text-gray-400 hover:text-white"
+                        >
+                          <RiCloseCircleFill className="w-6 h-6" />
+                        </button>
                       </div>
-                      <div className="relative h-full flex flex-col">
-                        <div className="lg:hidden w-full h-full p-2.5">
-                          <p className="border-b-[1px] py-2.5 border-[#E5E5E5] text-[#363F4D] dark:text-gray-700 font-[700] plus-jakarta text-[13px] md:text-[14.5px] 2xl:text-[16px]">
-                            CATEGORIES
-                          </p>
+                    </div>
 
-                          {categories?.map((category, index) => {
-                            const subCategories = category?.subcategories?.map(
-                              (subcategory, i) => {
-                                return (
-                                  <Link
-                                    to={`/shop/${category?.fileName}/${subcategory?.name}`}
-                                    onClick={() => SetIsMobileFilterOpen(false)}
-                                    key={i}
-                                  >
-                                    <p>{subcategory?.name}</p>
-                                  </Link>
-                                );
-                              }
-                            );
-
-                            return (
-                              <Menu key={index}>
-                                <Menu.Button>
-                                  {category?.name}
-                                  <ChevronDownIcon className="w-[15px]" />
-                                </Menu.Button>
-                                <Menu.Items className="flex flex-col text-[13px] md:text-[13px] 2xl:text-[16px] dark:text-gray-600 bg-white pl-2 gap-2 w-full">
-                                  {subCategories}
-                                </Menu.Items>
-                              </Menu>
-                            );
-                          })}
+                    <div className="flex-1 px-4 py-6">
+                      {/* Price Filter */}
+                      <div className="mb-6">
+                        <h3 className="text-white text-base mb-4">Price</h3>
+                        <div className="space-y-3">
+                          {['Free', 'Paid'].map((price) => (
+                            <label key={price} className="flex items-center group cursor-pointer">
+                              <div className="relative w-5 h-5 mr-3 border border-gray-600 rounded group-hover:border-[#C5FF32] transition-colors">
+                                <input
+                                  type="checkbox"
+                                  className="absolute inset-0 opacity-0 cursor-pointer"
+                                  checked={filters.price.includes(price.toLowerCase())}
+                                  onChange={() => handleFilterChange('price', price.toLowerCase())}
+                                />
+                                <div className="absolute inset-1 rounded-sm bg-[#C5FF32] opacity-0 group-hover:opacity-10"></div>
+                                {filters.price.includes(price.toLowerCase()) && (
+                                  <div className="absolute inset-1 rounded-sm bg-[#C5FF32]"></div>
+                                )}
+                              </div>
+                              <span className="text-gray-400 group-hover:text-white transition-colors">{price}</span>
+                            </label>
+                          ))}
                         </div>
                       </div>
+
+                      {/* Date Filter */}
+                      <div className="mb-6">
+                        <h3 className="text-white text-base mb-4">Date</h3>
+                        <div className="space-y-3">
+                          {['Today', 'Tomorrow', 'This Week', 'This Weekend', 'Pick a Date'].map((date) => (
+                            <label key={date} className="flex items-center group cursor-pointer">
+                              <div className="relative w-5 h-5 mr-3 border border-gray-600 rounded group-hover:border-[#C5FF32] transition-colors">
+                                <input
+                                  type="checkbox"
+                                  className="absolute inset-0 opacity-0 cursor-pointer"
+                                  checked={filters.date.includes(date.toLowerCase())}
+                                  onChange={() => handleFilterChange('date', date.toLowerCase())}
+                                />
+                                <div className="absolute inset-1 rounded-sm bg-[#C5FF32] opacity-0 group-hover:opacity-10"></div>
+                                {filters.date.includes(date.toLowerCase()) && (
+                                  <div className="absolute inset-1 rounded-sm bg-[#C5FF32]"></div>
+                                )}
+                              </div>
+                              <span className="text-gray-400 group-hover:text-white transition-colors">{date}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Category Filter */}
+                      {renderFilterSection('Category', allCategories, 'category')}
+
+                      {/* Format Filter */}
+                      {renderFilterSection('Format', allFormats, 'format')}
+                    </div>
+
+                    {/* Apply Filters Button - Fixed at bottom */}
+                    <div className="sticky bottom-0 bg-[#0E0F13] px-4 py-4 border-t border-gray-800">
+                      <button
+                        onClick={() => SetIsMobileFilterOpen(false)}
+                        className="w-full py-3 bg-[#C5FF32] text-black rounded-xl font-medium hover:bg-[#d4ff66] transition-colors"
+                      >
+                        Apply Filters
+                      </button>
                     </div>
                   </div>
                 </Dialog.Panel>

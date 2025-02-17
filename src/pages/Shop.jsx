@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState, useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
 import { MdStar } from "react-icons/md";
 import MultiRangeSlider from "multi-range-slider-react";
@@ -15,6 +15,8 @@ import { FaStar } from "react-icons/fa";
 import { Menu } from "@headlessui/react";
 import { ChevronDownIcon } from "@heroicons/react/24/solid";
 import { EventCard } from "@/components/EventCard";
+import HeroSlider from "../components/HeroSlider";
+import { IoLocationOutline, IoTimeOutline } from 'react-icons/io5';
 
 const sortMethods = [
   {
@@ -44,6 +46,37 @@ const sortMethods = [
   },
 ];
 
+// Sample event data
+const sampleEvents = [
+  {
+    _id: 1,
+    title: "The Kazi-culture show",
+    location: "12 Lake Avenue, Mumbai, India",
+    time: "8:30 AM - 7:30 PM",
+    mainImage: "/heroslider.jpeg",
+    date: "NOV 25 - 26",
+    interested: 14
+  },
+  {
+    _id: 2,
+    title: "Mumbai Music Festival",
+    location: "Marine Drive, Mumbai, India",
+    time: "4:00 PM - 11:00 PM",
+    mainImage: "/heroslider.jpeg",
+    date: "NOV 27 - 28",
+    interested: 22
+  },
+  {
+    _id: 3,
+    title: "Art & Culture Exhibition",
+    location: "Gallery Modern, Mumbai, India",
+    time: "10:00 AM - 6:00 PM",
+    mainImage: "/heroslider.jpeg",
+    date: "NOV 30",
+    interested: 18
+  }
+];
+
 const Shop = () => {
   const {
     filterCategories,
@@ -52,6 +85,10 @@ const Shop = () => {
     setFilterSubCategories,
     filterColor,
     setFilterColor,
+    filters,
+    handleFilterChange,
+    expandedSections,
+    toggleSection
   } = useContext(AppContext);
 
   const {
@@ -176,286 +213,257 @@ const Shop = () => {
     }
   };
 
-  return (
-    <div className="bg-[#0E0F13] lg:pt-16 pt-0">
-      <div className="bg-[#0E0F13]">
-        {loading ? (
-          <div className=" w-full flex items-center justify-center py-3">
-            <img
-              src="/Images/loader.svg"
-              alt="loading..."
-              className=" object-contain w-[60px] h-[60px]"
-            />
-          </div>
-        ) : (
-          <section className="bg-[#0E0F13] px-[3%] w-full pb-14 flex gap-10 pt-12 lg:pt-12 ">
+  // Filter events based on selected filters
+  const filteredEvents = useMemo(() => {
+    return sampleEvents.filter(event => {
+      // Price filter
+      if (filters.price.length > 0) {
+        const eventPrice = event.price === 0 ? 'free' : 'paid';
+        if (!filters.price.includes(eventPrice)) return false;
+      }
 
-            {/* <div className=" hidden lg:block w-[23%] h-full border-[2px] p-2.5 border-[#E5E5E5] dark:border-gray-700 ">
-              <p className="  border-b-[1px] py-2.5 border-[#E5E5E5]  dark:text-gray-400 text-white font-[700] plus-jakarta text-[13px] md:text-[14.5px] 2xl:text-[16px] ">
-                CATEGORIES
-              </p>
+      // Date filter
+      if (filters.date.length > 0) {
+        const today = new Date();
+        const eventDate = new Date(event.date);
+        const isToday = eventDate.toDateString() === today.toDateString();
+        const isTomorrow = eventDate.toDateString() === new Date(today.setDate(today.getDate() + 1)).toDateString();
+        const isThisWeek = eventDate <= new Date(today.setDate(today.getDate() + 7));
+        const isWeekend = eventDate.getDay() === 0 || eventDate.getDay() === 6;
 
-              {categories?.map((i, index) => {
-                return (
-                  <div key={index}>
-                    {i?.subcategories ? (
-                      <Menu>
-                        <Menu.Button
-                          className={`w-full justify-between capitalize cursor-pointer flex items-center border-b-[1px] py-2.5 border-[#E5E5E5] ${
-                            i?.fileName?.toLowerCase() === filterCategories
-                              ? "text-[#F9BA48] font-bold plus-jakarta"
-                              : "text-white dark:text-gray-400"
-                          } font-[400] text-[13px] md:text-[14px] 2xl:text-[16px] `}
-                        >
-                          {i.fileName}
-                          <ChevronDownIcon className=" w-[15px]" />
-                        </Menu.Button>
-                        <Menu.Items className="   flex flex-col  text-[13px] md:text-[13px] 2xl:text-[16px]  dark:text-gray-600 bg-white pl-2 gap-2 w-full ">
-                          {i?.subcategories?.map((e, index) => {
-                            return (
-                              <Link
-                                autoFocus="off"
-                                to={`/shop/${i?.fileName}/${e?.name}`}
-                                onClick={() => {
-                                  SetIsMenuOpen(false);
-                                }}
-                                key={index}
-                              >
-                                <p
-                                  className={`w-full capitalize cursor-pointer flex items-center border-b-[1px] py-2.5 border-[#E5E5E5] ${
-                                    i?.fileName?.toLowerCase() ===
-                                    filterCategories
-                                      ? "text-[#F9BA48] font-bold plus-jakarta"
-                                      : "text-[#363F4D] dark:text-gray-400"
-                                  } font-[400] text-[12px] md:text-[13px] 2xl:text-[15px] `}
-                                  key={index}
-                                >
-                                  {e?.name}
-                                </p>
-                              </Link>
-                            );
-                          })}
-                        </Menu.Items>
-                      </Menu>
-                    ) : (
-                      <Link
-                        to={`/shop/${i?.fileName}/all`}
-                        onClick={() => {
-                          setFilterCategories(i?.fileName?.toLowerCase());
-                        }}
-                        className={`w-full capitalize cursor-pointer flex items-center border-b-[1px] py-2.5 border-[#E5E5E5] ${
-                          i?.fileName?.toLowerCase() === filterCategories
-                            ? "text-[#F9BA48] font-bold plus-jakarta"
-                            : "text-[#363F4D] dark:text-gray-400"
-                        } font-[400] text-[13px] md:text-[14px] 2xl:text-[16px] `}
-                      >
-                        {i?.fileName}
-                      </Link>
-                    )}
-                  </div>
-                );
-              })}
-              <div className=" bg-[#E5E5E5] p-3 ">
-                <p className="  border-b-[1px] pt-2.5 border-[#E5E5E5] text-[#363F4D] font-[700] plus-jakarta text-[13px] md:text-[14.5px] 2xl:text-[16px] ">
-                  FILTER BY PRICE
-                </p>
-                <MultiRangeSlider
-                  min={0}
-                  max={maxPrice}
-                  step={5}
-                  label="false"
-                  ruler="false"
-                  style={{ border: "none", outline: "none", boxShadow: "none" }}
-                  barInnerColor="#F9BA48"
-                  barRightColor="#000"
-                  barLeftColor="#000"
-                  thumbLeftColor="#F9BA48"
-                  thumbRightColor="#F9BA48"
-                  minValue={minValue}
-                  maxValue={maxValue}
-                  onInput={(e) => {
-                    handleInput(e);
-                  }}
-                />
-                <p className="  border-b-[1px] border-[#E5E5E5] text-[#363F4D] font-[700] plus-jakarta text-[12.5px] md:text-[14px] 2xl:text-[15px] ">
-                  Price: {currency}{" "}
-                  {currency === "OMR" ? minValue * 0.1 : minValue} - {currency}{" "}
-                  {currency === "OMR" ? maxValue * 0.1 : maxValue}
-                </p>
-              </div>
+        const dateMatch = filters.date.some(filter => {
+          switch (filter) {
+            case 'today': return isToday;
+            case 'tomorrow': return isTomorrow;
+            case 'this week': return isThisWeek;
+            case 'this weekend': return isWeekend;
+            default: return true;
+          }
+        });
+        if (!dateMatch) return false;
+      }
 
-              <button
-                onClick={() => {
-                  setFilterColor("");
-                  setFilterCategories("");
-                  set_minValue(0);
-                  set_maxValue(maxPrice);
-                }}
-                className=" my-2 bg-gray-600 text-white text-sm px-4 py-2 "
-              >
-                {" "}
-                Clear Filters
-              </button>
-            </div> */}
-            <div className="w-full lg:w-full h-full">
-              <div className=" dark:text-gray-400 flex flex-col items-center lg:grid xl:grid-cols-4 gap-6 px-[4%] xl:px-[8%]  mt-5 ">
-                <div className=" flex flex-col items-center col-span-4">
-                  <p className=" text-[24px] md:text-[28px] 2xl:text-[32px] plus-jakarta font-[700] text-white dark:text-gray-400 ">
-                    All Events
-                  </p>
-                  <p className=" text-[#474747] text-center text-[13px] md:text-[14.5px] 2xl:text-[16px] dark:text-gray-400 ">
-                    Torem ipsum dolor sit amet, consectetur adipisicing elitsed do
-                    eiusmo tempor incididunt ut labore
-                  </p>
-                </div>
-              </div>
-              <div className=" w-full flex lg:grid grid-cols-3 gap-2 items-center justify-between pt-8">
+      // Category filter
+      if (filters.category.length > 0) {
+        if (!filters.category.includes(event.category?.toLowerCase())) return false;
+      }
 
-                {/* <div className=" w-full hidden lg:flex gap-2 items-center">
-                  <HiMiniSquares2X2
-                    onClick={() => {
-                      setIsCard(true);
-                    }}
-                    className={` text-[19px] cursor-pointer ${
-                      isCard && "text-[#F9BA48]"
-                    } `}
-                  />
-                  <AiOutlineBars
-                    onClick={() => {
-                      setIsCard(false);
-                    }}
-                    className={` text-[19px] cursor-pointer pointer ${
-                      !isCard && "text-[#F9BA48]"
-                    } `}
-                  />
-                </div> */}
-                <div className=" flex items-center pr-3 py-2.5 text-[#7A7A7A] font-[400] text-[12px] md:text-[13.5px] 2xl:text-[14px] ">
-                  <label htmlFor="sort-method" className="text-white px-2">Sort By: </label>
-                  <select
-                    name="sort-method"
-                    id="sort-method"
-                    className="text-[14px] p-2 bg-transparent border border-gray-700   "
-                    value={sortMethod}
-                    onChange={(e) => {
-                      setSortMethod(e.target.value);
-                    }}
-                  >
-                    {sortMethods.map((e, index) => {
-                      return (
-                        <option
-                          className=" p-2 bg-black "
-                          key={index}
-                          value={e.id}
-                        >
-                          {e.name}
-                        </option>
-                      );
-                    })}
-                  </select>
-                </div>
-                <p
-                  onClick={() => {
-                    SetIsMobileFilterOpen(true);
-                  }}
-                  className=" lg:hidden underline text-sm cursor-pointer "
-                >
-                  Filters
-                </p>
-              </div>
-              {loading ? (
-                <div className=" w-full flex items-center justify-center py-3">
-                  <img
-                    src="/Images/loader.svg"
-                    alt="loading..."
-                    className=" object-contain w-[60px] h-[60px]"
-                  />
-                </div>
-              ) : (
-                <>
-                  <div className="w-full grid-cols-2 sm:grid-cols-3 grid lg:grid-cols-4 gap-5 pt-12">
-                    {sortedArray
-                      .filter((product) => {
-                        console.log(product);
-                        const isPriceInRange =
-                          Number(product.price) > minValue &&
-                          Number(product.price) < maxValue;
-                        const matchesCategory =
-                          filterCategories === "all" ||
-                          product?.mainCategory?.some(
-                            (cat) =>
-                              cat.toLowerCase() ===
-                              filterCategories.toLowerCase()
-                          );
+      // Format filter
+      if (filters.format.length > 0) {
+        if (!filters.format.includes(event.format?.toLowerCase())) return false;
+      }
 
-                        const matchesSubCategory =
-                          filterSubCategories === "all" ||
-                          product?.subCategory?.some(
-                            (cat) =>
-                              cat.toLowerCase() ===
-                              filterSubCategories.toLowerCase()
-                          );
+      return true;
+    });
+  }, [filters, sampleEvents]);
 
-                        return (
-                          product?.approved &&
-                          isPriceInRange &&
-                          matchesCategory &&
-                          (filterSubCategories === "all" || matchesSubCategory)
-                        );
-                      })
-                      ?.slice(0, itemsPerPage)
-                      .map((item, index) => (
-                        <div
-                          key={index}
-                          className={`relative ${isCard
-                            ? "flex flex-col items-center justify-between"
-                            : "col-span-2 gap-3 flex border border-gray-300 dark:border-gray-700 rounded-md p-3"
-                            } shadow shadow-black/30`}
-                        >
-                          <EventCard event={item} key={item._id} />
-                        </div>
-                      ))}
-                  </div>
-                  {sortedArray?.filter((e) => {
-                    const isPriceInRange =
-                      Number(e.price) > minValue && Number(e.price) < maxValue;
-                    const matchesCategory =
-                      filterCategories === "all" ||
-                      e?.mainCategory?.some(
-                        (cat) =>
-                          cat.toLowerCase() === filterCategories.toLowerCase()
-                      );
+  // Add these expanded arrays for the "More" functionality
+  const allCategories = [
+    'Adventure Travel',
+    'Art Exhibitions',
+    'Auctions & Fundraisers',
+    'Beer Festivals',
+    'Benefit Concerts',
+    'Cultural Festivals',
+    'Dance Events',
+    'Food & Wine',
+    'Gaming Events',
+    'Music Festivals'
+  ];
 
-                    const matchesSubCategory =
-                      filterSubCategories === "all" ||
-                      e?.subCategory?.some(
-                        (cat) =>
-                          cat.toLowerCase() ===
-                          filterSubCategories.toLowerCase()
-                      );
+  const allFormats = [
+    'Community Engagement',
+    'Concerts & Performances',
+    'Conferences',
+    'Experiential Events',
+    'Festivals & Fairs',
+    'Workshops',
+    'Seminars',
+    'Virtual Events',
+    'Hybrid Events',
+    'Networking Events'
+  ];
 
-                    return (
-                      e?.approved &&
-                      isPriceInRange &&
-                      matchesCategory &&
-                      matchesSubCategory
-                    );
-                  })?.length > itemsPerPage ? (
-                    <div
-                      onClick={() => setItemsPerPage((prev) => prev + 8)}
-                      className="p-3 cursor-pointer border-t bg-gray-200 text-gray-700 font-semibold border-gray-300 my-2 flex items-center justify-center gap-3"
-                    >
-                      See More
-                    </div>
-                  ) : (
-                    <p className="mt-10 text-center text-gray-400">
-                      No More Events Available
-                    </p>
-                  )}
-                </>
+  // Update the filter sections to use the expanded state
+  const renderFilterSection = (title, items, type, showMore = true) => (
+    <div className="mb-6">
+      <h3 className="text-white text-base mb-4">{title}</h3>
+      <div className="space-y-3">
+        {items.slice(0, expandedSections[type] ? items.length : 5).map((item) => (
+          <label key={item} className="flex items-center group cursor-pointer">
+            <div className="relative w-5 h-5 mr-3 border border-gray-600 rounded group-hover:border-[#C5FF32] transition-colors">
+              <input
+                type="checkbox"
+                className="absolute inset-0 opacity-0 cursor-pointer"
+                checked={filters[type].includes(item.toLowerCase())}
+                onChange={() => handleFilterChange(type, item.toLowerCase())}
+              />
+              <div className="absolute inset-1 rounded-sm bg-[#C5FF32] opacity-0 group-hover:opacity-10"></div>
+              {filters[type].includes(item.toLowerCase()) && (
+                <div className="absolute inset-1 rounded-sm bg-[#C5FF32]"></div>
               )}
             </div>
-          </section>
-        )}
+            <span className="text-gray-400 group-hover:text-white transition-colors">{item}</span>
+          </label>
+        ))}
+      </div>
+      {showMore && items.length > 5 && (
+        <button
+          onClick={() => toggleSection(type)}
+          className="text-[#00FFB3] text-sm mt-3 hover:text-[#00FFB3]/80"
+        >
+          {expandedSections[type] ? 'Less' : 'More'}
+        </button>
+      )}
+    </div>
+  );
+
+  return (
+    <div className="bg-[#0E0F13]">
+      <div className="relative w-full">
+        <HeroSlider />
+      </div>
+
+      <div className="w-full max-w-7xl mx-auto px-4 py-8">
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Filters - Hidden on mobile, shown as sidebar on desktop */}
+          <aside className="hidden lg:block w-[280px] bg-[#1C1D24]/50 backdrop-blur-sm rounded-xl p-6 h-fit sticky top-4">
+            <h2 className="text-white text-xl font-semibold mb-6">Filters</h2>
+
+            {/* Price Filter */}
+            <div className="mb-6">
+              <h3 className="text-white text-base mb-4">Price</h3>
+              <div className="space-y-3">
+                {['Free', 'Paid'].map((price) => (
+                  <label key={price} className="flex items-center group cursor-pointer">
+                    <div className="relative w-5 h-5 mr-3 border border-gray-600 rounded group-hover:border-[#C5FF32] transition-colors">
+                      <input
+                        type="checkbox"
+                        className="absolute inset-0 opacity-0 cursor-pointer"
+                        checked={filters.price.includes(price.toLowerCase())}
+                        onChange={() => handleFilterChange('price', price.toLowerCase())}
+                      />
+                      <div className="absolute inset-1 rounded-sm bg-[#C5FF32] opacity-0 group-hover:opacity-10"></div>
+                      {filters.price.includes(price.toLowerCase()) && (
+                        <div className="absolute inset-1 rounded-sm bg-[#C5FF32]"></div>
+                      )}
+                    </div>
+                    <span className="text-gray-400 group-hover:text-white transition-colors">{price}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Date Filter */}
+            {renderFilterSection('Date', ['Today', 'Tomorrow', 'This Week', 'This Weekend', 'Pick a Date'], 'date')}
+
+            {/* Category Filter */}
+            {renderFilterSection('Category', allCategories, 'category')}
+
+            {/* Format Filter */}
+            {renderFilterSection('Format', allFormats, 'format')}
+          </aside>
+
+          {/* Main content */}
+          <div className="flex-1">
+            {/* Header */}
+            <div className="flex justify-between items-center mb-8">
+              <h2 className="text-2xl font-semibold text-white">All Events</h2>
+              <div className="flex items-center gap-3">
+                <span className="text-gray-400 hidden sm:inline">Sort by:</span>
+                <select
+                  className="bg-[#1C1D24]/50 backdrop-blur-sm text-white px-4 py-2 rounded-lg border border-gray-700 focus:outline-none focus:border-[#C5FF32]"
+                  value={sortMethod}
+                  onChange={(e) => setSortMethod(e.target.value)}
+                >
+                  {sortMethods.map((method) => (
+                    <option key={method.id} value={method.id} className="bg-[#1C1D24]">
+                      {method.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Event Cards */}
+            <div className="space-y-4">
+              {filteredEvents.map((event) => (
+                <div key={event._id} className="bg-[#1C1D24]/50 backdrop-blur-sm rounded-xl overflow-hidden hover:bg-[#1C1D24]/70 transition-colors">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 p-4">
+                    {/* Image container */}
+                    <div className="w-full sm:w-[200px] h-[200px] sm:h-[140px] flex-shrink-0">
+                      <img
+                        src={event.mainImage}
+                        alt={event.title}
+                        className="w-full h-full object-cover rounded-lg"
+                      />
+                    </div>
+
+                    {/* Date container */}
+                    <div className="flex-shrink-0 w-full sm:w-auto">
+                      <div className="bg-[#262626]/50 backdrop-blur-sm rounded-xl px-4 py-3 inline-block">
+                        <div className="text-gray-400 text-sm font-medium mb-1">NOV</div>
+                        <div className="text-white text-lg font-semibold">
+                          {event.date.includes('-') ? (
+                            <span className="whitespace-nowrap">
+                              {event.date.split('-')[0].trim().split(' ')[1]} - {event.date.split('-')[1].trim()}
+                            </span>
+                          ) : (
+                            <span>{event.date.split(' ')[1]}</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Content container */}
+                    <div className="flex-1 min-w-0 w-full">
+                      <div className="relative">
+                        <h3 className="text-white text-xl font-semibold mb-3 pr-12">
+                          {event.title}
+                        </h3>
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2 text-gray-400">
+                            <IoLocationOutline className="w-4 h-4 flex-shrink-0" />
+                            <span className="text-sm truncate">{event.location}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-gray-400">
+                            <IoTimeOutline className="w-4 h-4 flex-shrink-0" />
+                            <span className="text-sm">{event.time}</span>
+                          </div>
+                          <div className="flex items-center gap-1 text-gray-400">
+                            <FaStar className="w-3 h-3 text-[#C5FF32]" />
+                            <span className="text-sm">{event.interested} interested</span>
+                          </div>
+                        </div>
+
+                        {/* Star button */}
+                        <button className="absolute right-0 top-0 bg-[#C5FF32] p-2.5 rounded-full hover:bg-[#d4ff66] transition-colors group">
+                          <FaStar className="w-4 h-4 text-black group-hover:scale-110 transition-transform" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Load more button */}
+            <button
+              onClick={() => setItemsPerPage(prev => prev + 8)}
+              className="w-full mt-8 py-4 bg-[#1C1D24]/50 backdrop-blur-sm text-gray-400 rounded-xl hover:bg-[#1C1D24]/70 transition-colors"
+            >
+              See More
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile filters button */}
+        <button
+          onClick={() => SetIsMobileFilterOpen(true)}
+          className="fixed bottom-4 left-4 lg:hidden bg-[#C5FF32] p-4 rounded-full shadow-lg hover:bg-[#d4ff66] transition-colors"
+        >
+          <AiOutlineBars className="w-6 h-6" />
+        </button>
       </div>
     </div>
   );

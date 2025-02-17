@@ -21,6 +21,34 @@ export const AppProvider = ({ children }) => {
   const [orders, setOrders] = useState([]);
   const [cartTotal, setCartTotal] = useState(0);
   const [grandTotal, setGrandTotal] = useState(0);
+  const [filters, setFilters] = useState({
+    price: [],
+    date: [],
+    category: [],
+    format: []
+  });
+
+  const handleFilterChange = (type, value) => {
+    setFilters(prev => ({
+      ...prev,
+      [type]: prev[type].includes(value)
+        ? prev[type].filter(item => item !== value)
+        : [...prev[type], value]
+    }));
+  };
+
+  const [expandedSections, setExpandedSections] = useState({
+    date: false,
+    category: false,
+    format: false
+  });
+
+  const toggleSection = (section) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
 
   return (
     <AppContext.Provider
@@ -59,6 +87,10 @@ export const AppProvider = ({ children }) => {
         setGrandTotal,
         isRatingFormOpen,
         setIsRatingFormOpen,
+        filters,
+        handleFilterChange,
+        expandedSections,
+        toggleSection,
       }}
     >
       {children}
