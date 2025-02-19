@@ -296,7 +296,7 @@ const EventPage = ({ }) => {
   };
 
   return (
-    <div className="relative bg-[#0E0F13] min-h-screen text-white overflow-hidden">
+    <div className="relative bg-[#0E0F13] min-h-screen text-white overflow-hidden font-sen">
       {/* Background gradient */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute inset-0 opacity-40">

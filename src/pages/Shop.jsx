@@ -319,7 +319,7 @@ const Shop = () => {
   );
 
   return (
-    <div className="bg-[#0E0F13]">
+    <div className="bg-[#0E0F13] font-sen">
       <div className="relative w-full">
         <HeroSlider />
       </div>

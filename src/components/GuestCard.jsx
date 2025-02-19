@@ -53,7 +53,7 @@ const GuestCard = ({ guest }) => {
 
                 {/* View Profile Button */}
                 <Link
-                    to={`/profile/${guest.id}`}
+                    to={`/venue/${guest.id}`}
                     className="px-6 py-2 bg-[#C5FF32] text-black rounded-lg text-center font-medium hover:bg-[#b3ff00] transition-colors"
                 >
                     View Profile

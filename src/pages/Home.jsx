@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import HeroSlider from "../components/HeroSlider";
 import NewsSlider from "../components/NewsSlider";
 import CategorySlider from "../components/CategorySlider";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { AppContext } from "../context/AppContext";
 import { IoHeartCircle } from "react-icons/io5";
 import axios from "axios";
@@ -265,6 +265,8 @@ const Home = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
 
+  const navigate = useNavigate();
+
   // Auto-scroll effect
   useEffect(() => {
     if (isHovered) return; // Don't auto-scroll while user is interacting
@@ -493,8 +495,12 @@ const Home = () => {
     return activeFilter === 'All' || guest.attended > 200; // Example filter
   });
 
+  const handleContribute = (id) => {
+    navigate(`/crowdfunding/${id}`);
+  };
+
   return (
-    <section className="w-full bg-[#0E0F13] text-white relative overflow-hidden">
+    <section className="bg-[#0E0F13] min-h-screen text-white font-sen">
       {/* Header + Hero + Categories Background Wrapper */}
       <div className="relative">
         {/* Gradient Background */}
@@ -740,7 +746,7 @@ const Home = () => {
         <div className="w-full max-w-7xl mx-auto px-4 py-16 relative overflow-hidden">
           {/* Section Header */}
           <div className="flex flex-col gap-8 mb-12">
-            <h2 className="text-[32px] font-semibold text-white">
+            <h2 className="text-[32px] font-semibold text-white font-sen">
               Popular <span className="text-[#C5FF32]">Fans/Guests</span>
             </h2>
 
@@ -798,7 +804,7 @@ const Home = () => {
           <div className="w-full max-w-7xl mx-auto px-4 py-16 relative">
             {/* Section Header */}
             <div className="flex flex-col gap-8 mb-12">
-              <h2 className="text-[32px] font-semibold text-white">
+              <h2 className="text-[32px] font-semibold text-white font-sen">
                 Featured <span className="text-[#C5FF32]">Blogs</span>
               </h2>
             </div>
@@ -856,7 +862,7 @@ const Home = () => {
             {/* Section Title */}
             <div className="text-center mb-16">
               <p className="text-[#C5FF32] text-sm uppercase mb-4">TESTIMONIALS</p>
-              <h2 className="text-4xl font-semibold text-white mb-4">
+              <h2 className="text-4xl font-semibold text-white mb-4 font-sen">
                 What people says about us
               </h2>
               <p className="text-gray-400 text-sm">
