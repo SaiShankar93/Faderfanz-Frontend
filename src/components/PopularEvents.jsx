@@ -50,7 +50,7 @@ const mockEvents = [
     // Add more mock events as needed
 ];
 
-export default function PopularEvents() {
+const PopularEvents = ({ showTitle = true, showBackground = true }) => {
     const [activeFilter, setActiveFilter] = React.useState('all');
 
     // Filter events based on the active filter
@@ -63,35 +63,37 @@ export default function PopularEvents() {
 
     return (
         <div className="w-full max-w-7xl mx-auto px-4 py-16 relative overflow-hidden">
-            {/* Background Gradient */}
-            <div
-                className="absolute inset-0 z-0"
-                style={{
-                    pointerEvents: 'none',
-                    width: '100%',
-                    height: '100%',
-                }}
-            >
-                <img
-                    src="/Images/bg-grad-pevents.svg"
-                    alt=""
-                    className="absolute top-1/2 left-0 -translate-y-1/2 w-full h-auto opacity-40"
+            {/* Background Gradient - Only show if showBackground is true */}
+            {showBackground && (
+                <div
+                    className="absolute inset-0 z-0"
                     style={{
-                        maxWidth: '1323px',
-                        transform: 'translateY(-50%) translateX(-30%)', // Adjusted to position from left side
+                        pointerEvents: 'none',
+                        width: '100%',
+                        height: '100%',
                     }}
-                />
-            </div>
+                >
+                    <img
+                        src="/Images/bg-grad-pevents.svg"
+                        alt=""
+                        className="absolute top-1/2 left-0 -translate-y-1/2 w-full h-auto opacity-40"
+                        style={{
+                            maxWidth: '1323px',
+                            transform: 'translateY(-50%) translateX(-30%)',
+                        }}
+                    />
+                </div>
+            )}
 
             {/* Content with relative positioning */}
             <div className="relative z-10">
-                <div className="flex flex-col md:flex-row items-center gap-2 mb-8">
-                    <h2 className="text-3xl md:text-4xl font-semibold text-white">Popular</h2>
-                    <div className="flex items-center gap-2">
-                        <span className="text-3xl md:text-4xl font-semibold text-[#C5FF32]">Events</span>
-                        <span className="text-3xl md:text-4xl font-semibold text-white">Near you</span>
+                {showTitle && (
+                    <div className="flex justify-between items-center mb-8">
+                        <h2 className="text-2xl font-semibold">
+                            Popular <span className="text-[#C5FF32]">Events</span> Near you
+                        </h2>
                     </div>
-                </div>
+                )}
 
                 <div className="flex flex-wrap gap-3 mb-8">
                     {timeFilters.map((filter) => (
@@ -121,4 +123,6 @@ export default function PopularEvents() {
             </div>
         </div>
     );
-} 
+};
+
+export default PopularEvents; 

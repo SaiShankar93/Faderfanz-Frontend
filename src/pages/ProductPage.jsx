@@ -12,8 +12,11 @@ import {
   IoCloseCircle,
   IoHeartCircle,
   IoStarOutline,
+  IoLocationOutline,
+  IoTimeOutline,
+  IoTicketOutline,
 } from "react-icons/io5";
-import { FaHeart, FaStar } from "react-icons/fa";
+import { FaHeart, FaStar, FaShare } from "react-icons/fa";
 import axios from "axios";
 import { useAuth } from "@/context/AuthContext";
 import { MainAppContext } from "@/context/MainContext";
@@ -23,6 +26,7 @@ import parse from "html-react-parser";
 import AttributeSlider from "@/components/AttributeSlider";
 import { Tooltip } from "@material-tailwind/react";
 import { Swiper, SwiperSlide } from "swiper/react";
+import PopularEvents from "@/components/PopularEvents";
 
 import "swiper/css";
 import "swiper/css/pagination";
@@ -292,210 +296,235 @@ const EventPage = ({ }) => {
   };
 
   return (
-    <div className="bg-[#0E0F13] text-white min-h-screen py-16 px-4 md:px-10 lg:px-20">
-      <Helmet>
-        <title>{product?.title}</title>
-        <meta name="description" content={product?.metaDescription} />
-        <meta name="keywords" content={product?.metaHead} />
-        <meta name="author" content={product?.metaTitle} />
-      </Helmet>
+    <div className="relative bg-[#0E0F13] min-h-screen text-white overflow-hidden">
+      {/* Background gradient */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute inset-0 opacity-40">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1323px] h-[1323px] rounded-[72px] bg-gradient-to-br from-[#F829BA] via-[#081CD1]/87 to-[#49DEFF] blur-[357px]" />
+        </div>
+      </div>
 
-      <section className="w-full py-10">
-        {loading || !product ? (
-          <div className="w-full flex items-center justify-center py-10">
-            <img
-              src="/Images/loader.svg"
-              alt="loading..."
-              className="w-[60px] h-[60px] object-contain"
-            />
+      {/* Content container - added relative and z-10 to ensure content stays above gradient */}
+      <div className="relative z-10 max-w-[1200px] mx-auto px-4 md:px-6 pt-0">
+        {/* Hero Image Section */}
+        <div className="relative w-full h-[250px] md:h-[400px] rounded-xl overflow-hidden">
+          <img
+            src="/events/event1.jpeg"
+            alt="Event Cover"
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute bottom-4 right-4 flex gap-2">
+            <button className="bg-[#C5FF32] p-2 md:p-3 rounded-full">
+              <img src="/icons/share-icon.svg" alt="Share" className="w-4 h-4 md:w-5 md:h-5" />
+            </button>
+            <button className="bg-[#C5FF32] p-2 md:p-3 rounded-full">
+              <img src="/icons/star-icon.svg" alt="Star" className="w-4 h-4 md:w-5 md:h-5" />
+            </button>
           </div>
-        ) : (
-          <div className="w-full">
-            {/* Image Carousel */}
-            <svg
-              className="fixed top-0 right-0 z-[0] pointer-events-none"
-              width="536"
-              height="1071"
-              viewBox="0 0 536 1071"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <g filter="url(#filter0_f_1_3190)">
-                <circle cx="535.5" cy="535.5" r="207.5" fill="#8B33FE" fillOpacity="0.4" />
-              </g>
-              <defs>
-                <filter
-                  id="filter0_f_1_3190"
-                  x="0"
-                  y="0"
-                  width="1071"
-                  height="1071"
-                  filterUnits="userSpaceOnUse"
-                  colorInterpolationFilters="sRGB"
-                >
-                  <feFlood floodOpacity="0" result="BackgroundImageFix" />
-                  <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape" />
-                  <feGaussianBlur stdDeviation="164" result="effect1_foregroundBlur_1_3190" />
-                </filter>
-              </defs>
-            </svg>
-            <div className="w-full h-[400px] lg:h-[600px]">
-              <Swiper
-                loop={true}
-                pagination={{ clickable: true, dynamicBullets: true }}
-                autoplay={{ delay: 3000, disableOnInteraction: false }}
-                modules={[Autoplay, Pagination]}
-                className="w-full h-full rounded-lg overflow-hidden"
-              >
-                {allImages?.map((image, index) => (
-                  <SwiperSlide key={index}>
-                    <img
-                      className="w-full h-full object-cover"
-                      src={image}
-                      alt="Event"
-                    />
-                  </SwiperSlide>
-                ))}
-              </Swiper>
+        </div>
+
+        {/* Title and Info Container */}
+        <div className="mt-6 md:mt-8">
+          <h1 className="text-4xl md:text-[44px] font-bold mb-6 md:mb-8">The Kazi-culture show</h1>
+
+          {/* Date/Time and Ticket Container */}
+          <div className="flex flex-col md:flex-row justify-between gap-6 md:gap-8 bg-[#1C1D24]/50 rounded-xl p-4 md:p-6">
+            {/* Left Side - Date and Time */}
+            <div className="flex-1">
+              <h2 className="text-[#94A3B8] text-lg md:text-2xl mb-4">Date and Time</h2>
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center gap-2">
+                  <img src="/icons/calendar-icon.svg" alt="Calendar" className="w-5 h-5" />
+                  <span>Saturday, 2 December 2023</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <img src="/icons/time-icon.svg" alt="Time" className="w-5 h-5" />
+                  <span>6:30 PM - 9:30 PM</span>
+                </div>
+                <button className="text-[#00FFB3] text-sm hover:text-[#00cc8f] transition-colors w-fit">
+                  + Add to Calendar
+                </button>
+              </div>
             </div>
 
-            {/* Main Content Layout */}
-            <div className="mt-10 flex flex-col lg:flex-row gap-10">
-              {/* Left Section */}
-              <div className="flex-1">
-                <div className="flex justify-between">
-                  <h1 className="text-4xl font-bold mb-4">{product?.title}</h1>
-                  <button onClick={handleLike} className="text-2xl">
-                    {
-                      liked > 0 ? (
-                        <FaHeart className="text-red-500" />
-                      ) : (
-                        <FaHeart />
-                      )
-                    }
-                  </button>
-
+            {/* Right Side - Ticket Info */}
+            <div className="flex-1">
+              <div className="flex flex-col items-end">
+                <button className="bg-[#00FFB3] text-black px-6 md:px-8 py-2 md:py-3 rounded-lg font-medium mb-4 w-full md:w-auto flex items-center justify-center gap-2">
+                  <IoTicketOutline className="w-5 h-5" />
+                  Buy Tickets
+                </button>
+                <div className="w-full">
+                  <h2 className="text-[#94A3B8] text-lg md:text-2xl mb-4">Ticket Information</h2>
+                  <div className="bg-[#1C1D24] rounded-xl p-4">
+                    <div className="flex items-center gap-2">
+                      <img src="/icons/ticket-icon.svg" alt="Ticket" className="w-5 h-5" />
+                      <span className="text-[#94A3B8]">Standard Ticket: ₹ 200 each</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="py-3 flex gap-2">
-                  <Stars stars={3} /> 
-                  <span className="text-gray-400">(5)</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Location Section */}
+          <div className="mt-8">
+            <h2 className="text-[#94A3B8] text-lg md:text-2xl mb-4">Location</h2>
+            <div className="bg-[#1C1D24] rounded-xl p-4 md:p-6">
+              <div className="flex flex-col md:flex-row gap-6 md:gap-8">
+                <div className="flex-1">
+                  <div className="flex items-start gap-2">
+                    <img src="/icons/location-icon.svg" alt="Location" className="w-5 h-5 mt-1" />
+                    <p className="text-[#94A3B8]">
+                      12 Lake Avenue, Mumbai, Near Junction<br />
+                      Of 24th & 32nd Road & Patwardhan<br />
+                      Park,Off Linking Road, Bandra West,<br />
+                      Mumbai, India
+                    </p>
+                  </div>
                 </div>
-                <p className="text-xl text-gray-400 mb-6">₹{product?.price}</p>
-
-                <p className="mb-8 leading-7">
-                  Lorem ipsum dolor sit, amet consectetur adipisicing elit. Veritatis perspiciatis aliquam possimus deserunt ut veniam tempora repellendus aperiam laudantium voluptatem molestiae sunt tenetur assumenda ab, molestias delectus corrupti sapiente ullam!
-                  Lorem ipsum dolor sit amet consectetur adipisicing elit. Maiores dolorem quas adipisci sapiente numquam voluptate eligendi fugit explicabo dolores iure ipsam vero, nobis eum aliquam tempore at velit illum architecto. Lorem, ipsum dolor sit amet consectetur adipisicing elit. Mollitia assumenda minima asperiores tenetur ipsa nihil nulla enim perferendis unde laudantium architecto laborum illum pariatur, vitae possimus sint repudiandae quisquam soluta! Lorem ipsum dolor sit, amet consectetur adipisicing elit. Dolor odit repellat aliquid atque! Odit alias labore pariatur delectus dicta ratione dolores ut, exercitationem reiciendis. Officia pariatur blanditiis sapiente dignissimos dolor.
-                </p>
-
-                {/* Map Section */}
-                <div className=" p-6 rounded-lg mb-8 order-3 ">
-                  <h3 className="text-lg font-semibold mb-4">Location</h3>
+                <div className="flex-1 h-[200px] md:h-[250px]">
                   <iframe
-                    className="w-full h-60 rounded-md"
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3153.8354345094274!2d-122.42006968468114!3d37.779280979759516!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x80858064c2cb33b7%3A0xe3a6b535d61c5b6!2sSan%20Francisco%20City%20Hall!5e0!3m2!1sen!2sus!4v1645678886145!5m2!1sen!2sus"
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3771.803960726307!2d72.82824147499422!3d19.0507943570711!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3be7c9c000000001%3A0x3c1c64a0f6c13656!2sBandra%20West%2C%20Mumbai%2C%20Maharashtra!5e0!3m2!1sen!2sin!4v1709825037044!5m2!1sen!2sin"
+                    className="w-full h-full rounded-xl"
                     allowFullScreen=""
                     loading="lazy"
                   ></iframe>
                 </div>
-                <svg width="601" height="1031" viewBox="0 0 601 1031" fill="none" xmlns="http://www.w3.org/2000/svg" className="fixed top-[0%] left-0 z-[0] pointer-events-none hidden lg:block">
-                  <g filter="url(#filter0_f_1_3194)">
-                    <circle cx="85.5" cy="515.5" r="207.5" fill="#8B33FE" fill-opacity="0.4" />
-                  </g>
-                  <defs>
-                    <filter id="filter0_f_1_3194" x="-430" y="0" width="1031" height="1031" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-                      <feFlood flood-opacity="0" result="BackgroundImageFix" />
-                      <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape" />
-                      <feGaussianBlur stdDeviation="154" result="effect1_foregroundBlur_1_3194" />
-                    </filter>
-                  </defs>
-                </svg>
-                {/* Comments Section */}
-                <div className=" p-6 rounded-lg order-2 lg:order-3  ">
-                  <h3 className="text-lg font-semibold mb-4">Comments</h3>
-                  <div className="mb-4">
-                    {comments.map((comment, index) => (
-                      <div
-                        key={index}
-                        className="p-4 mb-4 bg-gray-700 rounded-md"
-                      >
-                        <p>
-                          <strong>{comment.userId?.name}</strong> - {" "}
-                          {comment.createdAt.split("T")[0]}
-                        </p>
-                        <p>{comment.comment}</p>
-                      </div>
-                    ))}
-                  </div>
-                  <textarea
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                    placeholder="Add your comment..."
-                    className="w-full p-2 rounded-md bg-gray-700 text-white mb-4"
-                  ></textarea>
-                  <div className="absolute  group">
-                    <div
-                      className="absolute  px-4 py-2 -inset-1 rounded-xl blur-lg opacity-70 bg-gradient-to-r from-[#44BCFF] via-[#FF44EC] to-[#FF675E] transition-all duration-300 group-hover:opacity-100 group-hover:blur-md"
-                    />
-                    <button
-                      onClick={handleAddComment}
-                      href=""
-                      title="View all Events"
-                      className="relative inline-flex items-center justify-center px-6 py-3  font-bold text-white bg-gray-900 rounded-xl font-pj transition-all duration-200 focus:outline-none  focus:ring-offset-2 focus:ring-gray-900 md:px-6 md:py-3 text-xs"
-                      role="button"
-                    >
-                      Add
-                    </button>
-                  </div>
-                </div>
               </div>
+            </div>
+          </div>
 
-              {/* Right Section */}
-              <div className="w-full lg:w-1/3 p-6 rounded-lg">
-                {/* Curator Details */}
-                <div className="mb-6">
-                  <h3 className="text-lg font-semibold mb-4">Curator</h3>
-                  <p className="mt-2">John Doe</p>
-                  <p className="text-gray-400">Event Date: 25th December 2024</p>
-                </div>
-
-                {/* Ticket Section */}
-                <div className="mb-6">
-                  <h3 className="text-lg font-semibold mb-4">Tickets</h3>
-                  <div className="flex items-center gap-4 mb-4">
-                    <button
-                      onClick={handleDecrease}
-                      className=" px-4 py-2 rounded-md"
-                    >
-                      -
-                    </button>
-                    <span className="text-xl">{ticketCount}</span>
-                    <button
-                      onClick={handleIncrease}
-                      className=" px-4 py-2 rounded-md"
-                    >
-                      +
-                    </button>
-                  </div>
-                  <p>Total Price: ₹{ticketPrice * ticketCount}</p>
-                  <div className="absolute my-12 inline-flex group">
-                    <div
-                      className="absolute -inset-1 rounded-xl blur-lg opacity-70 bg-gradient-to-r from-[#44BCFF] via-[#FF44EC] to-[#FF675E] transition-all duration-300 group-hover:opacity-100 group-hover:blur-md"
-                    />
-                    <a
-                      href=""
-                      title="View all Events"
-                      className="relative inline-flex items-center justify-center px-6 py-3  font-bold text-white bg-gray-900 rounded-xl font-pj transition-all duration-200 focus:outline-none  focus:ring-offset-2 focus:ring-gray-900 md:px-6 md:py-3 text-xs"
-                      role="button"
-                    >
-                      Book Now
-                    </a>
-                  </div>
+          {/* Hosted by Section */}
+          <div className="mt-8">
+            <h2 className="text-[#94A3B8] text-lg md:text-2xl mb-4">Hosted by</h2>
+            <div className="flex items-center gap-4">
+              <img
+                src="/Images/host-image.png"
+                alt="City Youth Movement"
+                className="w-16 h-16 md:w-20 md:h-20 rounded-lg object-cover"
+              />
+              <div>
+                <h3 className="text-white font-medium text-lg mb-2">City Youth Movement</h3>
+                <div className="flex gap-2">
+                  <button className="bg-white text-black px-6 py-2 rounded-lg text-sm font-medium hover:bg-gray-100 transition-colors">
+                    Contact
+                  </button>
+                  <button className="bg-transparent text-white px-6 py-2 rounded-lg text-sm font-medium border border-white hover:bg-white/10 transition-colors">
+                    + Follow
+                  </button>
                 </div>
               </div>
             </div>
           </div>
-        )}
-      </section>
+
+          {/* Event Description Section */}
+          <div className="mt-8">
+            <h2 className="text-[#94A3B8] text-xl mb-4">Event Description</h2>
+            <div className="bg-[#1C1D24] rounded-xl p-6">
+              <p className="text-[#94A3B8]">
+                Get ready to kick off the Christmas season in Mumbai with KAZI OF CHRISTMAS - your favourite LIVE Christmas party/fair. Be the patch that the city needs! Your favourite monthly events, stalls, karaoke and more exciting surprises! Bring your family, new friends and sing along your favourite Christmas songs on the 2nd of December, 6:30 PM onwards at the Bungalow!<br /><br />
+                Bonus Note: Wear your Santa hats!<br /><br />
+                1. Reasons to attend the event:<br />
+                2. The FIRST Christmas carnival of Mumbai!<br />
+                3. A special Christmas choir!<br />
+                4. Special dance performances and many more surprises!
+              </p>
+            </div>
+          </div>
+
+          {/* Sponsors Section */}
+          <div className="mt-8">
+            <h2 className="text-[#94A3B8] text-lg md:text-2xl mb-4">Sponsors</h2>
+            <div className="flex gap-6 overflow-x-auto pb-4">
+              {[
+                { name: "Elites Mark", image: "/Images/sponsor-logo.png" },
+                // Add more sponsors here as needed
+              ].map((sponsor, i) => (
+                <div key={i} className="flex flex-col items-center">
+                  <div className="w-32 h-32 rounded-full overflow-hidden mb-2">
+                    <img
+                      src={sponsor.image}
+                      alt={sponsor.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <span className="text-white text-sm">{sponsor.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Products by sponsor Section */}
+          <div className="mt-8">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-[#94A3B8] text-xl">Products by sponsor: Elites Mark</h2>
+              <a href="#" className="text-[#C5FF32] hover:text-[#a3cc28] transition-colors">Visit page</a>
+            </div>
+
+            {/* Horizontal scrollable container */}
+            <div className="relative overflow-x-auto pb-4">
+              <div className="flex gap-6 min-w-min">
+                {Array(5).fill(0).map((_, i) => (
+                  <div key={i} className="flex-shrink-0 w-[320px] bg-[#1C1D24] rounded-xl overflow-hidden">
+                    <div className="aspect-square relative">
+                      <img
+                        src="/Images/product-image.png"
+                        alt="Base Ball T-Shirt"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="p-4">
+                      <h3 className="text-white text-xl font-medium mb-3">BASE BALL T-SHIRT</h3>
+                      <div className="flex justify-between items-center mb-4">
+                        <span className="text-[#94A3B8] text-lg">${200}</span>
+                        <span className="text-[#94A3B8]">Stock: 32</span>
+                      </div>
+                      <button className="bg-[#00FFB3] hover:bg-[#00cc8f] transition-colors text-black px-4 py-3 rounded-lg text-base w-full font-medium">
+                        Buy Now
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Curators Section */}
+          <div className="mt-8">
+            <h2 className="text-[#94A3B8] text-xl mb-6">Curators</h2>
+            <div className="flex gap-6 overflow-x-auto pb-4">
+              {[
+                { name: "DJ Larsh", image: "/Images/curator-img.png" },
+                { name: "Mr Rush", image: "/Images/curator-img.png" },
+                { name: "Mr Rush", image: "/Images/curator-img.png" },
+                { name: "Mr Rush", image: "/Images/curator-img.png" },
+                { name: "Mr Rush", image: "/Images/curator-img.png" },
+                { name: "Mr Rush", image: "/Images/curator-img.png" }
+              ].map((curator, i) => (
+                <div key={i} className="flex flex-col items-center">
+                  <div className="w-32 h-32 rounded-full overflow-hidden mb-2">
+                    <img
+                      src={curator.image}
+                      alt={curator.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <span className="text-white text-sm">{curator.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Other events section (already implemented with PopularEvents) */}
+          <div className="mt-16">
+            <h2 className="text-[#94A3B8] text-2xl font-semibold mb-4">Other events you may Like</h2>
+            <PopularEvents showTitle={false} showBackground={false} />
+          </div>
+
+
+        </div>
+      </div>
     </div>
   );
 };

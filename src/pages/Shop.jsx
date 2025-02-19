@@ -388,7 +388,7 @@ const Shop = () => {
             {/* Event Cards */}
             <div className="space-y-4">
               {filteredEvents.map((event) => (
-                <div key={event._id} className="bg-[#1C1D24]/50 backdrop-blur-sm rounded-xl overflow-hidden hover:bg-[#1C1D24]/70 transition-colors">
+                <Link to={`/event/${event._id}`} key={event._id} className="bg-[#1C1D24]/50 backdrop-blur-sm rounded-xl overflow-hidden hover:bg-[#1C1D24]/70 transition-colors">
                   <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 p-4">
                     {/* Image container */}
                     <div className="w-full sm:w-[200px] h-[200px] sm:h-[140px] flex-shrink-0">
@@ -443,7 +443,7 @@ const Shop = () => {
                       </div>
                     </div>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
 
