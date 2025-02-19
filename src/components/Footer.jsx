@@ -207,7 +207,7 @@ const Footer = () => {
               onChange={(e) => setEmail(e.target.value)}
             />
             <button
-              className=" uppercase bg-[#222] py-[10px] mt-[10px] w-auto border-gray-400 px-3 uppercase text-[14px] text-[#fff] font-[700] plus-jakarta"
+              className=" bg-[#222] py-[10px] mt-[10px] w-auto border-gray-400 px-3 uppercase text-[14px] text-[#fff] font-[700] plus-jakarta"
               onClick={handleSubscribe}
             >
               Sign Up
