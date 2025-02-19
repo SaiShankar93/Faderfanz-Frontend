@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { FaStar } from 'react-icons/fa';
 import { IoLocationOutline, IoTimeOutline } from 'react-icons/io5';
 import PopularEventCard from './PopularEventCard';
@@ -52,7 +52,7 @@ const mockEvents = [
 
 const PopularEvents = ({ showTitle = true, showBackground = true }) => {
     const [activeFilter, setActiveFilter] = React.useState('all');
-
+    const navigate = useNavigate();
     // Filter events based on the active filter
     const filteredEvents = mockEvents.filter(event => {
         if (activeFilter === 'all') return true;
@@ -117,7 +117,7 @@ const PopularEvents = ({ showTitle = true, showBackground = true }) => {
                     ))}
                 </div>
 
-                <button className="w-full mt-8 py-4 bg-[#1C1D24] text-gray-400 rounded-xl hover:bg-[#262626] transition-colors">
+                <button className="w-full mt-8 py-4 bg-[#1C1D24] text-gray-400 rounded-xl hover:bg-[#262626] transition-colors" onClick={() => navigate('/events/all/all')}>
                     See More
                 </button>
             </div>

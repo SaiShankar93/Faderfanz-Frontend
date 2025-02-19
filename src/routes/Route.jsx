@@ -37,6 +37,7 @@ import VendorRegister from "@/pages/VendorRegister";
 import VenueOwnerPage from "@/pages/VenueOwnerPage";
 import WishList from "@/pages/Wishlist";
 import CrowdfundingDetail from "@/pages/CrowdfundingDetail";
+import CreateEvent from "@/pages/CreateEvent";
 
 export const userRoutes = [
   {
@@ -92,6 +93,12 @@ export const userRoutes = [
     title: "Venue Owners Page",
     component: <VenueOwnerPage />,
     path: "/venue/:id",
+  },
+  {
+    name: "Create Event page",
+    title: "Create Event page",
+    component: <CreateEvent />,
+    path: "/create-event",
   },
   {
     name: "All Blogs",

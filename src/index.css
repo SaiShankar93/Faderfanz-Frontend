@@ -5,6 +5,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap");
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Playwrite+IN:wght@100..400&family=Syne:wght@400..800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Playwrite+IN:wght@100..400&family=Sen:wght@400..800&family=Syne:wght@400..800&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -32,8 +33,14 @@
 .plus-jakarta {
   font-family: "Plus Jakarta Sans", sans-serif !important;
 }
+
 .font-playwrite {
   font-family: 'Playwrite IN', sans-serif !important;
+}
+.font-sen {
+  font-family: "Sen", serif;
+  font-optical-sizing: auto;
+  font-style: normal;
 }
 
 
@@ -46,21 +53,27 @@
 
 /* Style for the scrollbar */
 ::-webkit-scrollbar {
-  height: 5px; /* For horizontal scrollbars */
-  width: 5px; /* For vertical scrollbars */
+  height: 5px;
+  /* For horizontal scrollbars */
+  width: 5px;
+  /* For vertical scrollbars */
 }
 
 ::-webkit-scrollbar-track {
-  background: #fcf8f8; /* Track background */
+  background: #fcf8f8;
+  /* Track background */
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #555555; /* Thumb color */
-  border-radius: 10px; /* Rounded corners */
+  background: #555555;
+  /* Thumb color */
+  border-radius: 10px;
+  /* Rounded corners */
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #333333; /* Thumb color on hover */
+  background: #333333;
+  /* Thumb color on hover */
 }
 
 /* slider  */
@@ -449,6 +462,7 @@ ul.listing_disc li {
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
   }
+
   .dark {
     --background: 0 0% 3.9%;
     --foreground: 0 0% 98%;
@@ -481,6 +495,7 @@ ul.listing_disc li {
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }
@@ -516,8 +531,10 @@ ul.listing_disc li {
   0% {
     transform: translateX(0);
   }
+
   100% {
-    transform: translateX(calc(-400px * 3)); /* Adjust based on card width and number */
+    transform: translateX(calc(-400px * 3));
+    /* Adjust based on card width and number */
   }
 }
 
@@ -530,10 +547,47 @@ ul.listing_disc li {
 
 /* Hide scrollbar but keep functionality */
 .scrollbar-hide {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
 }
 
 .scrollbar-hide::-webkit-scrollbar {
-    display: none;  /* Chrome, Safari and Opera */
+  display: none;
+  /* Chrome, Safari and Opera */
+}
+
+
+.bg-2 {
+  /* blob-01 */
+  position: absolute;
+  /* width: 1323px; */
+  height: 1160px;
+  left: -475px;
+  top: -382px;
+  width: 100vw; /* Ensure it stays within viewport width */
+  max-width: 100vw; /* Prevent it from exceeding screen width */
+
+  background: linear-gradient(40.39deg, #49DEFF 15.02%, rgba(89, 249, 172, 0) 48.97%), linear-gradient(95.91deg, rgba(8, 28, 209, 0.7395) 48.83%, rgba(78, 173, 235, 0) 97.37%), #F829BA;
+  opacity: 0.4;
+  filter: blur(357.838px);
+  border-radius: 72.1689px;
+  overflow: hidden;
+}
+
+.bg-3 {
+  /* blob-01 */
+
+  position: fixed;
+  width: 1323.1px;
+  height: 1323.1px;
+  left: -301px;
+  top: 1117px;
+
+  background: linear-gradient(40.39deg, #49DEFF 15.02%, rgba(89, 249, 172, 0) 48.97%), linear-gradient(95.91deg, rgba(8, 28, 209, 0.7395) 48.83%, rgba(78, 173, 235, 0) 97.37%), #F829BA;
+  opacity: 0.4;
+  filter: blur(357.838px);
+  border-radius: 72.1689px;
+
 }

@@ -73,6 +73,11 @@ const Footer = () => {
           name: "FAQs",
           link: "/faqs",
         },
+        {
+          id: "2.5",
+          name: "Create Event",
+          link: "/create-event",
+        },
       ],
     },
   ];
