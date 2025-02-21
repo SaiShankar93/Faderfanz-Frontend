@@ -75,127 +75,117 @@ const Login = () => {
     }, []);
 
     return (
-        <div className=" w-full h-full flex items-center justify-center pt-20 bg-[#0E0F13] text-white">
-            <div>
-                <div className=" flex flex-col ">
-                    <h4 className=" text-[16px] md:text-[18px] 2xl:text-[20px] font-[700] plus-jakarta text-[#363F4D] dark:text-gray-400 underline underline-offset-3 mt-5 ">
-                        Login
-                    </h4>
-                    <div className="  md:mt-2 ">
-                        <div className=" w-full col-span-2">
-                            <label
-                                className=" text-[#7A7A7A] dark:text-gray-400 font-[700] plus-jakarta text-[12px] md:text-[13px] 2xl:text-[14.4px] mb-1 "
-                                htmlFor="email"
-                            >
-                                Email Address*
+        <div className="min-h-screen bg-[#1a1b4b] flex flex-col lg:flex-row">
+            {/* Left Content - Made wider and responsive */}
+            <div className="flex-[2] flex items-center justify-center p-4 lg:p-0">
+                <div className="w-full max-w-xl px-4 lg:px-16 py-8 lg:py-0">
+                    {/* Logo and Title */}
+                    <div className="flex items-center gap-3 mb-8">
+                        <img src="/kazi_logo.jpeg" alt="Kazi Culture" className="w-12 h-12" />
+                        <h1 className="text-2xl text-white font-sen">Kazi Culture</h1>
+                    </div>
+
+                    <h2 className="text-[32px] font-semibold text-white font-sen mb-12">
+                        Sign In to Kazi Culture
+                    </h2>
+
+                    <form onSubmit={onSubmit} className="space-y-6">
+                        {/* Email Input */}
+                        <div>
+                            <label className="block text-gray-300 text-sm uppercase mb-2 font-medium">
+                                YOUR EMAIL
                             </label>
                             <input
-                                autoComplete="off"
-                                required
-                                name="email"
-                                id="email"
                                 type="email"
+                                name="email"
                                 value={email}
-                                className=" w-[100%] font-semibold 2xl:w-[100%] border-[1.4px] border-[#999999] p-2 bg-transparent text-[#666666] dark:text-gray-400 text-[14.4px]"
-                                placeholder="Company Email"
                                 onChange={onChange}
+                                placeholder="Enter your mail"
+                                className="w-full bg-transparent border border-gray-600 rounded-lg p-3 text-white placeholder-gray-500 focus:border-[#00FFB3] focus:outline-none transition-colors"
+                                required
                             />
                         </div>
-                    </div>
-                    <div className=" md:mt-2 ">
-                        <div className=" w-full col-span-2 flex flex-col">
-                            <label
-                                className=" text-[#7A7A7A] dark:text-gray-400 font-[700] plus-jakarta text-[12px] md:text-[13px] 2xl:text-[14.4px] mb-1 "
-                                htmlFor="password"
-                            >
-                                Password*
-                            </label>
-                            <div className=" relative flex items-center justify-center">
+
+                        {/* Password Input */}
+                        <div>
+                            <div className="flex justify-between items-center mb-2">
+                                <label className="text-gray-300 text-sm uppercase font-medium">
+                                    PASSWORD
+                                </label>
+                                <Link
+                                    to="/forgot-password"
+                                    className="text-sm text-gray-300 hover:text-[#00FFB3] transition-colors"
+                                >
+                                    Forgot your password?
+                                </Link>
+                            </div>
+                            <div className="relative">
                                 <input
-                                    autoComplete="off"
-                                    required
-                                    name="password"
-                                    id="password"
                                     type={isPswdVisible ? "text" : "password"}
+                                    name="password"
                                     value={password}
-                                    className=" w-[100%] font-semibold 2xl:w-[100%] border-[1.4px] border-[#999999] p-2 bg-transparent text-[#666666] dark:text-gray-400 text-[14.4px]"
-                                    placeholder="Password"
                                     onChange={onChange}
+                                    placeholder="Enter your password"
+                                    className="w-full bg-transparent border border-gray-600 rounded-lg p-3 text-white placeholder-gray-500 focus:border-[#00FFB3] focus:outline-none transition-colors"
+                                    required
                                 />
-                                {!isPswdVisible ? (
-                                    <FaEye
-                                        onClick={() => {
-                                            setIsPswdVisible(true);
-                                        }}
-                                        className=" absolute text-[#999999] right-2 text-[21px] cursor-pointer"
-                                    />
-                                ) : (
-                                    <FaEyeSlash
-                                        onClick={() => {
-                                            setIsPswdVisible(false);
-                                        }}
-                                        className=" absolute text-[#999999]  right-2 text-[21px] cursor-pointer"
-                                    />
-                                )}
+                                <button
+                                    type="button"
+                                    onClick={() => setIsPswdVisible(!isPswdVisible)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+                                >
+                                    {isPswdVisible ? <FaEyeSlash /> : <FaEye />}
+                                </button>
                             </div>
                         </div>
-                    </div>
-                    <div className=" flex items-center justify-between">
-                        <div className=" flex items-center gap-2 ">
-                            <input
-                                name="State*"
-                                id="State*"
-                                type="checkbox"
-                                className=" border-[1.4px] border-[#999999] p-2 bg-transparent text-[#7A7A7A] dark:text-gray-400 text-[14.4px]"
-                                placeholder="State*"
-                            />
-                            <label
-                                className=" text-[#7A7A7A] dark:text-gray-400 font-[700] plus-jakarta text-[12px] md:text-[13px] 2xl:text-[14.4px] mb-1 "
-                                htmlFor="State*"
-                            >
-                                Remember me
+
+                        {/* Remember Me */}
+                        <div>
+                            <label className="flex items-center gap-2 text-gray-300">
+                                <input
+                                    type="checkbox"
+                                    className="w-4 h-4 border-gray-600 rounded bg-transparent"
+                                />
+                                <span className="text-sm">Remember me</span>
                             </label>
                         </div>
-                        <Link to="/forgot-password">
-                            <p className=" text-[12px] md:text-[13px] 2xl:text-[14.4px] text-[#7A7A7A] dark:text-gray-400">
-                                Forgot pasword?
-                            </p>
-                        </Link>
-                    </div>
-                    <button
-                        disabled={email === "" || password === ""}
-                        className=" bg-[#363F4D] px-4 py-2.5 disabled:bg-gray-400 disabled:text-gray-600 font-medium uppercase text-[11.2px] md:text-[13px] text-white mt-5 "
-                        type="submit"
-                        onClick={onSubmit}
-                    >
-                        Login
-                    </button>
-                    <p className="font-[400] mt-1.5 mb-3 text-right w-full text-[12px] md:text-[14px]">
-                        Don't have an account ?
-                        <Link to="/register" className=" font-semibold underline">
-                            Register
-                        </Link>
-                    </p>
-                    <div className=" flex items-center gap-1 my-3">
-                        <span className=" h-[1px] flex-grow bg-black"></span>
-                        <span className=" font-[600] plus-jakarta w-max text-[12px] md:text-[14px] ">
-                            or use one of these options
-                        </span>
-                        <span className=" h-[1px] flex-grow bg-black"></span>
-                    </div>
-                    <div className=" flex items-center justify-center gap-5 mb-5 ">
-                        <RiFacebookCircleFill
-                            className="text-[#363F4D] text-[36px] md:text-[45px] py-2 cursor-pointer border border-black dark:text-gray-500"
-                            onClick={loginWithFacebook}
-                        />
 
-                        <RiGoogleFill
-                            className="text-[#363F4D] text-[36px] md:text-[45px] py-2 cursor-pointer border border-black dark:text-gray-500"
+                        {/* Sign In Button */}
+                        <button
+                            type="submit"
+                            disabled={!email || !password}
+                            className="w-full bg-[#00FFB3] text-black font-medium py-3 rounded-lg hover:bg-[#00FFB3]/90 disabled:bg-gray-600 disabled:text-gray-400 transition-colors"
+                        >
+                            Sign In
+                        </button>
+
+                        {/* Or Divider */}
+                        <div className="flex items-center">
+                            <div className="flex-grow h-px bg-gray-600"></div>
+                            <span className="px-4 text-gray-400 text-sm">Or</span>
+                            <div className="flex-grow h-px bg-gray-600"></div>
+                        </div>
+
+                        {/* Google Login */}
+                        <button
+                            type="button"
                             onClick={loginWithGoogle}
-                        />
-                        <RiAppleFill className="text-[#363F4D] text-[36px] md:text-[45px] py-2 cursor-pointer border border-black dark:text-gray-500 " />
-                    </div>
+                            className="w-full flex items-center justify-center gap-3 bg-black border border-gray-800 rounded-lg p-3 text-white hover:bg-gray-900 transition-colors"
+                        >
+                            <RiGoogleFill className="text-xl" />
+                            <span>Sign up with Google</span>
+                        </button>
+                    </form>
                 </div>
+            </div>
+
+            {/* Right Image Section - Made responsive */}
+            <div className="hidden lg:block flex-1 relative">
+                <img
+                    src="/Images/gaming-event.jpeg"
+                    alt="Gaming Event"
+                    className="absolute inset-0 w-full h-full object-cover"
+                />
             </div>
         </div>
     );
