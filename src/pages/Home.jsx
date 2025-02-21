@@ -503,11 +503,11 @@ const Home = () => {
     <section className="bg-[#0E0F13] min-h-screen text-white font-sen">
       {/* Header + Hero + Categories Background Wrapper */}
       <div className="relative">
-        {/* Gradient Background */}
+        {/* Gradient Background - Modified to start below header */}
         <div
           className="absolute inset-0 z-0 w-full"
           style={{
-            height: '200vh', // Make it tall enough to cover all three sections
+            height: '200vh',
             background: `
               radial-gradient(
                 circle at 50% 0%, 
@@ -518,7 +518,8 @@ const Home = () => {
               )
             `,
             filter: 'blur(100px)',
-            transform: 'translateY(-30%)', // Adjust this value to position the gradient
+            transform: 'translateY(0)', // Changed from -30% to 0
+            top: '64px', // Added to start below header height
             pointerEvents: 'none'
           }}
         />
