@@ -1,3 +1,4 @@
+import React from "react";
 import About from "@/pages/About";
 import AdminLogin from "@/pages/AdminLogin";
 import AdminRegister from "@/pages/AdminRegister";
@@ -20,7 +21,7 @@ import MyFeed from "@/pages/MyFeed";
 import PrivacyPol from "@/pages/PrivacyPol";
 import ProductPage from "@/pages/ProductPage";
 import Profile from "@/pages/Profile";
-import Register from "@/pages/Register";
+import Register from "@/pages/RegistrationForm";
 import SearchPage from "@/pages/Search";
 import Shop from "@/pages/Shop";
 import SponserPage from "@/pages/SponserPage";
@@ -38,6 +39,12 @@ import VenueOwnerPage from "@/pages/VenueOwnerPage";
 import WishList from "@/pages/Wishlist";
 import CrowdfundingDetail from "@/pages/CrowdfundingDetail";
 import CreateEvent from "@/pages/CreateEvent";
+import SponsorRegistration from "@/pages/SponsorRegistration";
+import VenueOwnerRegistration from "@/pages/VenueOwnerRegistration";
+import CuratorRegistration from "@/pages/CuratorRegistration";
+import GuestRegistration from "@/pages/GuestRegistration";
+import RoleSelectionModal from "@/components/RoleSelectionModal";
+import RegistrationForm from "@/pages/RegistrationForm";
 
 export const userRoutes = [
   {
@@ -186,7 +193,7 @@ export const userRoutes = [
   {
     name: "register",
     title: "Register",
-    component: <Register />,
+    component: <RegistrationForm />,
     path: "/register",
   },
   {
@@ -242,6 +249,36 @@ export const userRoutes = [
     title: "Crowdfunding Detail",
     component: <CrowdfundingDetail />,
     path: "/crowdfunding/:id",
+  },
+  {
+    name: "sponsor-register",
+    title: "Sponsor Registration",
+    component: <SponsorRegistration />,
+    path: "/register/sponsor",
+  },
+  {
+    name: "venue-owner-register",
+    title: "Venue Owner Registration",
+    component: <VenueOwnerRegistration />,
+    path: "/register/venue-owner",
+  },
+  {
+    name: "curator-register",
+    title: "Curator Registration",
+    component: <CuratorRegistration />,
+    path: "/register/curator",
+  },
+  {
+    name: "guest-register",
+    title: "Guest Registration",
+    component: <GuestRegistration />,
+    path: "/register/guest",
+  },
+  {
+    name: "register-role-select",
+    title: "Choose Role",
+    component: <RoleSelectionModal />,
+    path: "/register-role",
   },
 ];
 

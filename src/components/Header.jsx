@@ -70,7 +70,7 @@ export default function Header() {
               </a>
             ) : (
               <a
-                href="/signup"
+                href="/register"
                 className="rounded-md bg-[#00FFB2] px-6 py-2 text-sm font-semibold text-black hover:bg-[#00E6A0] transition-colors"
               >
                 Signup
