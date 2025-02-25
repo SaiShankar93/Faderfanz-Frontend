@@ -45,6 +45,7 @@ import CuratorRegistration from "@/pages/CuratorRegistration";
 import GuestRegistration from "@/pages/GuestRegistration";
 import RoleSelectionModal from "@/components/RoleSelectionModal";
 import RegistrationForm from "@/pages/RegistrationForm";
+import AllSponsers from "@/pages/AllSponsers";
 
 export const userRoutes = [
   {
@@ -80,7 +81,7 @@ export const userRoutes = [
   {
     name: "All Sponsers",
     title: "Sponsers Page",
-    component: <AllCurators />,
+    component: <AllSponsers />,
     path: "/sponser/all",
   },
   {

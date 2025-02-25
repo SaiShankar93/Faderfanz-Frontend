@@ -100,7 +100,7 @@ const RoleSelectionModal = () => {
                         </button>
                     ))}
                 </div>
-
+                <p className="text-gray-400 mt-4 font-sen">Already a User? <a href="/login" className="text-white hover:underline">Login</a> </p>
                 <button
                     onClick={handleContinue}
                     disabled={!selectedRole}
