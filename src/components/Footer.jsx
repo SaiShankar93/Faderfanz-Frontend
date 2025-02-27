@@ -123,7 +123,7 @@ const Footer = () => {
         <div className=" grid grid-cols-1 md:grid-cols-6 gap-6 ">
           <div className=" col-span-2">
             <h2 className=" text-[30px] font-semibold mb-2 ">
-              Kazi Culture
+            FaderFanz
             </h2>
             <p className=" mb-5 md:mb-7 text-[13.5px] text-[#929292] dark:text-gray-400 ">
               Duis autem vel eum iriure dolor in hendrerit in vulputate velit
@@ -220,7 +220,7 @@ const Footer = () => {
         <div className=" py-4 md:py-6 border-t border-gray-400 flex flex-col-reverse md:flex-row items-center justify-between text-[12.2px] md:text-[13.4px] text-gray-400  ">
           <p className=" mt-3 md:mt-0 ">
             Copyright ©2024{" "}
-            <span className=" text-[#EE3333]">Kazi Culture</span> All
+            <span className=" text-[#EE3333]">FaderFanz</span> All
             rights reserved.
           </p>
           <div className="flex items-center gap-6">

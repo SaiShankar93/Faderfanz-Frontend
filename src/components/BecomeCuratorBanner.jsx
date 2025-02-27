@@ -30,7 +30,7 @@ const BecomeCuratorBanner = () => {
                         <div className="flex flex-col items-center md:items-start text-center md:text-left">
                             <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">Become a Curator</h2>
                             <p className="text-gray-400 text-sm md:text-base">
-                                Become a Curator on Kazi Culture to reach out to broader audience
+                                Become a Curator on FaderFanz to reach out to broader audience
                             </p>
                         </div>
                     </div>

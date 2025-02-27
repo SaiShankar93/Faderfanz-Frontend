@@ -30,7 +30,7 @@ const RegisterVenueBanner = () => {
                         <div className="flex flex-col items-center md:items-start text-center md:text-left">
                             <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">Register your Venue</h2>
                             <p className="text-gray-400 text-sm md:text-base">
-                                Register your venue on Kazi Venture to reach out
+                                Register your venue on FaderFanz Venture to reach out
                                 <br />
                                 for event organizers
                             </p>

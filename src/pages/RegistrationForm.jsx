@@ -130,11 +130,11 @@ const RegistrationForm = () => {
         <div className="w-full max-w-md">
           {/* Logo and Title */}
           <div className="flex items-center gap-4 mb-8">
-            <img src="/kazi_logo.jpeg" alt="Kazi Culture" className="w-12 h-12 rounded" />
-            <h1 className="text-2xl text-white font-sen">Kazi Culture</h1>
+            <img src="/faderfanz.png" alt="FaderFanz" className="w-12 h-12 rounded" />
+            <h1 className="text-2xl text-white font-sen">FaderFanz</h1>
           </div>
 
-          <h2 className="text-3xl font-semibold text-white mb-8">Sign Up to Kazi Culture</h2>
+          <h2 className="text-3xl font-semibold text-white mb-8">Sign Up to FaderFanz</h2>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>

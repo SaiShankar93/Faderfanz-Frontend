@@ -70,55 +70,55 @@ const testimonials = [
     name: "Jesica Okonkwo - CEO",
     location: "California",
     image: "/Images/testimonial.png",
-    text: "This platform allow me to know trending events in my area and also follow up on the activities around them. I never get to miss any hot events since I know about Kazi-Culture"
+    text: "This platform allow me to know trending events in my area and also follow up on the activities around them. I never get to miss any hot events since I know about FaderFanz"
   },
   {
     name: "Michael Chen - Event Planner",
     location: "New York",
     image: "/Images/testimonial.png",
-    text: "As an event planner, Kazi-Culture has revolutionized how I discover and manage events. The platform's intuitive interface and comprehensive features make it a game-changer."
+    text: "As an event planner, FaderFanz has revolutionized how I discover and manage events. The platform's intuitive interface and comprehensive features make it a game-changer."
   },
   {
     name: "Sarah Johnson - Artist",
     location: "London",
     image: "/Images/testimonial.png",
-    text: "Finding the right venues and connecting with the right audience was always a challenge until I found Kazi-Culture. Now I can focus more on my art and less on logistics."
+    text: "Finding the right venues and connecting with the right audience was always a challenge until I found FaderFanz. Now I can focus more on my art and less on logistics."
   },
   {
     name: "David Rodriguez - Venue Owner",
     location: "Miami",
     image: "/Images/testimonial.png",
-    text: "Since listing my venue on Kazi-Culture, I've seen a significant increase in bookings. The platform makes it easy to showcase my space and connect with event organizers."
+    text: "Since listing my venue on FaderFanz, I've seen a significant increase in bookings. The platform makes it easy to showcase my space and connect with event organizers."
   },
   {
     name: "Emma Wilson - Music Producer",
     location: "Nashville",
     image: "/Images/testimonial.png",
-    text: "The community on Kazi-Culture is incredible. I've found amazing collaboration opportunities and my events always get great engagement through the platform."
+    text: "The community on FaderFanz is incredible. I've found amazing collaboration opportunities and my events always get great engagement through the platform."
   },
   {
     name: "Alex Thompson - Tech Entrepreneur",
     location: "San Francisco",
     image: "/Images/testimonial.png",
-    text: "What sets Kazi-Culture apart is its focus on quality and user experience. It's become my go-to platform for both hosting and discovering unique events."
+    text: "What sets FaderFanz apart is its focus on quality and user experience. It's become my go-to platform for both hosting and discovering unique events."
   },
   {
     name: "Lisa Zhang - Cultural Director",
     location: "Toronto",
     image: "/Images/testimonial.png",
-    text: "Kazi-Culture has helped us reach diverse audiences and promote cultural events more effectively. The platform truly understands the needs of event organizers."
+    text: "FaderFanz has helped us reach diverse audiences and promote cultural events more effectively. The platform truly understands the needs of event organizers."
   },
   {
     name: "Marcus Brown - DJ",
     location: "Berlin",
     image: "/Images/testimonial.png",
-    text: "The exposure I've gotten through Kazi-Culture is phenomenal. The platform connects me with the right venues and helps me build my brand in the industry."
+    text: "The exposure I've gotten through FaderFanz is phenomenal. The platform connects me with the right venues and helps me build my brand in the industry."
   },
   {
     name: "Sophia Patel - Festival Organizer",
     location: "Mumbai",
     image: "/Images/testimonial.png",
-    text: "Managing large-scale events becomes much easier with Kazi-Culture. The tools and support they provide are invaluable for event organizers."
+    text: "Managing large-scale events becomes much easier with FaderFanz. The tools and support they provide are invaluable for event organizers."
   }
 ];
 
@@ -867,7 +867,7 @@ const Home = () => {
                 What people says about us
               </h2>
               <p className="text-gray-400 text-sm">
-                This is what our users have to say about their experience using Kazi-Culture
+                This is what our users have to say about their experience using FaderFanz
               </p>
             </div>
 

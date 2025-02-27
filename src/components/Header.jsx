@@ -30,8 +30,8 @@ export default function Header() {
           {/* Logo */}
           <div className="flex lg:flex-1 items-center">
             <a href="/" className="-m-1.5 p-1.5 flex items-center gap-2">
-              <img alt="Kazi Culture" src="/kazi_logo.jpeg" className="h-8 w-auto rounded" />
-              <span className="text-white font-semibold text-lg">Kazi Culture</span>
+              <img alt="FaderFanz" src="/faderfanz.png" className="h-16 w-auto rounded" />
+              <span className="text-white font-semibold text-lg font-sen">FaderFanz</span>
             </a>
           </div>
 
@@ -99,7 +99,7 @@ export default function Header() {
                   {/* Mobile menu content */}
                   <div className="flex items-center justify-between">
                     <a href="/" className="-m-1.5 p-1.5">
-                      <img alt="Kazi Culture" src="kazi_logo.png" className="h-8 w-auto" />
+                      <img alt="FaderFanz" src="faderfanz.png" className="h-8 w-auto" />
                     </a>
                     <button
                       type="button"
@@ -132,7 +132,7 @@ export default function Header() {
                           </a>
                         ) : (
                           <a
-                            href="/signup"
+                            href="/register"
                             className="flex w-full justify-center rounded-md bg-[#00FFB2] px-3 py-2 text-sm font-semibold text-black hover:bg-[#00E6A0]"
                           >
                             Signup

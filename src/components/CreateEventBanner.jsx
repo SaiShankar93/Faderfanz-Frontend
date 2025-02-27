@@ -41,7 +41,7 @@ const CreateEventBanner = () => {
                             <p className="text-gray-400 text-sm md:text-base">
                                 Got a show, event, activity or a great experience?
                                 <br />
-                                Partner with us & get listed on Kazi Culture
+                                Partner with us & get listed on FaderFanz
                             </p>
                         </div>
                     </div>

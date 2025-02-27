@@ -81,12 +81,12 @@ const Login = () => {
                 <div className="w-full max-w-xl px-4 lg:px-16 py-8 lg:py-0">
                     {/* Logo and Title */}
                     <div className="flex items-center gap-3 mb-8">
-                        <img src="/kazi_logo.jpeg" alt="Kazi Culture" className="w-12 h-12" />
-                        <h1 className="text-2xl text-white font-sen">Kazi Culture</h1>
+                        <img src="/faderfanz.png" alt="FaderFanz" className="w-12 h-12" />
+                        <h1 className="text-2xl text-white font-sen">FaderFanz</h1>
                     </div>
 
                     <h2 className="text-[32px] font-semibold text-white font-sen mb-12">
-                        Sign In to Kazi Culture
+                        Sign In to FaderFanz
                     </h2>
 
                     <form onSubmit={onSubmit} className="space-y-6">
