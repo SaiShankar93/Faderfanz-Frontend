@@ -89,7 +89,7 @@ export const userRoutes = [
     name: "Sponser page",
     title: "Sponsers Page",
     component: <SponserPage />,
-    path: "/sponser/:id",
+    path: "/sponsor/:id",
   },
   {
     name: "All Venue Owners",

@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useEffect } from "react";
 import { FaInstagram, FaTwitter, FaFacebook } from "react-icons/fa";
 import { ChevronDownIcon } from "@heroicons/react/24/solid";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -11,92 +11,133 @@ import "swiper/css/pagination";
 import "swiper/css/navigation";
 import { Autoplay, Pagination } from "swiper/modules";
 
-const AllSponsers = () => {
+const AllSponsors = () => {
+    // UI States
     const [loading, setLoading] = useState(true);
-    const [selectedSort, setSelectedSort] = useState("Sponsors");
+    const [showMobileFilters, setShowMobileFilters] = useState(false);
     const [expandedSections, setExpandedSections] = useState({
         price: false,
-        date: false,
         category: false,
         format: false
     });
-    const [showMobileFilters, setShowMobileFilters] = useState(false);
 
-    // State for filters
+    // Data States
+    const [sponsors, setSponsors] = useState([]);
+    const [filteredSponsors, setFilteredSponsors] = useState([]);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [selectedLocation, setSelectedLocation] = useState("Mumbai");
+
+    // Filter States
+    const [selectedSort, setSelectedSort] = useState("rating");
     const [filters, setFilters] = useState({
         price: [],
-        date: [],
         category: [],
         format: []
     });
 
-    // Mock sponsor data
-    const sponsors = [
-        {
-            id: 1,
-            name: "Elites Mark",
-            image: "/Images/sponsor-logo.png",
-            eventsSponsored: 235,
-            followers: 235,
-            rating: 4.6
-        },
-        {
-            id: 2,
-            name: "Elites Mark",
-            image: "/Images/sponsor-logo.png",
-            eventsSponsored: 235,
-            followers: 235,
-            rating: 4.6
-        },
-        {
-            id: 3,
-            name: "Elites Mark",
-            image: "/Images/sponsor-logo.png",
-            eventsSponsored: 235,
-            followers: 235,
-            rating: 4.6
-        },
-        {
-            id: 4,
-            name: "Elites Mark",
-            image: "/Images/sponsor-logo.png",
-            eventsSponsored: 235,
-            followers: 235,
-            rating: 4.6
-        },
-        {
-            id: 5,
-            name: "Elites Mark",
-            image: "/Images/sponsor-logo.png",
-            eventsSponsored: 235,
-            followers: 235,
-            rating: 4.6
-        },
-        {
-            id: 6,
-            name: "Elites Mark",
-            image: "/Images/sponsor-logo.png",
-            eventsSponsored: 235,
-            followers: 235,
-            rating: 4.6
-        },
-        {
-            id: 7,
-            name: "Elites Mark",
-            image: "/Images/sponsor-logo.png",
-            eventsSponsored: 235,
-            followers: 235,
-            rating: 4.6
-        },
-        {
-            id: 8,
-            name: "Elites Mark",
-            image: "/Images/sponsor-logo.png",
-            eventsSponsored: 235,
-            followers: 235,
-            rating: 4.6
+    // Mock data - Replace with API call
+    useEffect(() => {
+        const fetchSponsors = async () => {
+            try {
+                // Simulate API call
+                const mockSponsors = [
+                    {
+                        id: 1,
+                        name: "Elites Mark",
+                        image: "/Images/sponsor-logo.png",
+                        eventsSponsored: 235,
+                        followers: 235,
+                        rating: 4.6,
+                        category: "Corporate",
+                        format: "Full Sponsorship",
+                        price: "paid",
+                        location: "Mumbai",
+                        socialLinks: {
+                            facebook: "#",
+                            instagram: "#",
+                            twitter: "#"
+                        }
+                    },
+                    // ... other sponsors
+                ];
+                setSponsors(mockSponsors);
+                setFilteredSponsors(mockSponsors);
+                setLoading(false);
+            } catch (error) {
+                console.error("Error fetching sponsors:", error);
+                setLoading(false);
+            }
+        };
+
+        fetchSponsors();
+    }, []);
+
+    // Filter and Search Logic
+    useEffect(() => {
+        let result = [...sponsors];
+
+        // Search filter
+        if (searchQuery) {
+            result = result.filter(sponsor =>
+                sponsor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                sponsor.category.toLowerCase().includes(searchQuery.toLowerCase())
+            );
         }
-    ];
+
+        // Location filter
+        if (selectedLocation) {
+            result = result.filter(sponsor =>
+                sponsor.location === selectedLocation
+            );
+        }
+
+        // Apply category filters
+        if (filters.category.length > 0) {
+            result = result.filter(sponsor =>
+                filters.category.includes(sponsor.category.toLowerCase())
+            );
+        }
+
+        // Apply format filters
+        if (filters.format.length > 0) {
+            result = result.filter(sponsor =>
+                filters.format.includes(sponsor.format.toLowerCase())
+            );
+        }
+
+        // Apply price filters
+        if (filters.price.length > 0) {
+            result = result.filter(sponsor =>
+                filters.price.includes(sponsor.price.toLowerCase())
+            );
+        }
+
+        // Apply sorting
+        result.sort((a, b) => {
+            switch (selectedSort) {
+                case 'rating':
+                    return b.rating - a.rating;
+                case 'eventsSponsored':
+                    return b.eventsSponsored - a.eventsSponsored;
+                case 'followers':
+                    return b.followers - a.followers;
+                default:
+                    return 0;
+            }
+        });
+
+        setFilteredSponsors(result);
+    }, [sponsors, searchQuery, selectedLocation, filters, selectedSort]);
+
+    // Handle search input
+    const handleSearch = (e) => {
+        setSearchQuery(e.target.value);
+    };
+
+    // Handle location change
+    const handleLocationChange = (e) => {
+        setSelectedLocation(e.target.value);
+    };
 
     // Handle filter changes
     const handleFilterChange = (type, value) => {
@@ -111,6 +152,15 @@ const AllSponsers = () => {
         });
     };
 
+    // Handle social link clicks
+    const handleSocialClick = (url, platform) => {
+        if (url === "#") {
+            console.log(`${platform} profile not available`);
+            return;
+        }
+        window.open(url, '_blank');
+    };
+
     // Toggle expanded sections
     const toggleSection = (section) => {
         setExpandedSections(prev => ({
@@ -119,36 +169,36 @@ const AllSponsers = () => {
         }));
     };
 
-    // Set loading state
-    setTimeout(() => {
-        setLoading(false);
-    }, 1000);
+    // Toggle mobile filters
+    const toggleMobileFilters = () => {
+        setShowMobileFilters(!showMobileFilters);
+    };
 
-    // Add these expanded arrays for the "More" functionality
+    // Filter categories
     const allCategories = [
-        'Adventure Travel',
-        'Art Exhibitions',
-        'Auctions & Fundraisers',
-        'Beer Festivals',
-        'Benefit Concerts',
-        'Cultural Festivals',
-        'Dance Events',
-        'Food & Wine',
-        'Gaming Events',
-        'Music Festivals'
+        'Corporate',
+        'Brand',
+        'Agency',
+        'Media',
+        'Technology',
+        'Entertainment',
+        'Food & Beverage',
+        'Fashion',
+        'Sports',
+        'Education'
     ];
 
     const allFormats = [
-        'Community Engagement',
-        'Concerts & Performances',
-        'Conferences',
-        'Experiential Events',
-        'Festivals & Fairs',
-        'Workshops',
-        'Seminars',
-        'Virtual Events',
-        'Hybrid Events',
-        'Networking Events'
+        'Full Sponsorship',
+        'Co-Sponsorship',
+        'Media Sponsorship',
+        'In-Kind Sponsorship',
+        'Title Sponsorship',
+        'Event Series',
+        'Venue Sponsorship',
+        'Product Placement',
+        'Digital Sponsorship',
+        'Technical Sponsorship'
     ];
 
     // Render filter sections
@@ -185,11 +235,6 @@ const AllSponsers = () => {
         </div>
     );
 
-    // Toggle mobile filters
-    const toggleMobileFilters = () => {
-        setShowMobileFilters(!showMobileFilters);
-    };
-
     return (
         <div className="bg-[#0E0F13] min-h-screen relative font-sen">
             {/* Background SVG */}
@@ -209,7 +254,6 @@ const AllSponsers = () => {
 
             {/* Hero Section */}
             <div className="relative w-full h-[300px] sm:h-[400px] md:h-[500px]">
-                {/* Hero Content */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center z-20 px-4">
                     <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white text-center mb-6 md:mb-12">
                         Explore Our Sponsors
@@ -222,17 +266,21 @@ const AllSponsers = () => {
                                 <IoSearchOutline className="ml-4 w-5 h-5 text-gray-400 shrink-0" />
                                 <input
                                     type="text"
-                                    placeholder="Search Events, Categories..."
+                                    value={searchQuery}
+                                    onChange={handleSearch}
+                                    placeholder="Search Sponsors, Categories..."
                                     className="w-full px-3 py-3 bg-transparent text-white focus:outline-none placeholder-gray-400 min-w-0"
                                 />
                             </div>
                             <div className="flex items-center border-t sm:border-t-0 sm:border-l border-gray-700/50 shrink-0">
                                 <IoLocationOutline className="ml-4 w-5 h-5 text-gray-400" />
                                 <select
+                                    value={selectedLocation}
+                                    onChange={handleLocationChange}
                                     className="w-full sm:w-32 md:w-40 px-3 py-3 bg-transparent text-white focus:outline-none appearance-none cursor-pointer"
                                 >
                                     <option value="Mumbai">Mumbai</option>
-                                    <option value="Delhi">Hyderabad</option>
+                                    <option value="Hyderabad">Hyderabad</option>
                                     <option value="Bangalore">Bangalore</option>
                                 </select>
                             </div>
@@ -288,9 +336,9 @@ const AllSponsers = () => {
                                 value={selectedSort}
                                 onChange={(e) => setSelectedSort(e.target.value)}
                             >
-                                <option value="Sponsors" className="bg-[#1C1D24]">Sponsors</option>
-                                <option value="Rating" className="bg-[#1C1D24]">Rating</option>
-                                <option value="Events" className="bg-[#1C1D24]">Events</option>
+                                <option value="rating" className="bg-[#1C1D24]">Rating</option>
+                                <option value="eventsSponsored" className="bg-[#1C1D24]">Events</option>
+                                <option value="followers" className="bg-[#1C1D24]">Followers</option>
                             </select>
                         </div>
                     </div>
@@ -333,9 +381,6 @@ const AllSponsers = () => {
                                     </div>
                                 </div>
 
-                                {/* Date Filter */}
-                                {renderFilterSection('Date', ['Today', 'Tomorrow', 'This Week', 'This Weekend', 'Pick a Date'], 'date')}
-
                                 {/* Category Filter */}
                                 {renderFilterSection('Category', allCategories, 'category')}
 
@@ -355,7 +400,7 @@ const AllSponsers = () => {
                         </div>
                     )}
 
-                    {/* Desktop Filters - Hidden on mobile, shown as sidebar on desktop */}
+                    {/* Desktop Filters */}
                     <aside className="hidden lg:block w-[280px] bg-[#1C1D24]/50 backdrop-blur-sm rounded-xl p-6 h-fit sticky top-4">
                         <h2 className="text-white text-xl font-semibold mb-6">Filters</h2>
 
@@ -383,9 +428,6 @@ const AllSponsers = () => {
                             </div>
                         </div>
 
-                        {/* Date Filter */}
-                        {renderFilterSection('Date', ['Today', 'Tomorrow', 'This Week', 'This Weekend', 'Pick a Date'], 'date')}
-
                         {/* Category Filter */}
                         {renderFilterSection('Category', allCategories, 'category')}
 
@@ -395,7 +437,7 @@ const AllSponsers = () => {
 
                     {/* Main content */}
                     <div className="flex-1">
-                        {/* Desktop Header - Hidden on mobile */}
+                        {/* Desktop Header */}
                         <div className="hidden lg:flex justify-between items-center mb-8">
                             <h2 className="text-2xl font-semibold text-white">All Sponsors</h2>
                             <div className="flex items-center gap-3">
@@ -405,9 +447,9 @@ const AllSponsers = () => {
                                     value={selectedSort}
                                     onChange={(e) => setSelectedSort(e.target.value)}
                                 >
-                                    <option value="Sponsors" className="bg-[#1C1D24]">Sponsors</option>
-                                    <option value="Rating" className="bg-[#1C1D24]">Rating</option>
-                                    <option value="Events" className="bg-[#1C1D24]">Events</option>
+                                    <option value="rating" className="bg-[#1C1D24]">Rating</option>
+                                    <option value="eventsSponsored" className="bg-[#1C1D24]">Events</option>
+                                    <option value="followers" className="bg-[#1C1D24]">Followers</option>
                                 </select>
                             </div>
                         </div>
@@ -427,9 +469,19 @@ const AllSponsers = () => {
                             </div>
                         ) : (
                             <div className="space-y-4">
-                                {sponsors.map((sponsor) => (
-                                    <SponsorCard key={sponsor.id} sponsor={sponsor} />
-                                ))}
+                                {filteredSponsors.length === 0 ? (
+                                    <div className="text-center text-gray-400 py-8">
+                                        No sponsors found matching your criteria
+                                    </div>
+                                ) : (
+                                    filteredSponsors.map((sponsor) => (
+                                        <SponsorCard
+                                            key={sponsor.id}
+                                            sponsor={sponsor}
+                                            onSocialClick={handleSocialClick}
+                                        />
+                                    ))
+                                )}
                             </div>
                         )}
                     </div>
@@ -440,7 +492,7 @@ const AllSponsers = () => {
 };
 
 // SponsorCard component
-const SponsorCard = ({ sponsor }) => {
+const SponsorCard = ({ sponsor, onSocialClick }) => {
     return (
         <div className="bg-[#1C1D24]/50 backdrop-blur-sm rounded-xl overflow-hidden hover:bg-[#1C1D24]/70 transition-colors">
             <div className="flex flex-col sm:flex-row items-stretch h-auto sm:h-60">
@@ -464,14 +516,14 @@ const SponsorCard = ({ sponsor }) => {
                             <div className="flex flex-col items-center">
                                 <div className="flex items-center gap-1 sm:gap-2">
                                     <span className="text-[#C5FF32] text-lg sm:text-xl font-bold">{sponsor.eventsSponsored}</span>
-                                    <img src="/icons/Event-icon.svg" alt="Events" className="w-[14px] h-[15px] sm:w-[17px] sm:h-[18px]" />
+                                    <img src="/icons/location-icon.svg" alt="Events" className="w-[14px] h-[15px] sm:w-[17px] sm:h-[18px]" />
                                 </div>
                                 <span className="text-gray-400 text-[10px] sm:text-xs mt-1">Events Sponsored</span>
                             </div>
                             <div className="flex flex-col items-center">
                                 <div className="flex items-center gap-1 sm:gap-2">
                                     <span className="text-[#C5FF32] text-lg sm:text-xl font-bold">{sponsor.followers}</span>
-                                    <img src="/icons/location-icon.svg" alt="Followers" className="w-[14px] h-[15px] sm:w-[17px] sm:h-[18px]" />
+                                    <img src="/icons/Event-icon.svg" alt="Followers" className="w-[14px] h-[15px] sm:w-[17px] sm:h-[18px]" />
                                 </div>
                                 <span className="text-gray-400 text-[10px] sm:text-xs mt-1">Followers</span>
                             </div>
@@ -487,18 +539,27 @@ const SponsorCard = ({ sponsor }) => {
 
                     {/* Social Links and Button Row */}
                     <div className="flex items-center space-x-3">
-                        <a href="#" className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-transparent flex items-center justify-center text-[#00FFB2]">
+                        <button
+                            onClick={() => onSocialClick(sponsor.socialLinks.facebook, 'Facebook')}
+                            className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-transparent flex items-center justify-center text-[#00FFB2] hover:text-[#00FFB2]/80 transition-colors"
+                        >
                             <FaFacebook size={16} className="sm:text-lg" />
-                        </a>
-                        <a href="#" className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-transparent flex items-center justify-center text-[#00FFB2]">
+                        </button>
+                        <button
+                            onClick={() => onSocialClick(sponsor.socialLinks.instagram, 'Instagram')}
+                            className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-transparent flex items-center justify-center text-[#00FFB2] hover:text-[#00FFB2]/80 transition-colors"
+                        >
                             <FaInstagram size={16} className="sm:text-lg" />
-                        </a>
-                        <a href="#" className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-transparent flex items-center justify-center text-[#00FFB2]">
+                        </button>
+                        <button
+                            onClick={() => onSocialClick(sponsor.socialLinks.twitter, 'Twitter')}
+                            className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-transparent flex items-center justify-center text-[#00FFB2] hover:text-[#00FFB2]/80 transition-colors"
+                        >
                             <FaTwitter size={16} className="sm:text-lg" />
-                        </a>
+                        </button>
                         <div className="ml-auto">
                             <a
-                                href={`/sponser/${sponsor.id}`}
+                                href={`/sponsor/${sponsor.id}`}
                                 className="px-3 py-1.5 sm:px-5 sm:py-2 bg-[#C5FF32] text-black rounded-md text-center text-xs sm:text-sm font-medium hover:bg-[#b3ff00] transition-colors"
                             >
                                 View Profile
@@ -511,4 +572,4 @@ const SponsorCard = ({ sponsor }) => {
     );
 };
 
-export default AllSponsers;
+export default AllSponsors;
