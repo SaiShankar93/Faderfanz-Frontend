@@ -46,6 +46,7 @@ import GuestRegistration from "@/pages/GuestRegistration";
 import RoleSelectionModal from "@/components/RoleSelectionModal";
 import RegistrationForm from "@/pages/RegistrationForm";
 import AllSponsers from "@/pages/AllSponsers";
+import EventVenuePage from "@/pages/EventVenuePage";
 
 export const userRoutes = [
   {
@@ -101,6 +102,12 @@ export const userRoutes = [
     title: "Venue Owners Page",
     component: <VenueOwnerPage />,
     path: "/venue/:id",
+  },
+  {
+    name: "Event Venue page",
+    title: "Event Venue Page",
+    component: <EventVenuePage />,
+    path: "/event-venue/:id",
   },
   {
     name: "Create Event page",

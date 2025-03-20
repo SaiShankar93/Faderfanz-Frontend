@@ -8,7 +8,7 @@ import { Dialog } from '@headlessui/react';
 import { BsCalendarEvent } from 'react-icons/bs';
 import followIcon from '/icons/follow.svg';
 
-const SponserPage = () => {
+const EventVenuePage = () => {
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState("reviews");
     const [rating, setRating] = useState(0);
@@ -24,7 +24,6 @@ const SponserPage = () => {
             additionalComment: "I look forward to being there this weekend for the Weekend Show",
             createdAt: new Date()
         }
-        // Add more mock reviews as needed
     ]);
     const [sortBy, setSortBy] = useState('top-rated');
     const [posts, setPosts] = useState([
@@ -44,33 +43,30 @@ const SponserPage = () => {
             comments: 45,
             isLiked: false
         }
-        // Add more mock posts as needed
     ]);
-    const [sponsoredEvents, setSponsoredEvents] = useState([
+    const [events, setEvents] = useState([
         {
             id: 1,
-            name: "Shinai Event Center",
+            name: "Weekend Show",
             location: "12 Lake Avenue, Mumbai, India",
             image: "/Images/venues.png",
-            events: 3445,
-            likes: "59k",
-            comments: "39k"
-        },
-        // Add more events as needed
+            date: "25th Jan, 2023",
+            time: "8:30 AM - 7:30 PM",
+            interested: 14
+        }
     ]);
 
     const totalPosts = posts.length;
-    const totalSponsoredEvents = sponsoredEvents.length;
+    const totalEvents = events.length;
 
     const tabs = [
         { id: "reviews", label: "Reviews/Rating" },
-        { id: "posts", label: `Posts (${totalPosts})` },
-        { id: "sponsoredEvents", label: `Events Sponsored (${totalSponsoredEvents})` }
+        { id: "gallery", label: "Photo Gallery" }
     ];
 
-    const sponsor = {
-        name: "Dj Kazi",
-        location: "Lagos, Nigeria",
+    const venue = {
+        name: "Shinai Event Center",
+        location: "12 Lake Avenue, Mumbai, Near Junction of 24th & 32nd Road & Patawardhan Park, Off Linking Road, Bandra West, Mumbai, India",
         followers: "2.3k",
         rating: 4.5,
         reviews: 32,
@@ -86,13 +82,88 @@ const SponserPage = () => {
             time: "8:30 AM - 7:30 PM",
             interested: 14,
             image: "/path-to-image.jpg"
-        },
-        // Add more events as needed
+        }
     ];
 
     const [postSort, setPostSort] = useState('recent');
     const [selectedImage, setSelectedImage] = useState(null);
     const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
+    const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+
+    const [galleryImages, setGalleryImages] = useState([
+        {
+            id: 1,
+            url: "/Images/post.png",
+            views: 3445,
+            likes: 32,
+        },
+        {
+            id: 2,
+            url: "/Images/post.png",
+            views: 3445,
+            likes: 32,
+        },
+        {
+            id: 3,
+            url: "/Images/post.png",
+            views: 3445,
+            likes: 32,
+        },
+        {
+            id: 4,
+            url: "/Images/post.png",
+            views: 3445,
+            likes: 32,
+        },
+        {
+            id: 5,
+            url: "/Images/post.png",
+            views: 3445,
+            likes: 32,
+        },
+        {
+            id: 6,
+            url: "/Images/post.png",
+            views: 3445,
+            likes: 32,
+        },
+        {
+            id: 7,
+            url: "/Images/post.png",
+            views: 3445,
+            likes: 32,
+        },
+        {
+            id: 8,
+            url: "/Images/post.png",
+            views: 3445,
+            likes: 32,
+        },
+        {
+            id: 9,
+            url: "/Images/post.png",
+            views: 3445,
+            likes: 32,
+        },
+        {
+            id: 10,
+            url: "/Images/post.png",
+            views: 3445,
+            likes: 32,
+        },
+        {
+            id: 11,
+            url: "/Images/post.png",
+            views: 3445,
+            likes: 32,
+        },
+        {
+            id: 12,
+            url: "/Images/post.png",
+            views: 3445,
+            likes: 32,
+        }
+    ]);
 
     const calculateAverageRating = useCallback(() => {
         if (reviews.length === 0) return 0;
@@ -124,10 +195,8 @@ const SponserPage = () => {
             };
 
             setReviews(prev => [newReview, ...prev]);
-
             setRating(0);
             setReviewText('');
-
             alert('Review submitted successfully');
         } catch (error) {
             alert('Failed to submit review');
@@ -183,14 +252,28 @@ const SponserPage = () => {
         );
     }, []);
 
-    const openImageViewer = (image) => {
+    const openImageViewer = (image, index) => {
         setSelectedImage(image);
+        setSelectedImageIndex(index);
         setIsImageViewerOpen(true);
     };
 
     const closeImageViewer = () => {
         setSelectedImage(null);
+        setSelectedImageIndex(0);
         setIsImageViewerOpen(false);
+    };
+
+    const navigateImage = (direction) => {
+        let newIndex;
+        if (direction === 'next') {
+            newIndex = (selectedImageIndex + 1) % galleryImages.length;
+        } else {
+            newIndex = selectedImageIndex - 1;
+            if (newIndex < 0) newIndex = galleryImages.length - 1;
+        }
+        setSelectedImageIndex(newIndex);
+        setSelectedImage(galleryImages[newIndex].url);
     };
 
     const renderPostsContent = () => (
@@ -234,7 +317,7 @@ const SponserPage = () => {
                         {post.images.map((image, index) => (
                             <button
                                 key={index}
-                                onClick={() => openImageViewer(image)}
+                                onClick={() => openImageViewer(image, index)}
                                 className="relative overflow-hidden rounded-lg group"
                             >
                                 <img
@@ -278,40 +361,85 @@ const SponserPage = () => {
                 onClose={closeImageViewer}
                 className="relative z-50"
             >
-                <div className="fixed inset-0 bg-black/80" aria-hidden="true" />
+                <div className="fixed inset-0 bg-black/90" aria-hidden="true" />
 
-                <div className="fixed inset-0 flex items-center justify-center p-4">
-                    <Dialog.Panel className="relative max-w-4xl w-full">
+                <div className="fixed inset-0 flex items-center justify-center">
+                    <Dialog.Panel className="relative w-full h-full flex items-center justify-center">
                         <button
                             onClick={closeImageViewer}
-                            className="absolute -top-10 right-0 text-white hover:text-gray-300"
+                            className="absolute top-4 right-4 text-white hover:text-gray-300 z-10"
                         >
-                            ✕
+                            <span className="text-2xl">✕</span>
                         </button>
 
-                        <img
-                            src={selectedImage}
-                            alt="Enlarged view"
-                            className="w-full h-auto max-h-[80vh] object-contain rounded-lg"
-                        />
+                        <button
+                            onClick={() => navigateImage('prev')}
+                            className="absolute left-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 z-10"
+                        >
+                            <span className="text-4xl">‹</span>
+                        </button>
+
+                        <button
+                            onClick={() => navigateImage('next')}
+                            className="absolute right-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 z-10"
+                        >
+                            <span className="text-4xl">›</span>
+                        </button>
+
+                        <div className="relative max-w-5xl w-full mx-4">
+                            <img
+                                src={selectedImage}
+                                alt="Enlarged view"
+                                className="w-full h-auto max-h-[80vh] object-contain rounded-lg"
+                            />
+
+                            <div className="absolute bottom-0 left-0 right-0 p-4 flex items-center justify-center gap-8 text-white">
+                                <div className="flex items-center gap-2">
+                                    <IoEyeOutline className="w-5 h-5" />
+                                    <span>{galleryImages[selectedImageIndex]?.views}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <FaHeart className="w-5 h-5" />
+                                    <span>{galleryImages[selectedImageIndex]?.likes}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="absolute bottom-8 left-0 right-0 flex justify-center gap-2">
+                            {galleryImages.map((_, index) => (
+                                <button
+                                    key={index}
+                                    onClick={() => {
+                                        setSelectedImageIndex(index);
+                                        setSelectedImage(galleryImages[index].url);
+                                    }}
+                                    className={`w-2 h-2 rounded-full transition-all ${index === selectedImageIndex
+                                        ? 'bg-[#3FE1B6] w-4'
+                                        : 'bg-white/50 hover:bg-white/80'
+                                        }`}
+                                />
+                            ))}
+                        </div>
                     </Dialog.Panel>
                 </div>
             </Dialog>
         </div>
     );
 
-    const renderSponsoredEventsContent = () => (
+    const renderEventsContent = () => (
         <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0">
-                <h2 className="text-white text-xl">Events Sponsored</h2>
+                <h2 className="text-white text-xl">Events</h2>
                 <select className="w-full sm:w-auto bg-[#231D30] text-gray-400 px-4 py-2 rounded-lg">
                     <option>All events</option>
+                    <option>Upcoming</option>
+                    <option>Past</option>
                 </select>
             </div>
 
             <div className="space-y-4">
-                {sponsoredEvents.map((event) => (
-                    <Link to={`/event-venue/${event.id}`} key={event.id} className="block bg-[#231D30] rounded-lg p-4 hover:bg-[#1A1625]/70 transition-colors">
+                {events.map((event) => (
+                    <div key={event.id} className="bg-[#231D30] rounded-lg p-4">
                         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                             <img
                                 src={event.image}
@@ -330,21 +458,21 @@ const SponserPage = () => {
 
                                 <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-gray-400 text-sm">
                                     <div className="flex items-center gap-2">
-                                        <BsCalendarEvent className="w-4 h-4 flex-shrink-0" />
-                                        <span>{event.events} Events</span>
+                                        <IoCalendarOutline className="w-4 h-4 flex-shrink-0" />
+                                        <span>{event.date}</span>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <FaRegHeart className="w-4 h-4 flex-shrink-0" />
-                                        <span>{event.likes} Likes</span>
+                                        <IoTimeOutline className="w-4 h-4 flex-shrink-0" />
+                                        <span>{event.time}</span>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <FaRegComment className="w-4 h-4 flex-shrink-0" />
-                                        <span>{event.comments} Comments</span>
+                                        <FaStar className="w-4 h-4 text-[#7c7d7b]" />
+                                        <span className="text-[#C5FF32]">{event.interested} interested</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </Link>
+                    </div>
                 ))}
             </div>
         </div>
@@ -390,7 +518,7 @@ const SponserPage = () => {
                         ))}
 
                         <div className="bg-[#231D30] rounded-lg p-6">
-                            <h3 className="text-white mb-4">Say something about DJ Kazi</h3>
+                            <h3 className="text-white mb-4">Say something about Shinai Event Center</h3>
                             <div className="flex gap-2 mb-4">
                                 {[1, 2, 3, 4, 5].map((star) => (
                                     <button
@@ -419,10 +547,112 @@ const SponserPage = () => {
                         </div>
                     </div>
                 );
+            case "gallery":
+                return (
+                    <>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                            {galleryImages.map((image, index) => (
+                                <div key={image.id} className="relative group">
+                                    <button
+                                        onClick={() => openImageViewer(image.url, index)}
+                                        className="relative w-full aspect-square overflow-hidden rounded-lg"
+                                    >
+                                        <img
+                                            src={image.url}
+                                            alt={`Gallery image ${index + 1}`}
+                                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                        />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                        <div className="absolute bottom-0 left-0 right-0 p-3 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                            <div className="flex items-center justify-between text-sm">
+                                                <div className="flex items-center gap-1">
+                                                    <IoEyeOutline className="w-4 h-4" />
+                                                    <span>{image.views}</span>
+                                                </div>
+                                                <div className="flex items-center gap-1">
+                                                    <FaHeart className="w-4 h-4" />
+                                                    <span>{image.likes}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+
+                        <Dialog
+                            open={isImageViewerOpen}
+                            onClose={closeImageViewer}
+                            className="relative z-50"
+                        >
+                            <div className="fixed inset-0 bg-black/90" aria-hidden="true" />
+
+                            <div className="fixed inset-0 flex items-center justify-center">
+                                <Dialog.Panel className="relative w-full h-full flex items-center justify-center">
+                                    <button
+                                        onClick={closeImageViewer}
+                                        className="absolute top-4 right-4 text-white hover:text-gray-300 z-10"
+                                    >
+                                        <span className="text-2xl">✕</span>
+                                    </button>
+
+                                    <button
+                                        onClick={() => navigateImage('prev')}
+                                        className="absolute left-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 z-10"
+                                    >
+                                        <span className="text-4xl">‹</span>
+                                    </button>
+
+                                    <button
+                                        onClick={() => navigateImage('next')}
+                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 z-10"
+                                    >
+                                        <span className="text-4xl">›</span>
+                                    </button>
+
+                                    <div className="relative max-w-5xl w-full mx-4">
+                                        <img
+                                            src={selectedImage}
+                                            alt="Enlarged view"
+                                            className="w-full h-auto max-h-[80vh] object-contain rounded-lg"
+                                        />
+
+                                        <div className="absolute bottom-0 left-0 right-0 p-4 flex items-center justify-center gap-8 text-white">
+                                            <div className="flex items-center gap-2">
+                                                <IoEyeOutline className="w-5 h-5" />
+                                                <span>{galleryImages[selectedImageIndex]?.views}</span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <FaHeart className="w-5 h-5" />
+                                                <span>{galleryImages[selectedImageIndex]?.likes}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="absolute bottom-8 left-0 right-0 flex justify-center gap-2">
+                                        {galleryImages.map((_, index) => (
+                                            <button
+                                                key={index}
+                                                onClick={() => {
+                                                    setSelectedImageIndex(index);
+                                                    setSelectedImage(galleryImages[index].url);
+                                                }}
+                                                className={`w-2 h-2 rounded-full transition-all ${index === selectedImageIndex
+                                                    ? 'bg-[#3FE1B6] w-4'
+                                                    : 'bg-white/50 hover:bg-white/80'
+                                                    }`}
+                                            />
+                                        ))}
+                                    </div>
+                                </Dialog.Panel>
+                            </div>
+                        </Dialog>
+                    </>
+                );
             case "posts":
                 return renderPostsContent();
-            case "sponsoredEvents":
-                return renderSponsoredEventsContent();
+            case "events":
+                return renderEventsContent();
             default:
                 return null;
         }
@@ -449,7 +679,7 @@ const SponserPage = () => {
                             <div className="absolute left-8 -top-16">
                                 <div className="w-32 h-32 rounded-full border-4 border-[#1A1625] overflow-hidden">
                                     <img
-                                        src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=3087&auto=format&fit=crop"
+                                        src="/Images/venues.png"
                                         alt="Profile"
                                         className="w-full h-full object-cover"
                                     />
@@ -459,30 +689,25 @@ const SponserPage = () => {
                             <div className="pt-20">
                                 <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start">
                                     <div className="flex flex-col gap-1">
-                                        <h1 className="text-2xl text-white font-bold">Dj Kazi</h1>
-                                        <p className="text-[#3FE1B6] text-sm">Sponsor</p>
-                                        <p className="text-gray-400 text-sm">Lagos, Nigeria</p>
-
-                                        <div className="flex items-center gap-2 mt-1">
-                                            <span className="text-white text-sm">2.3k followers</span>
-                                            <span className="text-gray-400">•</span>
-                                            <div className="flex items-center gap-1">
-                                                <span className="text-yellow-400">⭐</span>
-                                                <span className="text-white text-sm">
-                                                    {calculateAverageRating()} rating ({totalReviews} reviews)
-                                                </span>
+                                        <h1 className="text-2xl text-white font-bold">{venue.name}</h1>
+                                        <p className="text-[#3FE1B6] text-sm">Event Venue</p>
+                                        <div className="flex flex-col lg:flex-row gap-6 items-start">
+                                            <div className="flex items-start gap-2 flex-1">
+                                                <img src="/icons/location-icon.svg" alt="Location Icon" className="w-5 h-5 mt-1" />
+                                                <p className="text-gray-400 text-lg">{venue.location}</p>
+                                            </div>
+                                            <div className="w-full lg:w-[350px] h-[200px]">
+                                                <iframe
+                                                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3153.019110292!2d144.963058!3d-37.813611!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6ad642af0f11fd81%3A0xf577d1f9c1b1e0e!2sShinai%20Event%20Center!5e0!3m2!1sen!2sau!4v1611810192000!5m2!1sen!2sau"
+                                                    width="100%"
+                                                    height="100%"
+                                                    style={{ border: 0 }}
+                                                    allowFullScreen=""
+                                                    loading="lazy"
+                                                    title="Venue Location Map"
+                                                ></iframe>
                                             </div>
                                         </div>
-
-                                        <button className="w-fit mt-3 bg-[#3FE1B6] text-black px-6 py-1.5 rounded-md text-sm flex items-center gap-2">
-                                            <img src={followIcon} alt="follow" className="w-5 h-5" />
-                                            Follow
-                                        </button>
-                                    </div>
-
-                                    <div className="mt-8 lg:mt-0 lg:w-1/3">
-                                        <h2 className="text-white text-xl">About me</h2>
-                                        <p className="text-gray-400 mt-2">Your description goes here</p>
                                     </div>
                                 </div>
 
@@ -515,7 +740,7 @@ const SponserPage = () => {
 
                 <div className="w-full lg:w-[380px] space-y-6">
                     <div className="bg-[#231D30] rounded-lg p-6">
-                        <h2 className="text-white text-xl mb-4">Upcoming Performance</h2>
+                        <h2 className="text-white text-xl mb-4">Upcoming Events</h2>
                         <div className="space-y-4">
                             {upcomingEvents.map((event) => (
                                 <Link
@@ -616,4 +841,4 @@ const SponserPage = () => {
     );
 };
 
-export default SponserPage;
+export default EventVenuePage; 
