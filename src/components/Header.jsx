@@ -31,7 +31,6 @@ export default function Header() {
           <div className="flex lg:flex-1 items-center">
             <a href="/" className="-m-1.5 p-1.5 flex items-center gap-2">
               <img alt="FaderFanz" src="/faderfanz.png" className="h-16 w-auto rounded" />
-              <span className="text-white font-semibold text-lg font-sen">FaderFanz</span>
             </a>
           </div>
 
