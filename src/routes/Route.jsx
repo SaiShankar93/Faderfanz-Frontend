@@ -32,7 +32,7 @@ import OrderList from "@/pages/Vendordashboard/OrderList";
 import Payments from "@/pages/Vendordashboard/Payments";
 import ProductList from "@/pages/Vendordashboard/ProductList";
 import Reviews from "@/pages/Vendordashboard/Reviews";
-import Settings from "@/pages/Vendordashboard/Settings";
+import Settings from "@/pages/Settings";
 import VendorLogin from "@/pages/VendorLogin";
 import VendorRegister from "@/pages/VendorRegister";
 import VenueOwnerPage from "@/pages/VenueOwnerPage";
@@ -47,6 +47,7 @@ import RoleSelectionModal from "@/components/RoleSelectionModal";
 import RegistrationForm from "@/pages/RegistrationForm";
 import AllSponsers from "@/pages/AllSponsers";
 import EventVenuePage from "@/pages/EventVenuePage";
+import UserProfile from "@/pages/UserProfile";
 
 export const userRoutes = [
   {
@@ -287,6 +288,18 @@ export const userRoutes = [
     title: "Choose Role",
     component: <RoleSelectionModal />,
     path: "/register-role",
+  },
+  {
+    name: "user-profile",
+    title: "User Profile",
+    component: <UserProfile />,
+    path: "/user/:id",
+  },
+  {
+    name: "settings",
+    title: "Settings",
+    component: <Settings />,
+    path: "/settings",
   },
 ];
 
