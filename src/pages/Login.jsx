@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import axiosInstance from "@/configs/axiosConfig";
 
 const RegistrationForm = () => {
   const [formData, setFormData] = useState({}); // State to store all form data
@@ -15,8 +16,10 @@ const RegistrationForm = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    const response = await axiosInstance.post("/login", formData);
+    console.log(response.json())
     navigate("/");
   };
 

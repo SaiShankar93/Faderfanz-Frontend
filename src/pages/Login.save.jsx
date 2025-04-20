@@ -1,3 +1,4 @@
+import axiosInstance from "@/configs/axiosConfig";
 import { useAuth } from "@/context/AuthContext";
 import { MainAppContext } from "@/context/MainContext";
 import axios from "axios";
@@ -17,8 +18,9 @@ const Login = () => {
     const [formData, setFormData] = useState({
         email: "",
         password: "",
+        role: "guest", // Default role
     });
-    const { email, password } = formData;
+    const { email, password, role } = formData;
     const { setUserLoggedIn } = useAuth();
     const { user, setUser } = useContext(MainAppContext);
     const { userData, setUserData } = useState({});
@@ -30,8 +32,8 @@ const Login = () => {
         e.preventDefault();
 
         try {
-            const res = await axios.post(
-                `${import.meta.env.VITE_SERVER_URL}/auth/local/login`,
+            const res = await axiosInstance.post(
+                `/auth/login`,
                 formData,
                 {
                     headers: {
@@ -40,17 +42,18 @@ const Login = () => {
                 }
             );
 
-            // console.log(res.data);
+            console.log("bkj",res.data);
             if (res.data.user) {
                 localStorage.setItem("user", JSON.stringify(res.data.user));
+                localStorage.setItem("token", JSON.stringify(res.data.token));
                 setUserLoggedIn(true);
-                // setUserData(res.data.user);
+                setUser(res.data.user);
                 toast.success(res.data.message);
                 navigate("/");
             }
         } catch (err) {
             console.error("Login Error:", err.response.data);
-            toast.error("Incorrect email or password");
+            toast.error("Incorrect email or password or role");
         }
     };
 
@@ -139,6 +142,35 @@ const Login = () => {
                             </div>
                         </div>
 
+                        {/* Role Dropdown */}
+                        <div>
+                            <label className="block text-gray-300 text-sm uppercase mb-2 font-medium">
+                                SELECT ROLE
+                            </label>
+                            <select
+                                name="role"
+                                value={role}
+                                onChange={onChange}
+                                className={`w-full bg-transparent border border-gray-600 rounded-lg p-3 placeholder-gray-500 focus:border-[#00FFB3] focus:outline-none transition-colors ${
+                                    role ? "text-gray-300" : "text-black"
+                                }`}
+                                required
+                            >
+                                <option value="sponsor" className="text-black">
+                                    Sponsor
+                                </option>
+                                <option value="venueOwner" className="text-black">
+                                    Venue Owner
+                                </option>
+                                <option value="curator" className="text-black">
+                                    Curator
+                                </option>
+                                <option value="guest" className="text-black">
+                                    Guest
+                                </option>
+                            </select>
+                        </div>
+
                         {/* Remember Me */}
                         <div className="flex items-center justify-between">
                             <label className="flex items-center gap-2 text-gray-300">
@@ -156,7 +188,7 @@ const Login = () => {
                         {/* Sign In Button */}
                         <button
                             type="submit"
-                            disabled={!email || !password}
+                            disabled={!email || !password || !role}
                             className="w-full bg-[#00FFB3] text-black font-medium py-3 rounded-lg hover:bg-[#00FFB3]/90 disabled:bg-gray-600 disabled:text-gray-400 transition-colors"
                         >
                             Sign In

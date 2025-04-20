@@ -1,3 +1,4 @@
+import axiosInstance from "@/configs/axiosConfig";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -12,12 +13,14 @@ const GuestRegistration = () => {
             firstName: "",
             lastName: "",
             stageName: "",
-            bio: ""
+            bio: "",
+            email: "", // New field
+            password: "", // New field
         },
         mediaFiles: {
             images: [],
-            video: null
-        }
+            video: null,
+        },
     });
 
     // Preview states for uploaded files
@@ -148,6 +151,12 @@ const GuestRegistration = () => {
         if (!formData.personalDetails.bio.trim()) {
             errors["personalDetails.bio"] = "Bio/Description is required";
         }
+        if (!formData.personalDetails.email.trim()) {
+            errors["personalDetails.email"] = "Email is required";
+        }
+        if (!formData.personalDetails.password.trim()) {
+            errors["personalDetails.password"] = "Password is required";
+        }
 
         setFormErrors(errors);
         return Object.keys(errors).length === 0;
@@ -169,7 +178,7 @@ const GuestRegistration = () => {
 
             // Append personal details
             Object.entries(formData.personalDetails).forEach(([key, value]) => {
-                formDataToSend.append(`personalDetails[${key}]`, value);
+                formDataToSend.append(key, value);
             });
 
             // Append images
@@ -183,8 +192,8 @@ const GuestRegistration = () => {
             }
 
             // Here you'll add your API call
-            // const response = await axios.post('/api/guest/register', formDataToSend);
-
+            const response = await axiosInstance.post('/auth/register/guest', formDataToSend);
+            console.log("resp",response)
             toast.success("Registration successful!");
             navigate('/login');
         } catch (error) {
@@ -296,6 +305,42 @@ const GuestRegistration = () => {
                                     <p className="text-red-500 text-sm mt-1">{formErrors["personalDetails.bio"]}</p>
                                 )}
                             </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-400 mb-2">
+                                    Email <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="email"
+                                    name="email"
+                                    placeholder="Enter your email"
+                                    className={`w-full p-3 bg-[#1A1B23]/80 rounded-lg border ${formErrors["personalDetails.email"] ? 'border-red-500' : 'border-gray-600'
+                                        } focus:border-purple-500 focus:outline-none`}
+                                    value={formData.personalDetails.email}
+                                    onChange={handlePersonalDetailsChange}
+                                />
+                                {formErrors["personalDetails.email"] && (
+                                    <p className="text-red-500 text-sm mt-1">{formErrors["personalDetails.email"]}</p>
+                                )}
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-400 mb-2">
+                                    Password <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="password"
+                                    name="password"
+                                    placeholder="Enter your password"
+                                    className={`w-full p-3 bg-[#1A1B23]/80 rounded-lg border ${formErrors["personalDetails.password"] ? 'border-red-500' : 'border-gray-600'
+                                        } focus:border-purple-500 focus:outline-none`}
+                                    value={formData.personalDetails.password}
+                                    onChange={handlePersonalDetailsChange}
+                                />
+                                {formErrors["personalDetails.password"] && (
+                                    <p className="text-red-500 text-sm mt-1">{formErrors["personalDetails.password"]}</p>
+                                )}
+                            </div>
                         </div>
 
                         {/* Upload Media Section */}
@@ -388,4 +433,4 @@ const GuestRegistration = () => {
     );
 };
 
-export default GuestRegistration; 
+export default GuestRegistration;

@@ -330,7 +330,7 @@ const Home = () => {
       const response = await axios.get(
         `${import.meta.env.VITE_SERVER_URL}/admin/category`
       );
-      // console.log(response.data.categories);
+      console.log(response.data.categories);
       setCategories(response.data?.categories);
       // // // console.log(response.data);
     } catch (error) {
@@ -528,7 +528,7 @@ const Home = () => {
       {/* Rest of the content with relative positioning */}
       <div className="relative z-10">
         <HeroSlider slider={slider} />
-        <ExploreCategories />
+        <ExploreCategories categories={categories}/>
         <PopularEvents events={filteredProducts} />
         <CreateEventBanner />
 

@@ -40,7 +40,7 @@ const categories = [
     }
 ];
 
-export default function ExploreCategories() {
+export default function ExploreCategories({}) {
     return (
         <div className="w-full max-w-7xl mx-auto px-4 py-16">
             <div className="flex items-center gap-2 mb-12">
