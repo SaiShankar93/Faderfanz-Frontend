@@ -1,3 +1,4 @@
+import axiosInstance from "@/configs/axiosConfig";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -12,7 +13,9 @@ const CuratorRegistration = () => {
             firstName: "",
             lastName: "",
             stageName: "",
-            bio: ""
+            bio: "",
+            email: "", // New field
+            password: "", // New field
         },
         images: []
     });
@@ -87,6 +90,12 @@ const CuratorRegistration = () => {
         if (!formData.personalDetails.bio.trim()) {
             errors["personalDetails.bio"] = "Bio/Description is required";
         }
+        if (!formData.personalDetails.email.trim()) {
+            errors["personalDetails.email"] = "Email is required";
+        }
+        if (!formData.personalDetails.password.trim()) {
+            errors["personalDetails.password"] = "Password is required";
+        }
         if (formData.images.length === 0) {
             errors.images = "At least one image is required";
         }
@@ -111,20 +120,26 @@ const CuratorRegistration = () => {
 
             // Append personal details
             Object.entries(formData.personalDetails).forEach(([key, value]) => {
-                formDataToSend.append(`personalDetails[${key}]`, value);
+                formDataToSend.append(key, value);
             });
 
             // Append images
             formData.images.forEach((image, index) => {
-                formDataToSend.append(`images[${index}]`, image);
+                formDataToSend.append(`media`, image);
             });
-
+            console.log([...formDataToSend.entries()]); // Debugging
             // Here you'll add your API call
-            // const response = await axios.post('/api/curator/register', formDataToSend);
-
-            toast.success("Registration successful!");
-            navigate('/login');
+            const response = await axiosInstance.post('/auth/register/curator', formDataToSend);
+            console.log(response)
+            if(response.curator){
+                toast.success("Registration successful!");
+                navigate('/login');
+            }else{
+                toast.error(response.message);
+            }
         } catch (error) {
+            console.log(error)
+
             toast.error(error.response?.data?.message || "Registration failed");
         } finally {
             setIsSubmitting(false);
@@ -233,6 +248,44 @@ const CuratorRegistration = () => {
                                     <p className="text-red-500 text-sm mt-1">{formErrors["personalDetails.bio"]}</p>
                                 )}
                             </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-400 mb-2">
+                                    Email <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="email"
+                                    name="email"
+                                    placeholder="Enter your email"
+                                    className={`w-full p-3 bg-[#1A1B23]/80 rounded-lg border ${
+                                        formErrors["personalDetails.email"] ? "border-red-500" : "border-gray-600"
+                                    } focus:border-purple-500 focus:outline-none`}
+                                    value={formData.personalDetails.email}
+                                    onChange={handlePersonalDetailsChange}
+                                />
+                                {formErrors["personalDetails.email"] && (
+                                    <p className="text-red-500 text-sm mt-1">{formErrors["personalDetails.email"]}</p>
+                                )}
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-400 mb-2">
+                                    Password <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="password"
+                                    name="password"
+                                    placeholder="Enter your password"
+                                    className={`w-full p-3 bg-[#1A1B23]/80 rounded-lg border ${
+                                        formErrors["personalDetails.password"] ? "border-red-500" : "border-gray-600"
+                                    } focus:border-purple-500 focus:outline-none`}
+                                    value={formData.personalDetails.password}
+                                    onChange={handlePersonalDetailsChange}
+                                />
+                                {formErrors["personalDetails.password"] && (
+                                    <p className="text-red-500 text-sm mt-1">{formErrors["personalDetails.password"]}</p>
+                                )}
+                            </div>
                         </div>
 
                         {/* Upload Images Section */}
@@ -293,4 +346,4 @@ const CuratorRegistration = () => {
     );
 };
 
-export default CuratorRegistration; 
+export default CuratorRegistration;
