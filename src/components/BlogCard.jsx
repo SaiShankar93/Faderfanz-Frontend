@@ -5,9 +5,23 @@ import { MainAppContext } from "@/context/MainContext";
 export function BlogCard({ event }) {
     const { seteventPageId } = useContext(MainAppContext);
 
+    // Format the createdAt date
+    const formatDate = (dateString) => {
+        if (!dateString) return "No date";
+        const date = new Date(dateString);
+        return new Intl.DateTimeFormat("en-US", {
+            weekday: "long",
+            month: "long",
+            day: "numeric",
+            hour: "numeric",
+            minute: "numeric",
+            hour12: true,
+        }).format(date);
+    };
+
     return (
         <Link
-            to={`/blog/${event?.title?.replace(/\s+/g, "-")}`}
+            to={`/blog/${event?._id}`}
             onClick={() => {
                 sessionStorage.setItem("blogPageId", JSON.stringify(event?._id));
                 seteventPageId(event?._id);
@@ -18,7 +32,7 @@ export function BlogCard({ event }) {
                 {/* Image */}
                 <div className="relative w-full aspect-[4/3]">
                     <img
-                        src={event?.image || "https://images.unsplash.com/photo-1544077960-604201fe74bc"}
+                        src={event?.featuredImage || "https://images.unsplash.com/photo-1544077960-604201fe74bc"}
                         alt={event?.title}
                         className="w-full h-full object-cover"
                     />
@@ -28,13 +42,13 @@ export function BlogCard({ event }) {
                 <div className="p-5">
                     {/* Title */}
                     <h3 className="text-xl font-semibold text-white mb-3">
-                        {event?.title || "BestSeller Book Bootcamp -write, Market & Publish Your Book -Lucknow"}
+                        {event?.title || "No title"}
                     </h3>
 
                     {/* Date and Author */}
                     <div className="flex items-center justify-between text-sm text-gray-400 mb-3">
-                        <p>{event?.date || "Saturday, March 18, 9:30PM"}</p>
-                        <p>Publish by: {event?.author || "Admin"}</p>
+                        <p>{formatDate(event?.createdAt)}</p>
+                        <p>Publish by: {event?.author || "No Author"}</p>
                     </div>
                 </div>
             </div>
