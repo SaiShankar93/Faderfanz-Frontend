@@ -57,14 +57,14 @@ const AddProduct = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const user1 = JSON.parse(localStorage.getItem("user"));
-    if (
-      !isMounted.current &&
-      (!user || user?.role !== "admin") &&
-      (!user1 || user1?.role !== "admin")
-    ) {
-      navigate("/login");
-    }
+    // const user1 = JSON.parse(localStorage.getItem("user"));
+    // if (
+    //   !isMounted.current &&
+    //   (!user || user?.role !== "admin") &&
+    //   (!user1 || user1?.role !== "admin")
+    // ) {
+    //   navigate("/login");
+    // }
     getCategoriesData();
     getMaterials();
   }, []);

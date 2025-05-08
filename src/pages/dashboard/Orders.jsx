@@ -82,10 +82,10 @@ const Orders = () => {
   const { user, selectedItem, setSelectedItem } = useContext(MainAppContext);
   const navigate = useNavigate();
   useEffect(() => {
-    const user1 = JSON.parse(localStorage.getItem("user"));
-    if (user?.role !== "admin" && user1?.role !== "admin") {
-      navigate("/login");
-    }
+    // const user1 = JSON.parse(localStorage.getItem("user"));
+    // if (user?.role !== "admin" && user1?.role !== "admin") {
+    //   navigate("/login");
+    // }
   }, []);
   useEffect(() => {
     getAllOrders();

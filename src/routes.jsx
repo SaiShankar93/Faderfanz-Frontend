@@ -5,6 +5,7 @@ import {
   InformationCircleIcon,
   ServerStackIcon,
   RectangleStackIcon,
+  PencilSquareIcon
 } from "@heroicons/react/24/solid";
 import { Home } from "@/pages/dashboard";
 import { SignIn, SignUp } from "@/pages/auth";
@@ -32,12 +33,13 @@ import { TiSocialInstagramCircular } from "react-icons/ti";
 import Social from "./pages/dashboard/Settings";
 import { HiSquares2X2 } from "react-icons/hi2";
 import Categories from "./pages/dashboard/Categories";
-import NewsPage from "./pages/dashboard/NewsPage";
+import NewsPage from "./pages/dashboard/Blogs";
 import Materials from "./pages/dashboard/Materials";
 import PopupAdmin from "./pages/dashboard/Popup";
 import Transactions from "./pages/dashboard/Transaction";
 import { AiFillStar } from "react-icons/ai";
 import TestimonialPage from "./pages/dashboard/Testimonial";
+import Blogs from "./pages/dashboard/Blogs";
 // import PrivacyPolicy from "./pages/dashboard/PrivacyPolicy";
 
 const icon = {
@@ -54,6 +56,13 @@ export const routes = [
         path: "/",
         element: <Home />,
       },
+      {
+        icon: <PencilSquareIcon {...icon} />,
+        name: "Blogs",
+        path: "/blogs",
+        element: <Blogs />,
+      },
+      
       {
         icon: <FaBoxes {...icon} />,
         name: "Orders",
@@ -132,12 +141,7 @@ export const routes = [
         path: "/privacy-policy",
         element: <PrivacyPolicy />,
       },
-      {
-        icon: <FaNewspaper {...icon} />,
-        name: "News-Page",
-        path: "/news-page",
-        element: <NewsPage />,
-      },
+      
       {
         icon: <AiFillStar {...icon} />,
         name: "Testimonial",
