@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { EventCard } from "../components/EventCard";
 import { FaInstagram, FaTwitter, FaFacebook, FaStar, FaRegHeart, FaRegComment, FaHeart } from "react-icons/fa";
 import { IoLocationOutline, IoTimeOutline, IoCalendarOutline, IoEyeOutline } from 'react-icons/io5';
@@ -6,12 +6,33 @@ import { Link } from 'react-router-dom';
 import { Dialog } from '@headlessui/react';
 import { BsCalendarEvent } from 'react-icons/bs';
 import followIcon from '/icons/follow.svg';
+import { useParams } from "react-router-dom";
+import axiosInstance from "@/configs/axiosConfig";
 
 const CuratorPage = () => {
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState("reviews");
     const [rating, setRating] = useState(0);
     const [reviewText, setReviewText] = useState('');
+    const [curator, setCurator] = useState({
+        _id: "",
+        email: "",
+        firstName: "",
+        lastName: "",
+        stageName: "",
+        bio: "",
+        images: [],
+        followers: [],
+        followingCount: 0,
+        averageRating: 0,
+        totalRatings: 0,
+        role: "curator",
+        posts: [],
+        ratings: [],
+        createdAt: "",
+        updatedAt: ""
+    });
+    const {id} = useParams();
     const [reviews, setReviews] = useState([
         {
             id: 1,
@@ -44,24 +65,43 @@ const CuratorPage = () => {
         }
     ]);
 
+    useEffect(() => {
+        const fetchCurator = async () => {
+            setLoading(true);
+            try {
+                const {data} = await axiosInstance.get(`management/curators/${id}`);
+                if (data) {
+                    setCurator(data);
+                    // TODO: Uncomment when API is ready
+                    // setReviews(data.ratings || []);
+                    // setPosts(data.posts || []);
+                }
+            } catch (error) {
+                console.error('Error fetching curator:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchCurator();
+    }, [id]);
     const [selectedImage, setSelectedImage] = useState(null);
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
     const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
 
-    const curator = {
-        name: "DJ Kazi",
-        type: "Curator",
-        location: "Lagos, Nigeria",
-        followers: "2.3k",
-        rating: 4.5,
-        reviews: 32,
-        description: "Your description goes here",
-        socialLinks: {
-            instagram: "#",
-            twitter: "#",
-            facebook: "#"
-        }
-    };
+    // const curator = {
+    //     name: "DJ Kazi",
+    //     type: "Curator",
+    //     location: "Lagos, Nigeria",
+    //     followers: "2.3k",
+    //     rating: 4.5,
+    //     reviews: 32,
+    //     description: "Your description goes here",
+    //     socialLinks: {
+    //         instagram: "#",
+    //         twitter: "#",
+    //         facebook: "#"
+    //     }
+    // };
 
     const upcomingEvents = [
         {
@@ -232,7 +272,7 @@ const CuratorPage = () => {
             ))}
 
             <div className="bg-[#231D30] rounded-lg p-6">
-                <h3 className="text-white mb-4">Say something about {curator.name}</h3>
+                <h3 className="text-white mb-4">Say something about {curator.stageName || `${curator.firstName} ${curator.lastName}`}</h3>
                 <div className="flex gap-2 mb-4">
                     {[1, 2, 3, 4, 5].map((star) => (
                         <button
@@ -425,7 +465,7 @@ const CuratorPage = () => {
                             <div className="absolute left-8 -top-16">
                                 <div className="w-32 h-32 rounded-full border-4 border-[#1A1625] overflow-hidden">
                                     <img
-                                        src={curator.profilePhoto || "/Images/default-avatar.jpg"}
+                                        src={curator.images[0] || "/Images/default-avatar.jpg"}
                                         alt="Profile"
                                         className="w-full h-full object-cover"
                                     />
@@ -435,17 +475,17 @@ const CuratorPage = () => {
                             <div className="pt-20">
                                 <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start">
                                     <div className="flex flex-col gap-1">
-                                        <h1 className="text-2xl text-white font-bold">{curator.name}</h1>
-                                        <p className="text-[#3FE1B6] text-sm">{curator.type}</p>
+                                        <h1 className="text-2xl text-white font-bold">{curator.stageName || `${curator.firstName} ${curator.lastName}`}</h1>
+                                        <p className="text-[#3FE1B6] text-sm">{curator.role}</p>
                                         <p className="text-gray-400 text-sm">{curator.location}</p>
 
                                         <div className="flex items-center gap-2 mt-1">
-                                            <span className="text-white text-sm">{curator.followers} followers</span>
+                                            <span className="text-white text-sm">{curator.followers?.length || 0} followers</span>
                                             <span className="text-gray-400">•</span>
                                             <div className="flex items-center gap-1">
                                                 <span className="text-yellow-400">⭐</span>
                                                 <span className="text-white text-sm">
-                                                    {calculateAverageRating()} rating ({totalReviews} reviews)
+                                                    {curator.averageRating || 0} rating ({curator.totalRatings || 0} reviews)
                                                 </span>
                                             </div>
                                         </div>
@@ -463,7 +503,7 @@ const CuratorPage = () => {
 
                                     <div className="mt-8 lg:mt-0 lg:w-1/3">
                                         <h2 className="text-white text-xl">About me</h2>
-                                        <p className="text-gray-400 mt-2">{curator.description}</p>
+                                        <p className="text-gray-400 mt-2">{curator.bio}</p>
                                     </div>
                                 </div>
 

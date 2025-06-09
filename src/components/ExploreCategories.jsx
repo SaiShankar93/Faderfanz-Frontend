@@ -11,7 +11,7 @@ const categories = [
     {
         icon: "/icons/venue.svg",
         label: "Venue Owners",
-        link: "/venue/:id",
+        link: "/venue/all",
         colors: "from-[#C5FF32] to-[#FFE600]"
     },
     {
@@ -23,19 +23,20 @@ const categories = [
     {
         icon: "/icons/crowdfunding.svg",
         label: "Crowdfunding",
-        link: "/crowdfunding/:id",
+        link: "/crowdfunding/all",
         colors: "from-[#00FFB2] to-[#C5FF32]"
     },
     {
         icon: "/icons/guests.svg",
         label: "Guests/Fans",
-        link: "/guests",
+        // link: "/guests",
+        link: "#",
         colors: "from-[#00FFB2] to-[#C5FF32]"
     },
     {
         icon: "/icons/blogs.svg",
         label: "Blogs",
-        link: "/venue/all",
+        link: "/blogs/all",
         colors: "from-[#00FFB2] to-[#C5FF32]"
     }
 ];
@@ -57,11 +58,11 @@ export default function ExploreCategories({}) {
                     >
                         <div className="group relative">
                             <div className="w-32 h-32 rounded-full bg-[#1C1D24] flex items-center justify-center relative overflow-hidden transition-all duration-300 group-hover:scale-105">
-                                <div className={`absolute inset-0 bg-gradient-to-br ${category.colors} opacity-0 group-hover:opacity-10 transition-opacity duration-300`}></div>
+                                <div className={`absolute inset-0 bg-gradient-to-br`}></div>
                                 <img
                                     src={category.icon}
                                     alt={category.label}
-                                    className="w-16 h-16 relative z-10"
+                                    className="w-16 h-16 relative z-10 transition-transform duration-300 ease-in-out group-hover:scale-110"
                                 />
                             </div>
                         </div>

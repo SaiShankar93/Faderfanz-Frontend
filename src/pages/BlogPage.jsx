@@ -102,7 +102,7 @@ const BlogPage = () => {
           <h1 className="text-3xl font-bold mt-12">
             {blogData?.title}
           </h1>
-          <p className="text-gray-400 mt-2">Author : {blogData?.author || "No author"}</p>
+          <p className="text-gray-400 mt-2">Author : {`${blogData?.author?.firstName} ${blogData?.author?.lastName}` || "No author"}</p>
           <p className="text-xl mt-2">5 min read | Published : {formatDate(blogData?.createdAt)}</p>
         </div>
         <div className="bg-[#0E0F13] min-h-screen pt-16 text-white">

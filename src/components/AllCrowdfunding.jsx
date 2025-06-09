@@ -19,66 +19,78 @@ import HeroSlider from "../components/HeroSlider";
 import { IoLocationOutline, IoTimeOutline } from "react-icons/io5";
 import axiosInstance from "@/configs/axiosConfig";
 
+// Sample crowdfunding data
+const sampleCrowdfunding = [
+  {
+    _id: 1,
+    title: "Street Training Initiative",
+    description: "We are raising money for the people in the street to have a good training opportunity.",
+    target: 35000,
+    raised: 16900,
+    deadline: "23rd March, 2025",
+    createdBy: "Raihan Khan",
+    creatorImage: "/Images/testimonial.png",
+    mainImage: "/Images/Crowdcard.png",
+    category: "Education",
+    donors: 14,
+  },
+  {
+    _id: 2,
+    title: "Community Art Center",
+    description: "Building a space for local artists to showcase their work and conduct workshops.",
+    target: 50000,
+    raised: 25000,
+    deadline: "15th April, 2025",
+    createdBy: "Sarah Johnson",
+    creatorImage: "/Images/testimonial.png",
+    mainImage: "/Images/Crowdcard.png",
+    category: "Arts",
+    donors: 22,
+  },
+  {
+    _id: 3,
+    title: "Youth Sports Program",
+    description: "Supporting underprivileged youth through sports and physical education.",
+    target: 25000,
+    raised: 12000,
+    deadline: "30th March, 2025",
+    createdBy: "Mike Thompson",
+    creatorImage: "/Images/testimonial.png",
+    mainImage: "/Images/Crowdcard.png",
+    category: "Sports",
+    donors: 18,
+  },
+];
+
 const sortMethods = [
   {
     id: 1,
     name: "Sort By Popularity",
-    parameter: "rating",
+    parameter: "donors",
   },
   {
     id: 2,
-    name: "Price(Low to High)",
-    parameter: "price",
+    name: "Amount Raised (Low to High)",
+    parameter: "raised",
   },
   {
     id: 3,
-    name: "Price(High to Low)",
-    parameter: "price",
+    name: "Amount Raised (High to Low)",
+    parameter: "raised",
   },
   {
     id: 4,
     name: "A to Z",
-    parameter: "name",
+    parameter: "title",
   },
   {
     id: 5,
     name: "Z to A",
-    parameter: "name",
+    parameter: "title",
   },
 ];
 
-// Sample event data
-const sampleEvents = [
-  {
-    _id: 1,
-    title: "The Kazi-culture show",
-    location: "12 Lake Avenue, Mumbai, India",
-    time: "8:30 AM - 7:30 PM",
-    mainImage: "/heroslider.jpeg",
-    date: "NOV 25 - 26",
-    interested: 14,
-  },
-  {
-    _id: 2,
-    title: "Mumbai Music Festival",
-    location: "Marine Drive, Mumbai, India",
-    time: "4:00 PM - 11:00 PM",
-    mainImage: "/heroslider.jpeg",
-    date: "NOV 27 - 28",
-    interested: 22,
-  },
-  {
-    _id: 3,
-    title: "Art & Culture Exhibition",
-    location: "Gallery Modern, Mumbai, India",
-    time: "10:00 AM - 6:00 PM",
-    mainImage: "/heroslider.jpeg",
-    date: "NOV 30",
-    interested: 18,
-  },
-];
-
-const Shop = () => {
+const AllCrowdfunding = () => {
   const {
     filterCategories,
     setFilterCategories,
@@ -171,17 +183,15 @@ const Shop = () => {
   const sortProducts = (method) => {
     switch (method) {
       case "2":
-        return [...Products].sort((a, b) => a.price - b.price);
+        return [...Products].sort((a, b) => a.raised - b.raised);
       case "3":
-        return [...Products].sort((a, b) => b.price - a.price);
+        return [...Products].sort((a, b) => b.raised - a.raised);
       case "4":
         return [...Products].sort((a, b) => a.title.localeCompare(b.title));
       case "5":
         return [...Products].sort((a, b) => b.title.localeCompare(a.title));
       default:
-        return [...Products].sort(
-          (a, b) => Number(b.avgRating) - Number(a.avgRating)
-        );
+        return [...Products].sort((a, b) => b.donors - a.donors);
     }
   };
 
@@ -216,43 +226,48 @@ const Shop = () => {
     }
   };
 
-  const getEvents = async () => {
+  const getCrowdfunding = async () => {
     try {
-      const {data} = await axiosInstance.get(`/events`);
-      if (data.data) {
-        console.log(data.data,'data.data')
-        setEvents(data.data);
-      } else throw new Error("Fetching Events failed");
+      setLoading(true);
+      const {data} = await axiosInstance.get(`management/campaigns`);
+      if (data) {
+        setEvents(data);
+      } else throw new Error("Fetching Crowdfunding campaigns failed");
     } catch (error) {
-      console.error("Error fetching events:", error);
-      toast.error("Failed to fetch events");
+      console.error("Error fetching crowdfunding campaigns:", error);
+      toast.error("Failed to fetch crowdfunding campaigns");
+    } finally {
+      setLoading(false);
     }
+
   };
+
   useEffect(() => {
-    getEvents();
+    getCrowdfunding();
   }, []);
 
-  // Filter events based on selected filters
+  // Filter crowdfunding campaigns based on selected filters
   const filteredEvents = useMemo(() => {
-    console.log(events, "events");
-    return sampleEvents.filter((event) => {
-      // Price filter
+    return sampleCrowdfunding.filter((campaign) => {
+      // Category filter
+      if (filters.category.length > 0) {
+        if (!filters.category.includes(campaign.category?.toLowerCase())) return false;
+      }
+
+      // Amount filter
       if (filters.price.length > 0) {
-        const eventPrice = event.price === 0 ? "free" : "paid";
-        if (!filters.price.includes(eventPrice)) return false;
+        const campaignAmount = campaign.raised === 0 ? "free" : "paid";
+        if (!filters.price.includes(campaignAmount)) return false;
       }
 
       // Date filter
       if (filters.date.length > 0) {
+        const deadline = new Date(campaign.deadline);
         const today = new Date();
-        const eventDate = new Date(event.date);
-        const isToday = eventDate.toDateString() === today.toDateString();
-        const isTomorrow =
-          eventDate.toDateString() ===
-          new Date(today.setDate(today.getDate() + 1)).toDateString();
-        const isThisWeek =
-          eventDate <= new Date(today.setDate(today.getDate() + 7));
-        const isWeekend = eventDate.getDay() === 0 || eventDate.getDay() === 6;
+        const isToday = deadline.toDateString() === today.toDateString();
+        const isTomorrow = deadline.toDateString() === new Date(today.setDate(today.getDate() + 1)).toDateString();
+        const isThisWeek = deadline <= new Date(today.setDate(today.getDate() + 7));
+        const isWeekend = deadline.getDay() === 0 || deadline.getDay() === 6;
 
         const dateMatch = filters.date.some((filter) => {
           switch (filter) {
@@ -271,20 +286,9 @@ const Shop = () => {
         if (!dateMatch) return false;
       }
 
-      // Category filter
-      if (filters.category.length > 0) {
-        if (!filters.category.includes(event.category?.toLowerCase()))
-          return false;
-      }
-
-      // Format filter
-      if (filters.format.length > 0) {
-        if (!filters.format.includes(event.format?.toLowerCase())) return false;
-      }
-
       return true;
     });
-  }, [filters, sampleEvents]);
+  }, [filters, sampleCrowdfunding]);
 
   // Add these expanded arrays for the "More" functionality
   const allCategories = [
@@ -415,7 +419,7 @@ const Shop = () => {
           <div className="flex-1">
             {/* Header */}
             <div className="flex justify-between items-center mb-8">
-              <h2 className="text-2xl font-semibold text-white">All Events</h2>
+              <h2 className="text-2xl font-semibold text-white">All Crowdfunding</h2>
               <div className="flex items-center gap-3">
                 <span className="text-gray-400 hidden sm:inline">Sort by:</span>
                 <select
@@ -436,33 +440,37 @@ const Shop = () => {
               </div>
             </div>
 
-            {/* Event Cards */}
+            {/* Crowdfunding Cards */}
             <div className="space-y-4">
-              {events.length > 0 &&
-                events.map((event) => (
+              {loading ? (
+                <div className="flex justify-center items-center min-h-[400px]">
+                  <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#C5FF32]"></div>
+                </div>
+              ) : (
+                events.map((campaign) => (
                   <Link
-                    to={`/event/${event._id}`}
-                    key={event._id}
+                    to={`/crowdfunding/${campaign._id}`}
+                    key={campaign._id}
                     className="bg-[#1C1D24]/50 backdrop-blur-sm rounded-xl overflow-hidden hover:bg-[#1C1D24]/70 transition-colors"
                   >
                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 p-4">
                       {/* Image container */}
                       <div className="w-full sm:w-[200px] h-[200px] sm:h-[140px] flex-shrink-0">
                         <img
-                          src={event.banner?.url ? `${import.meta.env.VITE_SERVER_URL}${event.banner?.url}` : "/heroslider.jpeg"}
-                          alt={event.title}
+                          src={campaign.mainImage || "/Images/Crowdcard.png"}
+                          alt={campaign.title}
                           className="w-full h-full object-cover rounded-lg"
                         />
                       </div>
 
-                      {/* Date container */}
+                      {/* Progress container */}
                       <div className="flex-shrink-0 w-full sm:w-auto">
                         <div className="bg-[#262626]/50 backdrop-blur-sm rounded-xl px-4 py-3 inline-block">
                           <div className="text-gray-400 text-sm font-medium mb-1">
-                            {new Date(event.startDate).toLocaleString('default', { month: 'short' })}
+                            Progress
                           </div>
                           <div className="text-white text-lg font-semibold">
-                            {new Date(event.startDate).getDate()}
+                            {Math.round((campaign.amountRaised / campaign.goal) * 100)}%
                           </div>
                         </div>
                       </div>
@@ -471,25 +479,39 @@ const Shop = () => {
                       <div className="flex-1 min-w-0 w-full">
                         <div className="relative">
                           <h3 className="text-white text-xl font-semibold mb-3 pr-12">
-                            {event.title}
+                            {campaign.title}
                           </h3>
+                          <p className="text-gray-400 text-sm mb-3">
+                            {campaign.description}
+                          </p>
                           <div className="space-y-2">
                             <div className="flex items-center gap-2 text-gray-400">
-                              <IoLocationOutline className="w-4 h-4 flex-shrink-0" />
-                              <span className="text-sm truncate">
-                                {event.location.address || "Location TBA"}
+                              <span className="text-sm">
+                                ${campaign.amountRaised.toLocaleString()} raised of ${campaign.goal.toLocaleString()}
                               </span>
                             </div>
                             <div className="flex items-center gap-2 text-gray-400">
-                              <IoTimeOutline className="w-4 h-4 flex-shrink-0" />
                               <span className="text-sm">
-                                {new Date(event.startDate).toLocaleTimeString()} - {new Date(event.endDate).toLocaleTimeString()}
+                                {campaign.donors?.length || 0} donors
+                              </span>
+                            </div>
+                            {campaign.event && (
+                              <div className="flex items-center gap-2 text-gray-400">
+                                <span className="text-sm">
+                                  Event: {campaign.event.title}
+                                </span>
+                              </div>
+                            )}
+                            <div className="flex items-center gap-1 text-gray-400">
+                              <span className="text-sm">
+                                Deadline: {new Date(campaign.endDate).toLocaleDateString()}
                               </span>
                             </div>
                             <div className="flex items-center gap-1 text-gray-400">
-                              <FaStar className="w-3 h-3 text-[#C5FF32]" />
                               <span className="text-sm">
-                                {event.stats?.interested || 0} interested
+                                Status: <span className={`${campaign.status === 'active' ? 'text-green-400' : 'text-red-400'}`}>
+                                  {campaign.status}
+                                </span>
                               </span>
                             </div>
                           </div>
@@ -502,7 +524,8 @@ const Shop = () => {
                       </div>
                     </div>
                   </Link>
-                ))}
+                ))
+              )}
             </div>
 
             {/* Load more button */}
@@ -527,4 +550,5 @@ const Shop = () => {
   );
 };
 
-export default Shop;
+export default AllCrowdfunding;
+

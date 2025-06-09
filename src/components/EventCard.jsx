@@ -7,17 +7,25 @@ export function EventCard({ event, key, isCrowdfunding }) {
     const { seteventPageId } = useContext(MainAppContext);
     const navigate = useNavigate();
 
-    if (!isCrowdfunding) return null; // Return original event card if not crowdfunding
+    if (!isCrowdfunding) return null;
 
-    // Calculate progress percentage
-    const raisedAmount = 16900; // Default amount
-    const targetAmount = 35000; // Default target
+    // Calculate progress percentage using actual campaign data
+    const raisedAmount = event?.amountRaised || 0;
+    const targetAmount = event?.goal || 0;
     const progressPercentage = Math.min(Math.round((raisedAmount / targetAmount) * 100), 100);
 
     const handleContribute = () => {
-        // You can generate a unique ID for each campaign or use an existing one
-        const campaignId = event?.id || 'default-campaign';
+        const campaignId = event?._id;
         navigate(`/crowdfunding/${campaignId}`);
+    };
+
+    // Format date to readable string
+    const formatDate = (dateString) => {
+        return new Date(dateString).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
     };
 
     return (
@@ -25,8 +33,8 @@ export function EventCard({ event, key, isCrowdfunding }) {
             {/* Image Container */}
             <div className="relative h-48">
                 <img
-                    src={event?.image || "/Images/Crowdcard.png"}
-                    alt={event?.title}
+                    src={event?.banner?.url ? `${import.meta.env.VITE_SERVER_URL}${event?.banner?.url}` : "/Images/Crowdcard.png"}
+                    alt={event?.banner?.alt || event?.title}
                     className="w-full h-full object-cover"
                 />
             </div>
@@ -36,10 +44,10 @@ export function EventCard({ event, key, isCrowdfunding }) {
                 {/* Title and Description */}
                 <div className="mb-6">
                     <h3 className="text-white text-xl font-semibold mb-2">
-                        {event?.title || "Street Training"}
+                        {event?.title || "Campaign Title"}
                     </h3>
                     <p className="text-[#808191] text-sm">
-                        {event?.description || "We are raising money for the people in the street to have a good training opportunity"}
+                        {event?.description || "Campaign description"}
                     </p>
                 </div>
 
@@ -89,16 +97,18 @@ export function EventCard({ event, key, isCrowdfunding }) {
                         <span className="text-[#808191]">Created by</span>
                         <div className="flex items-center gap-2">
                             <img
-                                src={event?.creatorImage || "/Images/default-avatar.jpg"}
+                                src="/Images/default-avatar.jpg"
                                 alt="Creator"
                                 className="w-6 h-6 rounded-full"
                             />
-                            <span className="text-white">{event?.creator || "Sannidhan Katta"}</span>
+                            <span className="text-white">
+                                {event?.creator?.stageName || `${event?.creator?.firstName} ${event?.creator?.lastName}` || "Anonymous"}
+                            </span>
                         </div>
                     </div>
                     <div className="flex flex-col gap-1 text-right">
                         <span className="text-[#808191]">Deadline</span>
-                        <span className="text-white">{event?.deadline || "23rd March, 2025"}</span>
+                        <span className="text-white">{formatDate(event?.endDate)}</span>
                     </div>
                 </div>
             </div>

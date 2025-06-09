@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { MainAppContext } from "@/context/MainContext";
 
 export function BlogCard({ event }) {
+    console.log("BlogCard",event)
     const { seteventPageId } = useContext(MainAppContext);
 
     // Format the createdAt date
@@ -48,7 +49,7 @@ export function BlogCard({ event }) {
                     {/* Date and Author */}
                     <div className="flex items-center justify-between text-sm text-gray-400 mb-3">
                         <p>{formatDate(event?.createdAt)}</p>
-                        <p>Publish by: {event?.author || "No Author"}</p>
+                        <p>Publish by: {"No Author"}</p>
                     </div>
                 </div>
             </div>

@@ -15,7 +15,7 @@ const Blogs = () => {
   const [tagInput, setTagInput] = useState(""); // For handling tag input
   const [blogs, setBlogs] = useState([]);
   const [editingBlogId, setEditingBlogId] = useState(null); // Track which blog is being edited
-
+  const adminToken = localStorage.getItem("adminToken");
   const formats = [
     "header",
     "bold",
@@ -71,7 +71,8 @@ const Blogs = () => {
 
       const response = await axiosInstance.post(`/blogs`, formData, {
         headers: {
-          "Content-Type": "multipart/form-data",
+          // "Content-Type": "multipart/form-data",
+          "Authorization": `Bearer ${adminToken}`,
         },
       });
       const data = response.data;

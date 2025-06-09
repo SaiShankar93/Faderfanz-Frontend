@@ -34,8 +34,8 @@ import "swiper/css/navigation";
 
 import { Autoplay, Pagination, Navigation } from "swiper/modules";
 import { Start } from "@mui/icons-material";
-
-const EventPage = ({ }) => {
+import axiosInstance from "@/configs/axiosConfig";
+const EventPage = ({}) => {
   const [activeImage, SetActiveImage] = useState(1);
   const [viewMainImg, SetViewMainImg] = useState(false);
   const [materialImage, SetMaterialImage] = useState("");
@@ -87,16 +87,32 @@ const EventPage = ({ }) => {
   const ticketPrice = product?.price || 0;
 
   const handleIncrease = () => setTicketCount((prev) => prev + 1);
-  const handleDecrease = () => setTicketCount((prev) => (prev > 1 ? prev - 1 : 1));
+  const handleDecrease = () =>
+    setTicketCount((prev) => (prev > 1 ? prev - 1 : 1));
+  const [event, setEvent] = useState({});
 
+  const getEvent = async () => {
+    try {
+      const response = await axiosInstance.get(`/events/${param?.id}`);
+      if (response.data) {
+        setEvent(response.data);
+      } else throw new Error("Fetching Event failed");
+    } catch (error) {
+      console.error("Error fetching event:", error);
+      toast.error("Failed to fetch event");
+    }
+  };
+  useEffect(() => {
+    getEvent();
+  }, []);
 
   const getProductDetails = async (productId) => {
     setLoading(true);
     try {
       let eventPageId = sessionStorage.getItem("eventPageId");
-      eventPageId = eventPageId.replace(/"/g, ''); // Remove all double quotes
-      productId = productId.replace(/"/g, ''); // Remove all double quotes
-      console.log(`${import.meta.env.VITE_SERVER_URL}/product/${eventPageId}`)
+      eventPageId = eventPageId.replace(/"/g, ""); // Remove all double quotes
+      productId = productId.replace(/"/g, ""); // Remove all double quotes
+      console.log(`${import.meta.env.VITE_SERVER_URL}/product/${eventPageId}`);
 
       const response = await axios.get(
         `${import.meta.env.VITE_SERVER_URL}/product/${eventPageId || productId}`
@@ -108,7 +124,10 @@ const EventPage = ({ }) => {
       console.log("tests", response?.data);
       setPrice(response.data?.price);
       SetActiveImage(response?.data?.mainImage);
-      setAllImages([response?.data?.mainImage, ...response?.data?.additionalImages]);
+      setAllImages([
+        response?.data?.mainImage,
+        ...response?.data?.additionalImages,
+      ]);
       console.log(allImages);
       const sortedAttributes = response?.data?.attributes
         .filter((i) => {
@@ -295,6 +314,16 @@ const EventPage = ({ }) => {
     }
   };
 
+  const formatEventDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+  };
+
   return (
     <div className="relative bg-[#0E0F13] min-h-screen text-white overflow-hidden font-sen">
       {/* Background gradient */}
@@ -315,30 +344,50 @@ const EventPage = ({ }) => {
           />
           <div className="absolute bottom-4 right-4 flex gap-2">
             <button className="bg-[#C5FF32] p-2 md:p-3 rounded-full">
-              <img src="/icons/share-icon.svg" alt="Share" className="w-4 h-4 md:w-5 md:h-5" />
+              <img
+                src="/icons/share-icon.svg"
+                alt="Share"
+                className="w-4 h-4 md:w-5 md:h-5"
+              />
             </button>
             <button className="bg-[#C5FF32] p-2 md:p-3 rounded-full">
-              <img src="/icons/star-icon.svg" alt="Star" className="w-4 h-4 md:w-5 md:h-5" />
+              <img
+                src="/icons/star-icon.svg"
+                alt="Star"
+                className="w-4 h-4 md:w-5 md:h-5"
+              />
             </button>
           </div>
         </div>
 
         {/* Title and Info Container */}
         <div className="mt-6 md:mt-8">
-          <h1 className="text-4xl md:text-[44px] font-bold mb-6 md:mb-8">The Kazi-culture show</h1>
+          <h1 className="text-4xl md:text-[44px] font-bold mb-6 md:mb-8">
+            {event?.title}
+          </h1>
 
           {/* Date/Time and Ticket Container */}
           <div className="flex flex-col md:flex-row justify-between gap-6 md:gap-8 bg-[#1C1D24]/50 rounded-xl p-4 md:p-6">
             {/* Left Side - Date and Time */}
             <div className="flex-1">
-              <h2 className="text-[#94A3B8] text-lg md:text-2xl mb-4">Date and Time</h2>
+              <h2 className="text-[#94A3B8] text-lg md:text-2xl mb-4">
+                Date and Time
+              </h2>
               <div className="flex flex-col gap-3">
                 <div className="flex items-center gap-2">
-                  <img src="/icons/calendar-icon.svg" alt="Calendar" className="w-5 h-5" />
-                  <span>Saturday, 2 December 2023</span>
+                  <img
+                    src="/icons/calendar-icon.svg"
+                    alt="Calendar"
+                    className="w-5 h-5"
+                  />
+                  <span>{formatEventDate(event?.createdAt)}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <img src="/icons/time-icon.svg" alt="Time" className="w-5 h-5" />
+                  <img
+                    src="/icons/time-icon.svg"
+                    alt="Time"
+                    className="w-5 h-5"
+                  />
                   <span>6:30 PM - 9:30 PM</span>
                 </div>
                 <button className="text-[#00FFB3] text-sm hover:text-[#00cc8f] transition-colors w-fit">
@@ -355,11 +404,19 @@ const EventPage = ({ }) => {
                   Buy Tickets
                 </button>
                 <div className="w-full">
-                  <h2 className="text-[#94A3B8] text-lg md:text-2xl mb-4">Ticket Information</h2>
+                  <h2 className="text-[#94A3B8] text-lg md:text-2xl mb-4">
+                    Ticket Information
+                  </h2>
                   <div className="bg-[#1C1D24] rounded-xl p-4">
                     <div className="flex items-center gap-2">
-                      <img src="/icons/ticket-icon.svg" alt="Ticket" className="w-5 h-5" />
-                      <span className="text-[#94A3B8]">Standard Ticket: ₹ 200 each</span>
+                      <img
+                        src="/icons/ticket-icon.svg"
+                        alt="Ticket"
+                        className="w-5 h-5"
+                      />
+                      <span className="text-[#94A3B8]">
+                        Standard Ticket: ₹ 200 each
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -369,16 +426,25 @@ const EventPage = ({ }) => {
 
           {/* Location Section */}
           <div className="mt-8">
-            <h2 className="text-[#94A3B8] text-lg md:text-2xl mb-4">Location</h2>
+            <h2 className="text-[#94A3B8] text-lg md:text-2xl mb-4">
+              Location
+            </h2>
             <div className="bg-[#1C1D24] rounded-xl p-4 md:p-6">
               <div className="flex flex-col md:flex-row gap-6 md:gap-8">
                 <div className="flex-1">
                   <div className="flex items-start gap-2">
-                    <img src="/icons/location-icon.svg" alt="Location" className="w-5 h-5 mt-1" />
+                    <img
+                      src="/icons/location-icon.svg"
+                      alt="Location"
+                      className="w-5 h-5 mt-1"
+                    />
                     <p className="text-[#94A3B8]">
-                      12 Lake Avenue, Mumbai, Near Junction<br />
-                      Of 24th & 32nd Road & Patwardhan<br />
-                      Park,Off Linking Road, Bandra West,<br />
+                      12 Lake Avenue, Mumbai, Near Junction
+                      <br />
+                      Of 24th & 32nd Road & Patwardhan
+                      <br />
+                      Park,Off Linking Road, Bandra West,
+                      <br />
                       Mumbai, India
                     </p>
                   </div>
@@ -397,7 +463,9 @@ const EventPage = ({ }) => {
 
           {/* Hosted by Section */}
           <div className="mt-8">
-            <h2 className="text-[#94A3B8] text-lg md:text-2xl mb-4">Hosted by</h2>
+            <h2 className="text-[#94A3B8] text-lg md:text-2xl mb-4">
+              Hosted by
+            </h2>
             <div className="flex items-center gap-4">
               <img
                 src="/Images/host-image.png"
@@ -405,7 +473,9 @@ const EventPage = ({ }) => {
                 className="w-16 h-16 md:w-20 md:h-20 rounded-lg object-cover"
               />
               <div>
-                <h3 className="text-white font-medium text-lg mb-2">City Youth Movement</h3>
+                <h3 className="text-white font-medium text-lg mb-2">
+                  City Youth Movement
+                </h3>
                 <div className="flex gap-2">
                   <button className="bg-white text-black px-6 py-2 rounded-lg text-sm font-medium hover:bg-gray-100 transition-colors">
                     Contact
@@ -423,11 +493,23 @@ const EventPage = ({ }) => {
             <h2 className="text-[#94A3B8] text-xl mb-4">Event Description</h2>
             <div className="bg-[#1C1D24] rounded-xl p-6">
               <p className="text-[#94A3B8]">
-                Get ready to kick off the Christmas season in Mumbai with KAZI OF CHRISTMAS - your favourite LIVE Christmas party/fair. Be the patch that the city needs! Your favourite monthly events, stalls, karaoke and more exciting surprises! Bring your family, new friends and sing along your favourite Christmas songs on the 2nd of December, 6:30 PM onwards at the Bungalow!<br /><br />
-                Bonus Note: Wear your Santa hats!<br /><br />
-                1. Reasons to attend the event:<br />
-                2. The FIRST Christmas carnival of Mumbai!<br />
-                3. A special Christmas choir!<br />
+                Get ready to kick off the Christmas season in Mumbai with KAZI
+                OF CHRISTMAS - your favourite LIVE Christmas party/fair. Be the
+                patch that the city needs! Your favourite monthly events,
+                stalls, karaoke and more exciting surprises! Bring your family,
+                new friends and sing along your favourite Christmas songs on the
+                2nd of December, 6:30 PM onwards at the Bungalow!
+                <br />
+                <br />
+                Bonus Note: Wear your Santa hats!
+                <br />
+                <br />
+                1. Reasons to attend the event:
+                <br />
+                2. The FIRST Christmas carnival of Mumbai!
+                <br />
+                3. A special Christmas choir!
+                <br />
                 4. Special dance performances and many more surprises!
               </p>
             </div>
@@ -435,7 +517,9 @@ const EventPage = ({ }) => {
 
           {/* Sponsors Section */}
           <div className="mt-8">
-            <h2 className="text-[#94A3B8] text-lg md:text-2xl mb-4">Sponsors</h2>
+            <h2 className="text-[#94A3B8] text-lg md:text-2xl mb-4">
+              Sponsors
+            </h2>
             <div className="flex gap-6 overflow-x-auto pb-4">
               {[
                 { name: "Elites Mark", image: "/Images/sponsor-logo.png" },
@@ -458,34 +542,48 @@ const EventPage = ({ }) => {
           {/* Products by sponsor Section */}
           <div className="mt-8">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-[#94A3B8] text-xl">Products by sponsor: Elites Mark</h2>
-              <a href="#" className="text-[#C5FF32] hover:text-[#a3cc28] transition-colors">Visit page</a>
+              <h2 className="text-[#94A3B8] text-xl">
+                Products by sponsor: Elites Mark
+              </h2>
+              <a
+                href="#"
+                className="text-[#C5FF32] hover:text-[#a3cc28] transition-colors"
+              >
+                Visit page
+              </a>
             </div>
 
             {/* Horizontal scrollable container */}
             <div className="relative overflow-x-auto pb-4">
               <div className="flex gap-6 min-w-min">
-                {Array(5).fill(0).map((_, i) => (
-                  <div key={i} className="flex-shrink-0 w-[320px] bg-[#1C1D24] rounded-xl overflow-hidden">
-                    <div className="aspect-square relative">
-                      <img
-                        src="/Images/product-image.png"
-                        alt="Base Ball T-Shirt"
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="p-4">
-                      <h3 className="text-white text-xl font-medium mb-3">BASE BALL T-SHIRT</h3>
-                      <div className="flex justify-between items-center mb-4">
-                        <span className="text-[#94A3B8] text-lg">${200}</span>
-                        <span className="text-[#94A3B8]">Stock: 32</span>
+                {Array(5)
+                  .fill(0)
+                  .map((_, i) => (
+                    <div
+                      key={i}
+                      className="flex-shrink-0 w-[320px] bg-[#1C1D24] rounded-xl overflow-hidden"
+                    >
+                      <div className="aspect-square relative">
+                        <img
+                          src="/Images/product-image.png"
+                          alt="Base Ball T-Shirt"
+                          className="w-full h-full object-cover"
+                        />
                       </div>
-                      <button className="bg-[#00FFB3] hover:bg-[#00cc8f] transition-colors text-black px-4 py-3 rounded-lg text-base w-full font-medium">
-                        Buy Now
-                      </button>
+                      <div className="p-4">
+                        <h3 className="text-white text-xl font-medium mb-3">
+                          BASE BALL T-SHIRT
+                        </h3>
+                        <div className="flex justify-between items-center mb-4">
+                          <span className="text-[#94A3B8] text-lg">${200}</span>
+                          <span className="text-[#94A3B8]">Stock: 32</span>
+                        </div>
+                        <button className="bg-[#00FFB3] hover:bg-[#00cc8f] transition-colors text-black px-4 py-3 rounded-lg text-base w-full font-medium">
+                          Buy Now
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
               </div>
             </div>
           </div>
@@ -500,7 +598,7 @@ const EventPage = ({ }) => {
                 { name: "Mr Rush", image: "/Images/curator-img.png" },
                 { name: "Mr Rush", image: "/Images/curator-img.png" },
                 { name: "Mr Rush", image: "/Images/curator-img.png" },
-                { name: "Mr Rush", image: "/Images/curator-img.png" }
+                { name: "Mr Rush", image: "/Images/curator-img.png" },
               ].map((curator, i) => (
                 <div key={i} className="flex flex-col items-center">
                   <div className="w-32 h-32 rounded-full overflow-hidden mb-2">
@@ -518,11 +616,11 @@ const EventPage = ({ }) => {
 
           {/* Other events section (already implemented with PopularEvents) */}
           <div className="mt-16">
-            <h2 className="text-[#94A3B8] text-2xl font-semibold mb-4">Other events you may Like</h2>
+            <h2 className="text-[#94A3B8] text-2xl font-semibold mb-4">
+              Other events you may Like
+            </h2>
             <PopularEvents showTitle={false} showBackground={false} />
           </div>
-
-
         </div>
       </div>
     </div>

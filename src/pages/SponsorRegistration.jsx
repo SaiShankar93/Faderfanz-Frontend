@@ -1,3 +1,4 @@
+import axiosInstance from "@/configs/axiosConfig";
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify"; // Assuming you're using react-toastify for notifications
@@ -10,28 +11,22 @@ const SponsorRegistration = () => {
     const [formData, setFormData] = useState({
         businessLogo: null,
         businessBanner: null,
-        businessName: "",
-        taxNumber: "",
-        description: "",
-        contactPerson: {
-            name: "",
-            role: ""
-        },
-        eventPreference: "",
-        expectations: {
-            brandExposure: false,
-            sales: false,
-            increase: false,
-            empowerment: false
-        },
+        businessName: "fbd",
+        taxIdentificationNumber: "fd",
+        description: "fd",
+        contactName: "fd",
+        preferredEvents: "fd",
+        sponsorshipExpectations: [],
         products: [
             {
                 id: Date.now(),
                 name: "",
-                price: "",
-                image: null
+                price: ""
             }
-        ]
+        ],
+        email: "fd@gmail.com",
+        password: "123456789",
+        role: "fd"
     });
 
     // Preview states for uploaded images
@@ -54,19 +49,15 @@ const SponsorRegistration = () => {
         }
     };
 
-    // Handle contact person changes
-    const handleContactChange = (e) => {
-        const { name, value } = e.target;
+    // Handle expectations checkboxes
+    const handleExpectationChange = (e) => {
+        const { name, checked } = e.target;
         setFormData(prev => ({
             ...prev,
-            contactPerson: {
-                ...prev.contactPerson,
-                [name]: value
-            }
+            sponsorshipExpectations: checked 
+                ? [...prev.sponsorshipExpectations, name]
+                : prev.sponsorshipExpectations.filter(exp => exp !== name)
         }));
-        if (formErrors[`contactPerson.${name}`]) {
-            setFormErrors(prev => ({ ...prev, [`contactPerson.${name}`]: "" }));
-        }
     };
 
     // Handle file uploads with preview
@@ -95,18 +86,6 @@ const SponsorRegistration = () => {
                 setFormErrors(prev => ({ ...prev, [field]: "" }));
             }
         }
-    };
-
-    // Handle expectations checkboxes
-    const handleExpectationChange = (e) => {
-        const { name, checked } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            expectations: {
-                ...prev.expectations,
-                [name]: checked
-            }
-        }));
     };
 
     // Handle product changes
@@ -142,7 +121,15 @@ const SponsorRegistration = () => {
             };
             reader.readAsDataURL(file);
 
-            handleProductChange(productId, 'image', file);
+            // Store the actual file in formData
+            setFormData(prev => ({
+                ...prev,
+                products: prev.products.map(product =>
+                    product.id === productId
+                        ? { ...product, image: file }
+                        : product
+                )
+            }));
         }
     };
 
@@ -185,17 +172,18 @@ const SponsorRegistration = () => {
         if (!formData.businessLogo) errors.businessLogo = "Business logo is required";
         if (!formData.businessBanner) errors.businessBanner = "Business banner is required";
         if (!formData.businessName.trim()) errors.businessName = "Business name is required";
-        if (!formData.taxNumber.trim()) errors.taxNumber = "Tax number is required";
+        if (!formData.taxIdentificationNumber.trim()) errors.taxIdentificationNumber = "Tax identification number is required";
         if (!formData.description.trim()) errors.description = "Description is required";
-        if (!formData.contactPerson.name.trim()) errors["contactPerson.name"] = "Contact name is required";
-        if (!formData.contactPerson.role) errors["contactPerson.role"] = "Role is required";
-        if (!formData.eventPreference) errors.eventPreference = "Event preference is required";
+        if (!formData.contactName.trim()) errors.contactName = "Contact name is required";
+        if (!formData.preferredEvents) errors.preferredEvents = "Preferred events is required";
+        if (!formData.email.trim()) errors.email = "Email is required";
+        if (!formData.password.trim()) errors.password = "Password is required";
+        if (!formData.role) errors.role = "Role is required";
 
         // Validate products
         formData.products.forEach((product, index) => {
             if (!product.name.trim()) errors[`product${index}Name`] = "Product name is required";
             if (!product.price.trim()) errors[`product${index}Price`] = "Price is required";
-            if (!product.image) errors[`product${index}Image`] = "Product image is required";
         });
 
         setFormErrors(errors);
@@ -218,24 +206,34 @@ const SponsorRegistration = () => {
             formDataToSend.append('businessLogo', formData.businessLogo);
             formDataToSend.append('businessBanner', formData.businessBanner);
             formDataToSend.append('businessName', formData.businessName);
-            formDataToSend.append('taxNumber', formData.taxNumber);
+            formDataToSend.append('taxIdentificationNumber', formData.taxIdentificationNumber);
             formDataToSend.append('description', formData.description);
-            formDataToSend.append('contactPerson', JSON.stringify(formData.contactPerson));
-            formDataToSend.append('eventPreference', formData.eventPreference);
-            formDataToSend.append('expectations', JSON.stringify(formData.expectations));
+            formDataToSend.append('contactName', formData.contactName);
+            formDataToSend.append('preferredEvents', formData.preferredEvents);
+            formDataToSend.append('sponsorshipExpectations', "Brand Exposure");
+            formDataToSend.append('email', formData.email);
+            formDataToSend.append('password', formData.password);
+            formDataToSend.append('role', formData.role);
 
             // Append products
+            formDataToSend.append('products', JSON.stringify(formData.products));
+
+            // Append product images as File objects
             formData.products.forEach((product, index) => {
-                formDataToSend.append(`products[${index}][name]`, product.name);
-                formDataToSend.append(`products[${index}][price]`, product.price);
-                formDataToSend.append(`products[${index}][image]`, product.image);
+                if (product.image) {
+                    formDataToSend.append('productImages', product.image);
+                }
             });
 
-            // Here you'll add your API call
-            // const response = await axios.post('/api/sponsor/register', formDataToSend);
+            console.log(Object.fromEntries(formDataToSend));
+            const {data} = await axiosInstance.post('/auth/register/sponsor', formDataToSend);
 
-            toast.success("Registration successful!");
-            navigate('/login'); // or wherever you want to redirect after success
+            if (data.sponsor) {
+                toast.success("Registration successful!");
+                navigate("/login");
+            } else {
+                toast.error(data.message);
+            }
         } catch (error) {
             toast.error(error.response?.data?.message || "Registration failed");
         } finally {
@@ -360,15 +358,15 @@ const SponsorRegistration = () => {
                                     </label>
                                     <input
                                         type="text"
-                                        name="taxNumber"
+                                        name="taxIdentificationNumber"
                                         placeholder="Enter your business tax number here"
-                                        className={`w-full p-3 bg-[#1A1B23] rounded-lg border ${formErrors.taxNumber ? 'border-red-500' : 'border-gray-600'
+                                        className={`w-full p-3 bg-[#1A1B23] rounded-lg border ${formErrors.taxIdentificationNumber ? 'border-red-500' : 'border-gray-600'
                                             } focus:border-purple-500 focus:outline-none`}
-                                        value={formData.taxNumber}
+                                        value={formData.taxIdentificationNumber}
                                         onChange={handleInputChange}
                                     />
-                                    {formErrors.taxNumber && (
-                                        <p className="text-red-500 text-sm mt-1">{formErrors.taxNumber}</p>
+                                    {formErrors.taxIdentificationNumber && (
+                                        <p className="text-red-500 text-sm mt-1">{formErrors.taxIdentificationNumber}</p>
                                     )}
                                 </div>
                             </div>
@@ -394,7 +392,7 @@ const SponsorRegistration = () => {
 
                         {/* Contact Person Section */}
                         <div className="space-y-6">
-                            <h2 className="text-xl font-semibold">Contact person</h2>
+                            <h2 className="text-xl font-semibold">Contact Information</h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-400 mb-2">
@@ -402,15 +400,51 @@ const SponsorRegistration = () => {
                                     </label>
                                     <input
                                         type="text"
-                                        name="name"
+                                        name="contactName"
                                         placeholder="Enter full name"
-                                        className={`w-full p-3 bg-[#1A1B23] rounded-lg border ${formErrors['contactPerson.name'] ? 'border-red-500' : 'border-gray-600'
+                                        className={`w-full p-3 bg-[#1A1B23] rounded-lg border ${formErrors.contactName ? 'border-red-500' : 'border-gray-600'
                                             } focus:border-purple-500 focus:outline-none`}
-                                        value={formData.contactPerson.name}
-                                        onChange={handleContactChange}
+                                        value={formData.contactName}
+                                        onChange={handleInputChange}
                                     />
-                                    {formErrors['contactPerson.name'] && (
-                                        <p className="text-red-500 text-sm mt-1">{formErrors['contactPerson.name']}</p>
+                                    {formErrors.contactName && (
+                                        <p className="text-red-500 text-sm mt-1">{formErrors.contactName}</p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-400 mb-2">
+                                        Email <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        type="email"
+                                        name="email"
+                                        placeholder="Enter email address"
+                                        className={`w-full p-3 bg-[#1A1B23] rounded-lg border ${formErrors.email ? 'border-red-500' : 'border-gray-600'
+                                            } focus:border-purple-500 focus:outline-none`}
+                                        value={formData.email}
+                                        onChange={handleInputChange}
+                                    />
+                                    {formErrors.email && (
+                                        <p className="text-red-500 text-sm mt-1">{formErrors.email}</p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-400 mb-2">
+                                        Password <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        type="password"
+                                        name="password"
+                                        placeholder="Enter password"
+                                        className={`w-full p-3 bg-[#1A1B23] rounded-lg border ${formErrors.password ? 'border-red-500' : 'border-gray-600'
+                                            } focus:border-purple-500 focus:outline-none`}
+                                        value={formData.password}
+                                        onChange={handleInputChange}
+                                    />
+                                    {formErrors.password && (
+                                        <p className="text-red-500 text-sm mt-1">{formErrors.password}</p>
                                     )}
                                 </div>
 
@@ -420,18 +454,18 @@ const SponsorRegistration = () => {
                                     </label>
                                     <select
                                         name="role"
-                                        className={`w-full p-3 bg-[#1A1B23] rounded-lg border ${formErrors['contactPerson.role'] ? 'border-red-500' : 'border-gray-600'
+                                        className={`w-full p-3 bg-[#1A1B23] rounded-lg border ${formErrors.role ? 'border-red-500' : 'border-gray-600'
                                             } focus:border-purple-500 focus:outline-none`}
-                                        value={formData.contactPerson.role}
-                                        onChange={handleContactChange}
+                                        value={formData.role}
+                                        onChange={handleInputChange}
                                     >
                                         <option value="">Choose a role</option>
                                         <option value="owner">Owner</option>
                                         <option value="manager">Manager</option>
                                         <option value="representative">Representative</option>
                                     </select>
-                                    {formErrors['contactPerson.role'] && (
-                                        <p className="text-red-500 text-sm mt-1">{formErrors['contactPerson.role']}</p>
+                                    {formErrors.role && (
+                                        <p className="text-red-500 text-sm mt-1">{formErrors.role}</p>
                                     )}
                                 </div>
                             </div>
@@ -445,45 +479,21 @@ const SponsorRegistration = () => {
                                     Choose your preferred event? <span className="text-red-500">*</span>
                                 </label>
                                 <select
-                                    name="eventPreference"
-                                    className={`w-full p-3 bg-[#1A1B23] rounded-lg border ${formErrors.eventPreference ? 'border-red-500' : 'border-gray-600'
+                                    name="preferredEvents"
+                                    className={`w-full p-3 bg-[#1A1B23] rounded-lg border ${formErrors.preferredEvents ? 'border-red-500' : 'border-gray-600'
                                         } focus:border-purple-500 focus:outline-none`}
-                                    value={formData.eventPreference}
+                                    value={formData.preferredEvents}
                                     onChange={handleInputChange}
                                 >
                                     <option value="">Choose event</option>
-                                    <option value="music">Music Events</option>
-                                    <option value="sports">Sports Events</option>
-                                    <option value="cultural">Cultural Events</option>
-                                    <option value="technology">Technology Events</option>
+                                    <option value="Music Events">Music Events</option>
+                                    <option value="Sports Events">Sports Events</option>
+                                    <option value="Cultural Events">Cultural Events</option>
+                                    <option value="Technology Events">Technology Events</option>
                                 </select>
-                                {formErrors.eventPreference && (
-                                    <p className="text-red-500 text-sm mt-1">{formErrors.eventPreference}</p>
+                                {formErrors.preferredEvents && (
+                                    <p className="text-red-500 text-sm mt-1">{formErrors.preferredEvents}</p>
                                 )}
-                            </div>
-                        </div>
-
-                        {/* Expectations Section */}
-                        <div className="space-y-6">
-                            <h2 className="text-xl font-semibold">What are your expectations</h2>
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                {[
-                                    ['brandExposure', 'Brand Exposure'],
-                                    ['sales', 'Sales'],
-                                    ['increase', 'Increase'],
-                                    ['empowerment', 'Empowerment']
-                                ].map(([key, label]) => (
-                                    <label key={key} className="flex items-center space-x-2 cursor-pointer">
-                                        <input
-                                            type="checkbox"
-                                            name={key}
-                                            checked={formData.expectations[key]}
-                                            onChange={handleExpectationChange}
-                                            className="w-4 h-4 text-purple-600 border-gray-600 rounded focus:ring-purple-500"
-                                        />
-                                        <span className="text-gray-400">{label}</span>
-                                    </label>
-                                ))}
                             </div>
                         </div>
 

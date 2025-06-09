@@ -10,12 +10,12 @@ const CuratorRegistration = () => {
 
     const [formData, setFormData] = useState({
         personalDetails: {
-            firstName: "",
-            lastName: "",
-            stageName: "",
-            bio: "",
-            email: "", // New field
-            password: "", // New field
+            firstName: "f",
+            lastName: "f",
+            stageName: "f",
+            bio: "f",
+            email: "fs@gmail.com", // New field
+            password: "123456789", // New field
         },
         images: []
     });
@@ -131,11 +131,11 @@ const CuratorRegistration = () => {
             // Here you'll add your API call
             const response = await axiosInstance.post('/auth/register/curator', formDataToSend);
             console.log(response)
-            if(response.curator){
+            if(response.data.curator){
                 toast.success("Registration successful!");
                 navigate('/login');
             }else{
-                toast.error(response.message);
+                toast.error(response.data.message);
             }
         } catch (error) {
             console.log(error)
@@ -313,7 +313,9 @@ const CuratorRegistration = () => {
                                     </div>
                                 ))}
 
-                                <label className="aspect-square flex flex-col items-center justify-center border-2 border-dashed border-gray-600 rounded-lg cursor-pointer hover:border-purple-500">
+                                <label className={`     aspect-square flex flex-col items-center justify-center border-2 border-dashed border-gray-600 rounded-lg cursor-pointer hover:border-purple-500 transition-all duration-200 hover:bg-gray-800/20 ${
+                                    previews.length >= 1 ? "hidden" : ""
+                                }`}>
                                     <input
                                         type="file"
                                         multiple

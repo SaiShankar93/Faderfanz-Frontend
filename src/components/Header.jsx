@@ -3,20 +3,31 @@ import { Dialog } from '@headlessui/react';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaUserCircle } from 'react-icons/fa';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const isLoggedIn = localStorage.getItem("isLoggedIn");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  useEffect(() => {
+    setIsLoggedIn(localStorage.getItem("user"));
+  }, [isLoggedIn, navigate]);
+
+  const handleSignOut = () => {
+    console.log("sign out");
+    localStorage.removeItem("user");
+    setIsLoggedIn(false);
+    navigate('/')
+  };
 
   const navigation = [
     { name: 'Home', href: '/' },
     { name: 'Events', href: '/events/all/all' },
     { name: 'Curators', href: '/curator/all' },
     { name: 'Sponsors', href: '/sponser/all' },
-    { name: 'Crowd Funding', href: '/crowdfunding/:id' },
-    { name: 'Blog', href: '/venue/all' },
+    { name: 'Crowd Funding', href: '/crowdfunding/all' },
+    { name: 'Blogs', href: '/blogs/all' },
   ];
 
   const isActiveRoute = (path) => {
@@ -64,9 +75,17 @@ export default function Header() {
           {/* Sign up button */}
           <div className="hidden lg:flex lg:flex-1 lg:justify-end">
             {isLoggedIn ? (
-              <a href="/profile" className="text-sm font-semibold leading-6 text-gray-400">
-                <FaUserCircle className="text-white" size={20} />
-              </a>
+              <div className="flex items-center gap-4">
+                <a href="/profile" className="text-sm font-semibold leading-6 text-gray-400">
+                  <FaUserCircle className="text-white" size={20} />
+                </a>
+                <button
+                  onClick={handleSignOut}
+                  className="text-sm font-semibold leading-6 text-gray-400 hover:text-white"
+                >
+                  Sign Out
+                </button>
+              </div>
             ) : (
               <a
                 href="/register"
@@ -123,12 +142,20 @@ export default function Header() {
                       </div>
                       <div className="py-6">
                         {isLoggedIn ? (
-                          <a
-                            href="/profile"
-                            className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold text-gray-400 hover:bg-gray-800"
-                          >
-                            Profile
-                          </a>
+                          <>
+                            <a
+                              href="/profile"
+                              className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold text-gray-400 hover:bg-gray-800"
+                            >
+                              Profile
+                            </a>
+                            <button
+                              onClick={handleSignOut}
+                              className="-mx-3 block w-full text-left rounded-lg px-3 py-2 text-base font-semibold text-gray-400 hover:bg-gray-800"
+                            >
+                              Sign Out
+                            </button>
+                          </>
                         ) : (
                           <a
                             href="/register"

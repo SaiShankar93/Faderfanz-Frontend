@@ -48,6 +48,8 @@ import RegistrationForm from "@/pages/RegistrationForm";
 import AllSponsers from "@/pages/AllSponsers";
 import EventVenuePage from "@/pages/EventVenuePage";
 import UserProfile from "@/pages/UserProfile";
+import AllCrowdfunding from "@/components/AllCrowdfunding";
+import AllVenueOwners from "@/pages/AllVenueOwners";
 
 export const userRoutes = [
   {
@@ -99,10 +101,16 @@ export const userRoutes = [
     path: "/sponser/all",
   },
   {
+    name: "All Venue Owners",
+    title: "Venue Owners Page",
+    component: <AllVenueOwners />,
+    path: "/venue/all",
+  },
+  {
     name: "Venue Owners page",
     title: "Venue Owners Page",
     component: <VenueOwnerPage />,
-    path: "/venue/:id",
+    path: "/venue/all",
   },
   {
     name: "Event Venue page",
@@ -120,7 +128,7 @@ export const userRoutes = [
     name: "All Blogs",
     title: "All Blogs",
     component: <AllBlogs />,
-    path: "/venue/all",
+    path: "/blogs/all",
   },
   {
     name: "My Feed",
@@ -252,6 +260,12 @@ export const userRoutes = [
     title: "privacy-policy",
     component: <PrivacyPol />,
     path: "/privacy-policy",
+  },
+  {
+    name: "All Crowdfunding",
+    title: "All Crowdfunding",
+    component: <AllCrowdfunding />,
+    path: "/crowdfunding/all",
   },
   {
     name: "crowdfunding-detail",

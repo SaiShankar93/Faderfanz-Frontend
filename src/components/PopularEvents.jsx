@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaStar } from 'react-icons/fa';
 import { IoLocationOutline, IoTimeOutline } from 'react-icons/io5';
 import PopularEventCard from './PopularEventCard';
+import axiosInstance from '@/configs/axiosConfig';
+import { toast } from 'react-toastify';
 
 const timeFilters = [
     { label: 'All', value: 'all' },
@@ -12,54 +14,124 @@ const timeFilters = [
     { label: 'Free', value: 'free' },
 ];
 
-// Temporary mock data - replace with actual API data
-const mockEvents = [
-    {
-        id: 1,
-        title: 'The Kazi-culture show',
-        image: '/events/event1.jpeg',
-        date: '25-26',
-        month: 'NOV',
-        location: '12 Lake Avenue, Mumbai, India',
-        time: '8:30 AM - 7:30 PM',
-        interestedCount: 14,
-        isFree: true
-    },
-    {
-        id: 2,
-        title: 'Party Night',
-        image: '/events/event2.png',
-        date: '25-26',
-        month: 'NOV',
-        location: '12 Lake Avenue, Mumbai, India',
-        time: '8:30 AM - 7:30 PM',
-        interestedCount: 14,
-        isFree: true
-    },
-    {
-        id: 3,
-        title: 'The Kazi-culture show',
-        image: '/events/event3.png',
-        date: '25-26',
-        month: 'NOV',
-        location: '12 Lake Avenue, Mumbai, India',
-        time: '8:30 AM - 7:30 PM',
-        interestedCount: 14,
-        isFree: false
-    },
-    // Add more mock events as needed
-];
+// Mock data for fallback
+// const mockEvents = [
+//     {
+//         _id: 1,
+//         title: 'The Kazi-culture show',
+//         image: '/events/event1.jpeg',
+//         date: '25-26',
+//         month: 'NOV',
+//         location: '12 Lake Avenue, Mumbai, India',
+//         time: '8:30 AM - 7:30 PM',
+//         interestedCount: 14,
+//         isFree: true
+//     },
+//     {
+//         _id: 2,
+//         title: 'Party Night',
+//         image: '/events/event2.png',
+//         date: '25-26',
+//         month: 'NOV',
+//         location: '12 Lake Avenue, Mumbai, India',
+//         time: '8:30 AM - 7:30 PM',
+//         interestedCount: 14,
+//         isFree: true
+//     },
+//     {
+//         _id: 3,
+//         title: 'The Kazi-culture show',
+//         image: '/events/event3.png',
+//         date: '25-26',
+//         month: 'NOV',
+//         location: '12 Lake Avenue, Mumbai, India',
+//         time: '8:30 AM - 7:30 PM',
+//         interestedCount: 14,
+//         isFree: false
+//     }
+// ];
 
 const PopularEvents = ({ showTitle = true, showBackground = true }) => {
     const [activeFilter, setActiveFilter] = React.useState('all');
+    const [events, setEvents] = useState([]);
+    const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
+
+    const fetchEvents = async () => {
+        try {
+            setLoading(true);
+            const { data } = await axiosInstance.get('/events');
+            // console.log("data",data.data);
+            if (data && data.data.length > 0) {
+                setEvents(data.data);
+            } else {
+                // If API returns no data, keep using mock data
+                setEvents([]);
+            }
+        } catch (error) {
+            console.error('Error fetching events:', error);
+            toast.error('Failed to fetch events');
+            // Keep using mock data on error
+            setEvents([]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchEvents();
+    }, []);
+
     // Filter events based on the active filter
-    const filteredEvents = mockEvents.filter(event => {
-        if (activeFilter === 'all') return true;
-        if (activeFilter === 'free' && event.isFree) return true;
-        // Add more filtering logic for 'today', 'tomorrow', etc.
-        return false; // Default case
-    });
+    // const filteredEvents = events.filter(event => {
+    //     if (activeFilter === 'all') return true;
+    //     if (activeFilter === 'free' && (event.isFree || event.ticketPrice === 0)) return true;
+        
+    //     // For mock data
+    //     if (event.date) {
+    //         const eventDate = new Date(event.date);
+    //         const today = new Date();
+    //         const tomorrow = new Date(today);
+    //         tomorrow.setDate(tomorrow.getDate() + 1);
+    //         const thisWeekend = new Date(today);
+    //         thisWeekend.setDate(thisWeekend.getDate() + (6 - today.getDay()));
+
+    //         switch (activeFilter) {
+    //             case 'today':
+    //                 return eventDate.toDateString() === today.toDateString();
+    //             case 'tomorrow':
+    //                 return eventDate.toDateString() === tomorrow.toDateString();
+    //             case 'weekend':
+    //                 return eventDate >= today && eventDate <= thisWeekend;
+    //             default:
+    //                 return true;
+    //         }
+    //     }
+        
+    //     // For API data
+    //     if (event.startDate) {
+    //         const eventDate = new Date(event.startDate);
+    //         const today = new Date();
+    //         today.setHours(0, 0, 0, 0);
+    //         const tomorrow = new Date(today);
+    //         tomorrow.setDate(tomorrow.getDate() + 1);
+    //         const thisWeekend = new Date(today);
+    //         thisWeekend.setDate(thisWeekend.getDate() + (6 - today.getDay()));
+
+    //         switch (activeFilter) {
+    //             case 'today':
+    //                 return eventDate.toDateString() === today.toDateString();
+    //             case 'tomorrow':
+    //                 return eventDate.toDateString() === tomorrow.toDateString();
+    //             case 'weekend':
+    //                 return eventDate >= today && eventDate <= thisWeekend;
+    //             default:
+    //                 return true;
+    //         }
+    //     }
+
+    //     return false;
+    // });
 
     return (
         <div className="w-full max-w-7xl mx-auto px-4 py-16 relative overflow-hidden">
@@ -111,11 +183,22 @@ const PopularEvents = ({ showTitle = true, showBackground = true }) => {
                     ))}
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredEvents.map((event) => (
-                        <PopularEventCard key={event.id} event={event} />
-                    ))}
-                </div>
+                {loading ? (
+                    <div className="text-center py-8">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C5FF32] mx-auto"></div>
+                        <p className="text-gray-400 mt-4">Loading events...</p>
+                    </div>
+                ) : events.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {events.map((event) => (
+                            <PopularEventCard key={event._id} event={event} />
+                        ))}
+                    </div>
+                ) : (
+                    <div className="text-center py-8">
+                        <p className="text-gray-400">No events found</p>
+                    </div>
+                )}
 
                 <button className="w-full mt-8 py-4 bg-[#1C1D24] text-gray-400 rounded-xl hover:bg-[#262626] transition-colors" onClick={() => navigate('/events/all/all')}>
                     See More

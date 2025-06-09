@@ -10,9 +10,8 @@ import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/navigation";
 import { Autoplay, Pagination } from "swiper/modules";
-import axiosInstance from "@/configs/axiosConfig";
 
-const AllSponsors = () => {
+const AllGuests = () => {
     // UI States
     const [loading, setLoading] = useState(true);
     const [showMobileFilters, setShowMobileFilters] = useState(false);
@@ -40,13 +39,30 @@ const AllSponsors = () => {
     useEffect(() => {
         const fetchSponsors = async () => {
             try {
-                const { data } = await axiosInstance.get(`/management/sponsors`);
-                if (data) {
-                    setSponsors(data);
-                    console.log(data);
-                    setFilteredSponsors(data);
-                    setLoading(false);
-                }
+                // Simulate API call
+                const mockSponsors = [
+                    {
+                        id: 1,
+                        name: "Elites Mark",
+                        image: "/Images/sponsor-logo.png",
+                        eventsSponsored: 235,
+                        followers: 235,
+                        rating: 4.6,
+                        category: "Corporate",
+                        format: "Full Sponsorship",
+                        price: "paid",
+                        location: "Mumbai",
+                        socialLinks: {
+                            facebook: "#",
+                            instagram: "#",
+                            twitter: "#"
+                        }
+                    },
+                    // ... other sponsors
+                ];
+                setSponsors(mockSponsors);
+                setFilteredSponsors(mockSponsors);
+                setLoading(false);
             } catch (error) {
                 console.error("Error fetching sponsors:", error);
                 setLoading(false);
@@ -453,14 +469,14 @@ const AllSponsors = () => {
                             </div>
                         ) : (
                             <div className="space-y-4">
-                                {sponsors.length === 0 ? (
+                                {filteredSponsors.length === 0 ? (
                                     <div className="text-center text-gray-400 py-8">
                                         No sponsors found matching your criteria
                                     </div>
                                 ) : (
-                                    sponsors.map((sponsor) => (
+                                    filteredSponsors.map((sponsor) => (
                                         <SponsorCard
-                                            key={sponsor._id}
+                                            key={sponsor.id}
                                             sponsor={sponsor}
                                             onSocialClick={handleSocialClick}
                                         />
@@ -483,32 +499,30 @@ const SponsorCard = ({ sponsor, onSocialClick }) => {
                 {/* Sponsor Logo/Image */}
                 <div className="w-full sm:w-60 h-48 sm:h-full flex-shrink-0">
                     <img
-                        src={"/Images/sponsor-logo.png"}
-                        // src={sponsor.image || "/Images/sponsor-logo.png"}
-                        alt={sponsor.businessName}
+                        src={sponsor.image}
+                        alt={sponsor.name}
                         className="w-full h-full object-cover"
                     />
                 </div>
 
                 {/* Content Section */}
-                <div className="flex-1 pl-4 sm:pl-6 flex flex-col justify-around">
+                <div className="flex-1 p-4 sm:p-6 flex flex-col justify-between">
                     <div>
-                        {/* Sponsor Name and Description */}
-                        <h3 className="text-white text-xl sm:text-2xl font-semibold mb-2">{sponsor.businessName}</h3>
-                        <p className="text-gray-400 text-sm mb-4 line-clamp-2">{sponsor.description}</p>
+                        {/* Sponsor Name */}
+                        <h3 className="text-white text-xl sm:text-2xl font-semibold mb-4 sm:mb-6">{sponsor.name}</h3>
 
                         {/* Stats Row */}
-                        <div className="flex justify-between sm:justify-start sm:space-x-12 mb-2">
+                        <div className="flex justify-between sm:justify-start sm:space-x-12 mb-6">
                             <div className="flex flex-col items-center">
                                 <div className="flex items-center gap-1 sm:gap-2">
-                                    <span className="text-[#C5FF32] text-lg sm:text-xl font-bold">{sponsor.eventsSponsoredCount}</span>
+                                    <span className="text-[#C5FF32] text-lg sm:text-xl font-bold">{sponsor.eventsSponsored}</span>
                                     <img src="/icons/location-icon.svg" alt="Events" className="w-[14px] h-[15px] sm:w-[17px] sm:h-[18px]" />
                                 </div>
                                 <span className="text-gray-400 text-[10px] sm:text-xs mt-1">Events Sponsored</span>
                             </div>
                             <div className="flex flex-col items-center">
                                 <div className="flex items-center gap-1 sm:gap-2">
-                                    <span className="text-[#C5FF32] text-lg sm:text-xl font-bold">{sponsor.followersCount}</span>
+                                    <span className="text-[#C5FF32] text-lg sm:text-xl font-bold">{sponsor.followers}</span>
                                     <img src="/icons/Event-icon.svg" alt="Followers" className="w-[14px] h-[15px] sm:w-[17px] sm:h-[18px]" />
                                 </div>
                                 <span className="text-gray-400 text-[10px] sm:text-xs mt-1">Followers</span>
@@ -521,35 +535,31 @@ const SponsorCard = ({ sponsor, onSocialClick }) => {
                                 <span className="text-gray-400 text-[10px] sm:text-xs mt-1">Rating</span>
                             </div>
                         </div>
-
-                        {/* Products Preview
-                        {sponsor.products && sponsor.products.length > 0 && (
-                            <div className="mb-4">
-                                <h4 className="text-white text-sm font-medium mb-2">Products</h4>
-                                <div className="flex gap-2">
-                                    {sponsor.products.slice(0, 2).map((product) => (
-                                        <div key={product._id} className="bg-[#2A2B32] px-3 py-1 rounded-full">
-                                            <span className="text-gray-300 text-xs">{product.name}</span>
-                                        </div>
-                                    ))}
-                                    {sponsor.products.length > 2 && (
-                                        <div className="bg-[#2A2B32] px-3 py-1 rounded-full">
-                                            <span className="text-gray-300 text-xs">+{sponsor.products.length - 2} more</span>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        )} */}
                     </div>
 
-                    {/* Contact Info and Button Row */}
-                    <div className="flex items-center justify-between">
-                        <div className="text-gray-400 text-sm">
-                            Contact: {sponsor.contactName}
-                        </div>
-                        <div>
+                    {/* Social Links and Button Row */}
+                    <div className="flex items-center space-x-3">
+                        <button
+                            onClick={() => onSocialClick(sponsor.socialLinks.facebook, 'Facebook')}
+                            className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-transparent flex items-center justify-center text-[#00FFB2] hover:text-[#00FFB2]/80 transition-colors"
+                        >
+                            <FaFacebook size={16} className="sm:text-lg" />
+                        </button>
+                        <button
+                            onClick={() => onSocialClick(sponsor.socialLinks.instagram, 'Instagram')}
+                            className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-transparent flex items-center justify-center text-[#00FFB2] hover:text-[#00FFB2]/80 transition-colors"
+                        >
+                            <FaInstagram size={16} className="sm:text-lg" />
+                        </button>
+                        <button
+                            onClick={() => onSocialClick(sponsor.socialLinks.twitter, 'Twitter')}
+                            className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-transparent flex items-center justify-center text-[#00FFB2] hover:text-[#00FFB2]/80 transition-colors"
+                        >
+                            <FaTwitter size={16} className="sm:text-lg" />
+                        </button>
+                        <div className="ml-auto">
                             <a
-                                href={`/sponsor/${sponsor._id}`}
+                                href={`/sponsor/${sponsor.id}`}
                                 className="px-3 py-1.5 sm:px-5 sm:py-2 bg-[#C5FF32] text-black rounded-md text-center text-xs sm:text-sm font-medium hover:bg-[#b3ff00] transition-colors"
                             >
                                 View Profile
@@ -562,4 +572,4 @@ const SponsorCard = ({ sponsor, onSocialClick }) => {
     );
 };
 
-export default AllSponsors;
+export default AllGuests;

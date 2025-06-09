@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { EventCard } from "../components/EventCard";
 import { FaInstagram, FaTwitter, FaFacebook } from "react-icons/fa";
 import { IoLocationOutline, IoTimeOutline, IoCalendarOutline, IoEyeOutline } from 'react-icons/io5';
@@ -7,9 +7,43 @@ import { Link } from 'react-router-dom';
 import { Dialog } from '@headlessui/react';
 import { BsCalendarEvent } from 'react-icons/bs';
 import followIcon from '/icons/follow.svg';
+import axiosInstance from "@/configs/axiosConfig";
+import { useParams } from "react-router-dom";
 
 const SponserPage = () => {
+  const {id} = useParams();
+
     const [loading, setLoading] = useState(true);
+    const [sponsor, setSponsor] = useState({
+        rating: 0,
+        eventsSponsoredCount: 0,
+        followers: [],
+        followersCount: 0,
+        _id: "",
+        email: "",
+        businessName: "",
+        taxIdentificationNumber: "",
+        description: "",
+        contactName: "",
+        role: "",
+        preferredEvents: [],
+        sponsorshipExpectations: [],
+        products: [],
+        createdAt: "",
+        posts: [],
+        eventsSponsored: []
+    });
+
+    // Mock data for UI development
+    const mockSponsor = {
+        name: "Dj Kazi",
+        location: "Lagos, Nigeria",
+        followers: "2.3k",
+        rating: 4.5,
+        reviews: 32,
+        description: "Your description goes here"
+    };
+
     const [activeTab, setActiveTab] = useState("reviews");
     const [rating, setRating] = useState(0);
     const [reviewText, setReviewText] = useState('');
@@ -59,6 +93,23 @@ const SponserPage = () => {
         // Add more events as needed
     ]);
 
+    useEffect(() => {
+        const fetchSponsor = async () => {
+            try {
+                const {data} = await axiosInstance.get(`management/sponsors/${id}`);
+                if (data) {
+                    setSponsor(data);
+                    console.log(data);
+                    setLoading(false);
+                }
+            } catch (error) {
+                console.error('Error fetching sponsor:', error);
+                setLoading(false);
+            }
+        };
+        fetchSponsor();
+    }, [id]);
+
     const totalPosts = posts.length;
     const totalSponsoredEvents = sponsoredEvents.length;
 
@@ -67,15 +118,6 @@ const SponserPage = () => {
         { id: "posts", label: `Posts (${totalPosts})` },
         { id: "sponsoredEvents", label: `Events Sponsored (${totalSponsoredEvents})` }
     ];
-
-    const sponsor = {
-        name: "Dj Kazi",
-        location: "Lagos, Nigeria",
-        followers: "2.3k",
-        rating: 4.5,
-        reviews: 32,
-        description: "Your description goes here"
-    };
 
     const upcomingEvents = [
         {
@@ -459,17 +501,17 @@ const SponserPage = () => {
                             <div className="pt-20">
                                 <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start">
                                     <div className="flex flex-col gap-1">
-                                        <h1 className="text-2xl text-white font-bold">Dj Kazi</h1>
+                                        <h1 className="text-2xl text-white font-bold">{sponsor.businessName || mockSponsor.name}</h1>
                                         <p className="text-[#3FE1B6] text-sm">Sponsor</p>
-                                        <p className="text-gray-400 text-sm">Lagos, Nigeria</p>
+                                        <p className="text-gray-400 text-sm">{mockSponsor.location}</p>
 
                                         <div className="flex items-center gap-2 mt-1">
-                                            <span className="text-white text-sm">2.3k followers</span>
+                                            <span className="text-white text-sm">{sponsor.followersCount || mockSponsor.followers} followers</span>
                                             <span className="text-gray-400">•</span>
                                             <div className="flex items-center gap-1">
                                                 <span className="text-yellow-400">⭐</span>
                                                 <span className="text-white text-sm">
-                                                    {calculateAverageRating()} rating ({totalReviews} reviews)
+                                                    {sponsor.rating || mockSponsor.rating} rating ({mockSponsor.reviews} reviews)
                                                 </span>
                                             </div>
                                         </div>
@@ -482,7 +524,7 @@ const SponserPage = () => {
 
                                     <div className="mt-8 lg:mt-0 lg:w-1/3">
                                         <h2 className="text-white text-xl">About me</h2>
-                                        <p className="text-gray-400 mt-2">Your description goes here</p>
+                                        <p className="text-gray-400 mt-2">{sponsor.description || mockSponsor.description}</p>
                                     </div>
                                 </div>
 

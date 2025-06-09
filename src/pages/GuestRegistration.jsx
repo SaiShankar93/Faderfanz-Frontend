@@ -10,23 +10,23 @@ const GuestRegistration = () => {
 
   const [formData, setFormData] = useState({
     personalDetails: {
-      firstName: "",
-      lastName: "",
-      stageName: "",
-      bio: "",
-      email: "", // New field
-      password: "", // New field
+      firstName: "f",
+      lastName: "f",
+      stageName: "f",
+      bio: "f",
+      email: "f@gmail.com", // New field
+      password: "123456789", // New field
     },
     mediaFiles: {
       images: [],
-      video: null,
+      // video: null, // Commented out video
     },
   });
 
   // Preview states for uploaded files
   const [previews, setPreviews] = useState({
     images: [],
-    video: null,
+    // video: null, // Commented out video
   });
 
   // Handle personal details changes
@@ -77,7 +77,8 @@ const GuestRegistration = () => {
     }
   };
 
-  // Handle video upload
+  // Handle video upload - Commented out
+  /*
   const handleVideoUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -105,6 +106,7 @@ const GuestRegistration = () => {
       }));
     }
   };
+  */
 
   // Remove image
   const handleRemoveImage = (index) => {
@@ -121,7 +123,8 @@ const GuestRegistration = () => {
     }));
   };
 
-  // Remove video
+  // Remove video - Commented out
+  /*
   const handleRemoveVideo = () => {
     setPreviews((prev) => ({
       ...prev,
@@ -135,6 +138,7 @@ const GuestRegistration = () => {
       },
     }));
   };
+  */
 
   // Form validation
   const validateForm = () => {
@@ -184,26 +188,27 @@ const GuestRegistration = () => {
 
       // Append images
       formData.mediaFiles.images.forEach((image, index) => {
-        formDataToSend.append(`images[${index}]`, image);
+        formDataToSend.append(`image`, image);
       });
 
-      // Append video if exists
+      // Append video if exists - Commented out
+      /*
       if (formData.mediaFiles.video) {
         formDataToSend.append("video", formData.mediaFiles.video);
       }
+      */
 
       // Here you'll add your API call
       const response = await axiosInstance.post(
         "/auth/register/guest",
         formDataToSend
       );
-      console.log("resp", response);
 
-      if (response.curator) {
+      if (response.data.guest) {
         toast.success("Registration successful!");
         navigate("/login");
       } else {
-        toast.error(response.message);
+        toast.error(response.data.message);
       }
     } catch (error) {
       toast.error(error.response?.data?.message || "Registration failed");
@@ -394,44 +399,48 @@ const GuestRegistration = () => {
 
             {/* Upload Media Section */}
             <div className="space-y-4">
-              <h2 className="text-xl font-semibold">Upload images/video</h2>
+              <h2 className="text-xl font-semibold">Upload Images</h2>
               <p className="text-sm text-gray-400">
-                Upload images and video to showcase yourself
+                Upload multiple images to showcase yourself (Max 5MB per image)
               </p>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                 {/* Images */}
                 {previews.images.map((preview, index) => (
-                  <div key={index} className="relative aspect-square">
+                  <div key={index} className="relative aspect-square group">
                     <img
                       src={preview}
                       alt={`Preview ${index + 1}`}
                       className="w-full h-full object-cover rounded-lg"
                     />
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveImage(index)}
-                      className="absolute top-2 right-2 p-1 bg-black bg-opacity-50 rounded-full text-white hover:bg-opacity-75"
-                    >
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
+                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all duration-200 rounded-lg flex items-center justify-center">
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveImage(index)}
+                        className="opacity-0 group-hover:opacity-100 p-2 bg-red-500 rounded-full text-white hover:bg-red-600 transition-all duration-200"
                       >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M6 18L18 6M6 6l12 12"
-                        />
-                      </svg>
-                    </button>
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
                 ))}
 
                 {/* Image Upload Button */}
-                <label className="aspect-square flex flex-col items-center justify-center border-2 border-dashed border-gray-600 rounded-lg cursor-pointer hover:border-purple-500">
+                <label className={` aspect-square flex flex-col items-center justify-center border-2 border-dashed border-gray-600 rounded-lg cursor-pointer hover:border-purple-500 transition-all duration-200 hover:bg-gray-800/20 ${
+                  previews.images.length >= 1 ? "hidden" : ""
+                }`}>
                   <input
                     type="file"
                     multiple
@@ -445,26 +454,12 @@ const GuestRegistration = () => {
                     className="w-12 h-12 mb-2"
                   />
                   <span className="text-xs text-[#00FFB3]">Upload Images</span>
-                </label>
-
-                {/* Video Upload Button */}
-                <label className="aspect-square flex flex-col items-center justify-center border-2 border-dashed border-gray-600 rounded-lg cursor-pointer hover:border-purple-500">
-                  <input
-                    type="file"
-                    accept="video/*"
-                    className="hidden"
-                    onChange={handleVideoUpload}
-                  />
-                  <img
-                    src="/Images/img-upload.svg"
-                    alt="upload"
-                    className="w-12 h-12 mb-2"
-                  />
-                  <span className="text-xs text-[#00FFB3]">Upload Video</span>
+                  <span className="text-xs text-gray-400 mt-1">(Max 5MB each)</span>
                 </label>
               </div>
 
-              {/* Video Preview */}
+              {/* Video Preview - Commented out */}
+              {/*
               {previews.video && (
                 <div className="relative mt-4">
                   <video
@@ -493,6 +488,7 @@ const GuestRegistration = () => {
                   </button>
                 </div>
               )}
+              */}
             </div>
 
             {/* Submit Button */}

@@ -5,46 +5,39 @@ import { FiFilter } from "react-icons/fi";
 import { IoMdClose } from "react-icons/io";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination } from "swiper/modules";
-import axios from "axios";
 
 import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/navigation";
-import axiosInstance from "@/configs/axiosConfig";
 
-const AllCurators = () => {
+const AllVenueOwners = () => {
   // UI States
   const [loading, setLoading] = useState(true);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [expandedSections, setExpandedSections] = useState({
     price: false,
     category: false,
-    format: false,
+    amenities: false,
   });
 
   // Data States
-  const [filteredCurators, setFilteredCurators] = useState([]);
+  const [filteredVenueOwners, setFilteredVenueOwners] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLocation, setSelectedLocation] = useState("Mumbai");
-  const [curators, setCurators] = useState([]);
-
-  // Fetch curators from API
-  const getCurators = async () => {
+  const [venueOwners, setVenueOwners] = useState([]);
+  const getVenueOwners = async () => {
     try {
-      const { data } = await axiosInstance.get("/management/curators");
-      if (data) {
-        setCurators(data);
-        setFilteredCurators(data);
-      }
-      setLoading(false);
+      const response = await axiosInstance.get(`/venue-owners`);
+      if (response.data) {
+        setVenueOwners(response.data);
+      } else throw new Error("Fetching Venue Owners failed");
     } catch (error) {
-      console.error("Error fetching curators:", error);
-      setLoading(false);
+      console.error("Error fetching venue owners:", error);
+      toast.error("Failed to fetch venue owners");
     }
   };
-
   useEffect(() => {
-    getCurators();
+    getVenueOwners();
   }, []);
 
   // Filter States
@@ -52,47 +45,86 @@ const AllCurators = () => {
   const [filters, setFilters] = useState({
     price: [],
     category: [],
-    format: [],
+    amenities: [],
   });
+
+  // Mock data - Replace with API call
+  useEffect(() => {
+    const fetchVenueOwners = async () => {
+      try {
+        // Simulate API call
+        const mockVenueOwners = [
+          {
+            id: 1,
+            name: "Grand Ballroom",
+            image: "/Images/post.png",
+            events: 235,
+            capacity: 500,
+            rating: 4.6,
+            category: "Wedding Venue",
+            amenities: ["Parking", "Catering"],
+            price: "paid",
+            location: "Mumbai",
+            socialLinks: {
+              facebook: "#",
+              instagram: "#",
+              twitter: "#",
+            },
+          },
+          // ... other venue owners
+        ];
+        setVenueOwners(mockVenueOwners);
+        setFilteredVenueOwners(mockVenueOwners);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching venue owners:", error);
+        setLoading(false);
+      }
+    };
+
+    fetchVenueOwners();
+  }, []);
 
   // Filter and Search Logic
   useEffect(() => {
-    let result = [...curators];
+    let result = [...venueOwners];
 
     // Search filter
     if (searchQuery) {
       result = result.filter(
-        (curator) =>
-          curator.stageName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          curator.bio.toLowerCase().includes(searchQuery.toLowerCase())
+        (venue) =>
+          venue.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          venue.category.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
     // Location filter
     if (selectedLocation) {
       result = result.filter(
-        (curator) => curator.location === selectedLocation
+        (venue) => venue.location === selectedLocation
       );
     }
 
     // Apply category filters
     if (filters.category.length > 0) {
-      result = result.filter((curator) =>
-        filters.category.includes(curator.category?.toLowerCase())
+      result = result.filter((venue) =>
+        filters.category.includes(venue.category.toLowerCase())
       );
     }
 
-    // Apply format filters
-    if (filters.format.length > 0) {
-      result = result.filter((curator) =>
-        filters.format.includes(curator.format?.toLowerCase())
+    // Apply amenities filters
+    if (filters.amenities.length > 0) {
+      result = result.filter((venue) =>
+        filters.amenities.some(amenity => 
+          venue.amenities.includes(amenity.toLowerCase())
+        )
       );
     }
 
     // Apply price filters
     if (filters.price.length > 0) {
-      result = result.filter((curator) =>
-        filters.price.includes(curator.price?.toLowerCase())
+      result = result.filter((venue) =>
+        filters.price.includes(venue.price.toLowerCase())
       );
     }
 
@@ -100,18 +132,18 @@ const AllCurators = () => {
     result.sort((a, b) => {
       switch (selectedSort) {
         case "rating":
-          return b.averageRating - a.averageRating;
-        case "followers":
-          return b.followers.length - a.followers.length;
-        case "following":
-          return b.followingCount - a.followingCount;
+          return b.rating - a.rating;
+        case "events":
+          return b.events - a.events;
+        case "capacity":
+          return b.capacity - a.capacity;
         default:
           return 0;
       }
     });
 
-    setFilteredCurators(result);
-  }, [curators, searchQuery, selectedLocation, filters, selectedSort]);
+    setFilteredVenueOwners(result);
+  }, [venueOwners, searchQuery, selectedLocation, filters, selectedSort]);
 
   // Handle search input
   const handleSearch = (e) => {
@@ -162,29 +194,29 @@ const AllCurators = () => {
 
   // Filter categories
   const allCategories = [
-    "DJs",
-    "Musicians",
-    "Bands",
-    "Solo Artists",
-    "Orchestras",
-    "Live Performers",
-    "Music Producers",
-    "Sound Engineers",
-    "Event Hosts",
-    "MCs",
+    "Wedding Venue",
+    "Conference Hall",
+    "Party Hall",
+    "Restaurant",
+    "Hotel",
+    "Banquet Hall",
+    "Outdoor Venue",
+    "Sports Venue",
+    "Exhibition Space",
+    "Theater",
   ];
 
-  const allFormats = [
-    "Live Music",
-    "DJ Sets",
-    "Band Performance",
-    "Solo Performance",
-    "Orchestra",
-    "Electronic Music",
-    "Acoustic Sets",
-    "Hybrid Performance",
-    "Virtual Performance",
-    "Interactive Shows",
+  const allAmenities = [
+    "Parking",
+    "Catering",
+    "WiFi",
+    "Audio/Video Equipment",
+    "Air Conditioning",
+    "Bar",
+    "Kitchen",
+    "Dance Floor",
+    "Stage",
+    "Security",
   ];
 
   // Render filter sections
@@ -249,7 +281,7 @@ const AllCurators = () => {
       <div className="relative w-full h-[300px] sm:h-[400px] md:h-[500px]">
         <div className="absolute inset-0 flex flex-col items-center justify-center z-20 px-4">
           <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white text-center mb-6 md:mb-12">
-            Explore Our Curators
+            Explore Our Venues
           </h1>
 
           {/* Search Bar */}
@@ -261,7 +293,7 @@ const AllCurators = () => {
                   type="text"
                   value={searchQuery}
                   onChange={handleSearch}
-                  placeholder="Search Curators, Categories..."
+                  placeholder="Search Venues, Categories..."
                   className="w-full px-3 py-3 bg-transparent text-white focus:outline-none placeholder-gray-400 min-w-0"
                 />
               </div>
@@ -332,11 +364,11 @@ const AllCurators = () => {
                 <option value="rating" className="bg-[#1C1D24]">
                   Rating
                 </option>
-                <option value="performances" className="bg-[#1C1D24]">
-                  Performances
+                <option value="events" className="bg-[#1C1D24]">
+                  Events
                 </option>
-                <option value="followers" className="bg-[#1C1D24]">
-                  Followers
+                <option value="capacity" className="bg-[#1C1D24]">
+                  Capacity
                 </option>
               </select>
             </div>
@@ -392,8 +424,8 @@ const AllCurators = () => {
                 {/* Category Filter */}
                 {renderFilterSection("Category", allCategories, "category")}
 
-                {/* Format Filter */}
-                {renderFilterSection("Format", allFormats, "format")}
+                {/* Amenities Filter */}
+                {renderFilterSection("Amenities", allAmenities, "amenities")}
 
                 {/* Apply Filters Button */}
                 <div className="mt-8">
@@ -446,8 +478,8 @@ const AllCurators = () => {
             {/* Category Filter */}
             {renderFilterSection("Category", allCategories, "category")}
 
-            {/* Format Filter */}
-            {renderFilterSection("Format", allFormats, "format")}
+            {/* Amenities Filter */}
+            {renderFilterSection("Amenities", allAmenities, "amenities")}
           </aside>
 
           {/* Main content */}
@@ -455,7 +487,7 @@ const AllCurators = () => {
             {/* Desktop Header */}
             <div className="hidden lg:flex justify-between items-center mb-8">
               <h2 className="text-2xl font-semibold text-white">
-                All Curators
+                All Venues
               </h2>
               <div className="flex items-center gap-3">
                 <span className="text-gray-400">Sort by:</span>
@@ -467,11 +499,11 @@ const AllCurators = () => {
                   <option value="rating" className="bg-[#1C1D24]">
                     Rating
                   </option>
-                  <option value="performances" className="bg-[#1C1D24]">
-                    Performances
+                  <option value="events" className="bg-[#1C1D24]">
+                    Events
                   </option>
-                  <option value="followers" className="bg-[#1C1D24]">
-                    Followers
+                  <option value="capacity" className="bg-[#1C1D24]">
+                    Capacity
                   </option>
                 </select>
               </div>
@@ -479,7 +511,7 @@ const AllCurators = () => {
 
             {/* Mobile Header */}
             <div className="lg:hidden mb-6">
-              <h2 className="text-xl font-semibold text-white">All Curators</h2>
+              <h2 className="text-xl font-semibold text-white">All Venues</h2>
             </div>
 
             {loading ? (
@@ -492,15 +524,15 @@ const AllCurators = () => {
               </div>
             ) : (
               <div className="space-y-4">
-                {curators.length === 0 ? (
+                {filteredVenueOwners.length === 0 ? (
                   <div className="text-center text-gray-400 py-8">
-                    No curators found matching your criteria
+                    No venues found matching your criteria
                   </div>
                 ) : (
-                  curators.map((curator) => (
-                    <CuratorCard
-                      key={curator._id}
-                      curator={curator}
+                  filteredVenueOwners.map((venue) => (
+                    <VenueCard
+                      key={venue.id}
+                      venue={venue}
                       onSocialClick={handleSocialClick}
                     />
                   ))
@@ -514,69 +546,64 @@ const AllCurators = () => {
   );
 };
 
-// CuratorCard component
-const CuratorCard = ({ curator, onSocialClick }) => {
+// VenueCard component
+const VenueCard = ({ venue, onSocialClick }) => {
   return (
     <div className="bg-[#1C1D24]/50 backdrop-blur-sm rounded-xl overflow-hidden hover:bg-[#1C1D24]/70 transition-colors">
       <div className="flex flex-col sm:flex-row items-stretch h-auto sm:h-60">
-        {/* Curator Image */}
+        {/* Venue Image */}
         <div className="w-full sm:w-60 h-48 sm:h-full flex-shrink-0">
           <img
-            // src={curator.images?.[0] || "/Images/post.png"}
-            src={"/Images/post.png"}
-            alt={curator.stageName}
+            src={venue.image}
+            alt={venue.name}
             className="w-full h-full object-cover"
           />
         </div>
 
         {/* Content Section */}
-        <div className="flex-1  pl-4 sm:pl-6 flex flex-col justify-between">
-          <div className="">
+        <div className="flex-1 p-4 sm:p-6 flex flex-col justify-between">
           <div>
-            {/* Curator Name */}
+            {/* Venue Name */}
             <h3 className="text-white text-xl sm:text-2xl font-semibold mb-4 sm:mb-6">
-              {curator.stageName}
+              {venue.name}
             </h3>
-
-            {/* Bio */}
-            <p className="text-gray-400 text-sm mb-4">{curator.bio}</p>
 
             {/* Stats Row */}
             <div className="flex justify-between sm:justify-start sm:space-x-12 mb-6">
               <div className="flex flex-col items-center">
                 <div className="flex items-center gap-1 sm:gap-2">
                   <span className="text-[#C5FF32] text-lg sm:text-xl font-bold">
-                    {curator.followers.length}
-                  </span>
-                  <img
-                    src="/icons/Event-icon.svg"
-                    alt="Followers"
-                    className="w-[14px] h-[15px] sm:w-[17px] sm:h-[18px]"
-                  />
-                </div>
-                <span className="text-gray-400 text-[10px] sm:text-xs mt-1">
-                  Followers
-                </span>
-              </div>
-              <div className="flex flex-col items-center">
-                <div className="flex items-center gap-1 sm:gap-2">
-                  <span className="text-[#C5FF32] text-lg sm:text-xl font-bold">
-                    {curator.followingCount}
+                    {venue.events}
                   </span>
                   <img
                     src="/icons/location-icon.svg"
-                    alt="Following"
+                    alt="Events"
                     className="w-[14px] h-[15px] sm:w-[17px] sm:h-[18px]"
                   />
                 </div>
                 <span className="text-gray-400 text-[10px] sm:text-xs mt-1">
-                  Following
+                  Events
                 </span>
               </div>
               <div className="flex flex-col items-center">
                 <div className="flex items-center gap-1 sm:gap-2">
                   <span className="text-[#C5FF32] text-lg sm:text-xl font-bold">
-                    {curator.averageRating.toFixed(1)}
+                    {venue.capacity}
+                  </span>
+                  <img
+                    src="/icons/Event-icon.svg"
+                    alt="Capacity"
+                    className="w-[14px] h-[15px] sm:w-[17px] sm:h-[18px]"
+                  />
+                </div>
+                <span className="text-gray-400 text-[10px] sm:text-xs mt-1">
+                  Capacity
+                </span>
+              </div>
+              <div className="flex flex-col items-center">
+                <div className="flex items-center gap-1 sm:gap-2">
+                  <span className="text-[#C5FF32] text-lg sm:text-xl font-bold">
+                    {venue.rating}
                   </span>
                   <img
                     src="/icons/Star.svg"
@@ -590,35 +617,41 @@ const CuratorCard = ({ curator, onSocialClick }) => {
               </div>
             </div>
           </div>
+
           {/* Social Links and Button Row */}
           <div className="flex items-center space-x-3">
             <button
-              onClick={() => onSocialClick("#", "Facebook")}
+              onClick={() =>
+                onSocialClick(venue.socialLinks.facebook, "Facebook")
+              }
               className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-transparent flex items-center justify-center text-[#00FFB2] hover:text-[#00FFB2]/80 transition-colors"
             >
               <FaFacebook size={16} className="sm:text-lg" />
             </button>
             <button
-              onClick={() => onSocialClick("#", "Instagram")}
+              onClick={() =>
+                onSocialClick(venue.socialLinks.instagram, "Instagram")
+              }
               className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-transparent flex items-center justify-center text-[#00FFB2] hover:text-[#00FFB2]/80 transition-colors"
             >
               <FaInstagram size={16} className="sm:text-lg" />
             </button>
             <button
-              onClick={() => onSocialClick("#", "Twitter")}
+              onClick={() =>
+                onSocialClick(venue.socialLinks.twitter, "Twitter")
+              }
               className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-transparent flex items-center justify-center text-[#00FFB2] hover:text-[#00FFB2]/80 transition-colors"
             >
               <FaTwitter size={16} className="sm:text-lg" />
             </button>
             <div className="ml-auto">
               <a
-                href={`/curator/${curator._id}`}
+                href={`/venue/${venue.id}`}
                 className="px-3 py-1.5 sm:px-5 sm:py-2 bg-[#C5FF32] text-black rounded-md text-center text-xs sm:text-sm font-medium hover:bg-[#b3ff00] transition-colors"
               >
-                View Profile
+                View Venue
               </a>
             </div>
-          </div>
           </div>
         </div>
       </div>
@@ -626,4 +659,4 @@ const CuratorCard = ({ curator, onSocialClick }) => {
   );
 };
 
-export default AllCurators;
+export default AllVenueOwners;

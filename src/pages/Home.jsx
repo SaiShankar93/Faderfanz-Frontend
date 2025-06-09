@@ -42,6 +42,7 @@ import { SponserCard } from "@/components/SponserCard";
 import { UserCard } from "@/components/UsersCard";
 import ExploreCategories from "@/components/ExploreCategories";
 import PopularEvents from "@/components/PopularEvents";
+import axiosInstance from "@/configs/axiosConfig";
 
 const box = [
   {
@@ -244,21 +245,21 @@ const Home = () => {
     useContext(MainAppContext);
 
   const [activeVenueFilter, setActiveVenueFilter] = useState('All');
-  const [venueOwners] = useState([
-    // Mock data - replace with your actual data
-    { id: 1, name: "Kazi Culture E.", rating: 4.6 },
-    { id: 2, name: "Venue Owner 2", rating: 4.8 },
-    { id: 3, name: "Venue Owner 3", rating: 4.2 }
-  ]);
+  const [venueOwners, setVenueOwners] = useState([]);
 
   const [activeCuratorFilter, setActiveCuratorFilter] = useState('All');
   const [showAllCurators, setShowAllCurators] = useState(false);
+  const [curators, setCurators] = useState([]);
+  const [filteredCurators, setFilteredCurators] = useState([]);
 
   const [activeFundingFilter, setActiveFundingFilter] = useState('All');
   const [showAllCrowdfunding, setShowAllCrowdfunding] = useState(false);
 
   const [activeGuestFilter, setActiveGuestFilter] = useState('All');
   const [showAllGuests, setShowAllGuests] = useState(false);
+  const [guests, setGuests] = useState([]);
+  const [campaigns, setCampaigns] = useState([]);
+  const [showAllVenueOwners, setShowAllVenueOwners] = useState(false);
 
   const [activeFilter, setActiveFilter] = useState('All');
 
@@ -299,16 +300,15 @@ const Home = () => {
     setLoading(true);
     try {
       const response = await axios.get(
-        `${import.meta.env.VITE_SERVER_URL}/product/all`
+        `${import.meta.env.VITE_SERVER_URL}/events`
       );
-      // console.log(response.data);
       setFilteredProducts(response.data);
+      // console.log("Events", response.data);
       const chunkedArray = [];
       for (let i = 0; i < response?.data?.length; i += 10) {
         chunkedArray.push(response?.data?.slice(i, i + 10));
       }
-      console.log(chunkedArray);
-      // setNewProducts(chunkedArray[0]);
+      setNewProducts(chunkedArray[0]);
     } catch (error) {
       console.error("Error fetching products:", error);
     }
@@ -341,13 +341,26 @@ const Home = () => {
   const getAllBlogs = async () => {
     try {
       const response = await axios.get(
-        `${import.meta.env.VITE_SERVER_URL}/admin/blogs`
+        `${import.meta.env.VITE_SERVER_URL}/blogs`
       );
-      console.log(response.data);
-      setBlogs(response.data);
+      if (response.data.success) {
+        setBlogs(response.data.data);
+      } else throw new Error("Fetching Blogs failed");
     } catch (error) {
       console.error("Error fetching categories:", error);
     }
+  };
+  const getAllCampaigns = async () => {
+      try {
+        const {data} = await axiosInstance.get(`management/campaigns`);
+        if (data) {
+          setCampaigns(data);
+        } else throw new Error("Fetching Crowdfunding campaigns failed");
+      } catch (error) {
+        console.error("Error fetching crowdfunding campaigns:", error);
+        toast.error("Failed to fetch crowdfunding campaigns");
+      }
+  
   };
 
   const getCatalogue = async () => {
@@ -391,6 +404,39 @@ const Home = () => {
     }
   };
 
+  const getCurators = async () => {
+    try {
+      const { data } = await axiosInstance.get(`/management/curators`);
+      if (data) {
+        setCurators(data);
+        setFilteredCurators(data);
+      }
+    } catch (error) {
+      console.error("Error fetching curators:", error);
+    }
+  };
+
+  const getGuests = async () => {
+    try {
+      const { data } = await axiosInstance.get(`/management/guests`);
+      if (data) {
+        setGuests(data);
+      }
+    } catch (error) {
+      console.error("Error fetching guests:", error);
+    }
+  };
+  const getVenueOwners = async () => {
+    try {
+      const { data } = await axiosInstance.get(`/management/venue-owners`);
+      if (data) {
+        setVenueOwners(data);
+      }
+    } catch (error) {
+      console.error("Error fetching venue owners:", error);
+    }
+  };
+
   const truncateContent = (htmlContent, wordLimit) => {
     const textContent = htmlContent.replace(/<[^>]+>/g, "");
     const words = textContent.split(/\s+/);
@@ -423,20 +469,14 @@ const Home = () => {
     getCatalogue();
     getSlider();
     fetchTestimonials();
+    getCurators();
+    getGuests();
+    getAllCampaigns();
+    getVenueOwners();
     // setWishlistedProducts(wishlist);
   }, []);
 
   const getFilteredCurators = () => {
-    // Mock data - replace with your actual curator data
-    const curators = [
-      { id: 1, name: "DJ Kazi", rating: 4.6, price: 100, bookings: 50 },
-      { id: 2, name: "DJ Kazi", rating: 4.8, price: 80, bookings: 65 },
-      { id: 3, name: "DJ Kazi", rating: 4.2, price: 120, bookings: 45 },
-      { id: 4, name: "DJ Kazi", rating: 4.9, price: 90, bookings: 70 },
-      { id: 5, name: "DJ Kazi", rating: 4.5, price: 70, bookings: 55 },
-      { id: 6, name: "DJ Kazi", rating: 4.7, price: 110, bookings: 60 }
-    ];
-
     let filtered = [...curators];
 
     switch (activeCuratorFilter) {
@@ -458,41 +498,15 @@ const Home = () => {
     return showAllCurators ? filtered : filtered.slice(0, 3);
   };
 
-  const guests = [
-    {
-      id: 1,
-      name: "Wellings Ali",
-      image: "/Images/guestcard.png",
-      attended: 235,
-      counterRaised: 2235,
-    },
-    {
-      id: 2,
-      name: "Sarah Johnson",
-      image: "/Images/guestcard.png",
-      attended: 189,
-      counterRaised: 1875,
-    },
-    {
-      id: 3,
-      name: "Michael Chen",
-      image: "/Images/guestcard.png",
-      attended: 312,
-      counterRaised: 3450,
-    },
-    {
-      id: 4,
-      name: "Emma Davis",
-      image: "/Images/guestcard.png",
-      attended: 156,
-      counterRaised: 1590,
-    },
-    // Add more guests as needed
-  ];
-
   const filteredGuests = guests.filter(guest => {
-    // Add your filtering logic here based on activeFilter
-    return activeFilter === 'All' || guest.attended > 200; // Example filter
+    switch (activeFilter) {
+      case 'Most Active':
+        return guest.attended > 200;
+      case 'Top Contributors':
+        return guest.counterRaised > 2000;
+      default:
+        return true;
+    }
   });
 
   const handleContribute = (id) => {
@@ -580,14 +594,17 @@ const Home = () => {
 
               {/* Cards Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {getFilteredVenueOwners().map((owner) => (
+                {venueOwners.slice(0, showAllVenueOwners ? venueOwners.length : 3).map((owner) => (
                   <VenueOwnerCard key={owner.id} event={owner} />
                 ))}
               </div>
 
               {/* See More Button */}
-              <button className="w-full py-4 text-[#00FFB2] border border-[#1A1A1A] rounded-xl hover:bg-[#1A1A1A]/50 transition-colors mt-8">
-                See More
+              <button
+                onClick={() => setShowAllVenueOwners(!showAllVenueOwners)}
+                className="w-full py-4 text-[#00FFB2] border border-[#1A1A1A] rounded-xl hover:bg-[#1A1A1A]/50 transition-colors mt-8"
+              >
+                {showAllVenueOwners ? 'Show Less' : 'See More'}
               </button>
             </div>
           </div>
@@ -646,9 +663,9 @@ const Home = () => {
 
               {/* Cards Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                {getFilteredCurators().map((curator) => (
-                  <div key={curator.id} className="w-full">
-                    <CuratorCard event={curator} />
+                {curators.slice(0, showAllCurators ? curators.length : 3).map((curator) => (
+                  <div key={curator._id} className="w-full">
+                    <CuratorCard curator={curator} />
                   </div>
                 ))}
               </div>
@@ -660,6 +677,7 @@ const Home = () => {
               >
                 {showAllCurators ? 'Show Less' : 'See More'}
               </button>
+              
             </div>
           </div>
         </div>
@@ -720,9 +738,9 @@ const Home = () => {
 
               {/* Cards Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
-                {[1, 2, 3].slice(0, showAllCrowdfunding ? undefined : 3).map((_, index) => (
-                  <div key={index}>
-                    <EventCard isCrowdfunding={true} />
+                {campaigns.slice(0, showAllCrowdfunding ? undefined : 3).map((campaign) => (
+                  <div key={campaign._id}>
+                    <EventCard event={campaign} isCrowdfunding={true} />
                   </div>
                 ))}
               </div>
@@ -770,7 +788,7 @@ const Home = () => {
 
           {/* Cards Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredGuests.slice(0, showAllGuests ? filteredGuests.length : 3).map((guest) => (
+            {guests.slice(0, showAllGuests ? guests.length : 3).map((guest) => (
               <GuestCard key={guest.id} guest={guest} />
             ))}
           </div>
@@ -815,14 +833,15 @@ const Home = () => {
               {/* Blogs Container */}
               <div className="overflow-x-auto scrollbar-hide">
                 <div className="flex gap-6 pb-4" style={{ width: 'max-content' }}>
-                  {[1, 2, 3, 4, 5].map((_, index) => (
+                  {blogs.map((blog, index) => (
                     <div key={index} className="w-[400px]">
                       <BlogCard
                         event={{
-                          title: "BestSeller Book Bootcamp",
-                          date: "Saturday, March 18, 9:30PM",
-                          author: "Admin",
-                          image: "/Images/blogcard.jpg"
+                          _id: blog?._id,
+                          title: blog?.title,
+                          createdAt: blog?.createdAt,
+                          author: blog?.author,
+                          image: blog?.image
                         }}
                       />
                     </div>
@@ -839,9 +858,9 @@ const Home = () => {
               </Link>
             </div>
           </div>
-        </div>
 
-        {/* Testimonials Section with Background Gradient */}
+          {/* Testimonials Section with Background Gradient */}
+        
         <div className="relative">
           {/* Testimonial Background Gradient */}
           <div className="absolute inset-0 pointer-events-none overflow-hidden">
@@ -930,6 +949,8 @@ const Home = () => {
             </div>
           </div>
         </div>
+        </div>
+
       </div>
     </section>
   );

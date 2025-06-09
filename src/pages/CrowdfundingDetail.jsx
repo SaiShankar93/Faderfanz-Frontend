@@ -4,6 +4,7 @@ import { FaShare, FaStar } from 'react-icons/fa';
 import { BiChevronDown } from 'react-icons/bi';
 import './CrowdfundingDetail.css';
 import { toast } from 'react-hot-toast';
+import axiosInstance from '@/configs/axiosConfig';
 
 const CrowdfundingDetail = () => {
     const { id } = useParams();
@@ -13,23 +14,15 @@ const CrowdfundingDetail = () => {
     const [sortBy, setSortBy] = useState('recent');
     const [isFavorited, setIsFavorited] = useState(false);
     const [campaign, setCampaign] = useState({
-        title: "Street Training",
-        description: "We are raising money for the people in the street to have a good training opportunity.",
-        target: 35000,
-        raised: 16900,
-        deadline: "23rd March, 2025",
-        createdBy: "Raihan Khan",
-        creatorImage: "/Images/testimonial.png",
-        donors: [
-            { id: 1, name: "Abuka Henry", amount: 199.00, date: "23rd January, 2023", image: "/Images/testimonial.png" },
-            { id: 2, name: "Abuka Henry", amount: 199.00, date: "23rd January, 2023", image: "/Images/testimonial.png" },
-            { id: 3, name: "Abuka Henry", amount: 199.00, date: "23rd January, 2023", image: "/Images/testimonial.png" },
-            { id: 4, name: "Abuka Henry", amount: 199.00, date: "23rd January, 2023", image: "/Images/testimonial.png" },
-            { id: 5, name: "Abuka Henry", amount: 199.00, date: "23rd January, 2023", image: "/Images/testimonial.png" },
-            { id: 6, name: "Abuka Henry", amount: 199.00, date: "23rd January, 2023", image: "/Images/testimonial.png" },
-            { id: 7, name: "Abuka Henry", amount: 199.00, date: "23rd January, 2023", image: "/Images/testimonial.png" },
-            { id: 8, name: "Abuka Henry", amount: 199.00, date: "23rd January, 2023", image: "/Images/testimonial.png" }
-        ]
+        title: '',
+        description: '',
+        amountRaised: 0,
+        goal: 0,
+        endDate: '',
+        event: null,
+        rewards: [],
+        updates: [],
+        donors: []
     });
 
     const [otherCampaigns] = useState([
@@ -69,9 +62,8 @@ const CrowdfundingDetail = () => {
         const fetchCampaignDetails = async () => {
             try {
                 setLoading(true);
-                // Simulated API call
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                // In real implementation, fetch campaign details here
+                const { data } = await axiosInstance.get(`/crowdfunding/${id}`);
+                setCampaign(data);
                 setLoading(false);
             } catch (err) {
                 setError('Failed to load campaign details');
@@ -84,6 +76,14 @@ const CrowdfundingDetail = () => {
 
     const calculateProgress = (raised, target) => {
         return Math.round((raised / target) * 100);
+    };
+
+    const formatDate = (dateString) => {
+        return new Date(dateString).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
     };
 
     const handleShare = async () => {
@@ -208,12 +208,12 @@ const CrowdfundingDetail = () => {
                     <div className="space-y-2">
                         <div className="flex justify-between items-start mb-4">
                             <div>
-                                <div className="text-2xl md:text-3xl font-bold">${campaign.raised.toLocaleString()}</div>
+                                <div className="text-2xl md:text-3xl font-bold">${campaign.amountRaised?.toLocaleString()}</div>
                                 <div className="text-gray-400 text-xs md:text-sm">raised</div>
                             </div>
                             <div className="text-right">
                                 <div className="text-gray-400 text-xs md:text-sm">Target</div>
-                                <div className="text-lg md:text-xl">${campaign.target.toLocaleString()}</div>
+                                <div className="text-lg md:text-xl">${campaign.goal?.toLocaleString()}</div>
                             </div>
                         </div>
 
@@ -221,14 +221,14 @@ const CrowdfundingDetail = () => {
                         <div className="relative h-1 bg-[#1A1A1A] rounded-full overflow-hidden">
                             <div
                                 className="absolute top-0 left-0 h-full bg-[#00FFB2] transition-all duration-300 ease-in-out"
-                                style={{ width: `${calculateProgress(campaign.raised, campaign.target)}%` }}
+                                style={{ width: `${calculateProgress(campaign.amountRaised || 0, campaign.goal || 0)}%` }}
                             >
                                 <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-white"></div>
                             </div>
                         </div>
                         <div className="flex justify-between text-xs md:text-sm text-gray-400">
-                            <span>{calculateProgress(campaign.raised, campaign.target)}%</span>
-                            <span>Deadline: {campaign.deadline}</span>
+                            <span>{calculateProgress(campaign.amountRaised || 0, campaign.goal || 0)}%</span>
+                            <span>Deadline: {formatDate(campaign.endDate)}</span>
                         </div>
                     </div>
 
@@ -262,13 +262,15 @@ const CrowdfundingDetail = () => {
                                 </button>
                             </div>
                             <div className="space-y-3">
-                                {campaign.donors.map((donor) => (
-                                    <div key={donor.id} className="flex items-center justify-between bg-[#1A1A1A]/80 backdrop-blur-sm border border-white/5 rounded-xl p-4 hover:bg-[#1A1A1A]/90 transition-all duration-300">
+                                {campaign.donors?.map((donor) => (
+                                    <div key={donor._id} className="flex items-center justify-between bg-[#1A1A1A]/80 backdrop-blur-sm border border-white/5 rounded-xl p-4 hover:bg-[#1A1A1A]/90 transition-all duration-300">
                                         <div className="flex items-center gap-3">
-                                            <img src={donor.image} alt={donor.name} className="w-8 h-8 md:w-10 md:h-10 rounded-full object-cover border border-white/10" />
+                                            <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-[#1A1A1A] flex items-center justify-center border border-white/10">
+                                                <span className="text-lg">👤</span>
+                                            </div>
                                             <div>
-                                                <p className="font-medium text-sm md:text-base text-white/90">{donor.name}</p>
-                                                <p className="text-xs md:text-sm text-white/60">{donor.date}</p>
+                                                <p className="font-medium text-sm md:text-base text-white/90">Anonymous Donor</p>
+                                                <p className="text-xs md:text-sm text-white/60">{formatDate(donor.date)}</p>
                                             </div>
                                         </div>
                                         <div className="text-right">

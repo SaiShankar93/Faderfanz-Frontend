@@ -11,22 +11,22 @@ const VenueOwnerRegistration = () => {
 
   const [formData, setFormData] = useState({
     venueDetails: {
-      venueName: "",
-      address: "",
-      gstInfo: "",
+      venueName: "d",
+      address: "d",
+      gstInfo: "d",
     },
     images: [],
     contactInfo: {
-      phone: "",
-      email: "",
-      website: "",
-      password: "", // New password field
+      phone: "1234567890",
+      email: "d@gmail.com",
+      website: "https://d.com",
+      password: "123456789", // New password field
     },
     menuProducts: [
       {
         id: Date.now(),
-        name: "",
-        price: "",
+        name: "d",
+        price: "100",
         image: null,
       },
     ],
@@ -218,41 +218,52 @@ const VenueOwnerRegistration = () => {
       // Create FormData for file uploads
       const formDataToSend = new FormData();
 
-      // Append venue details
-      Object.entries(formData.venueDetails).forEach(([key, value]) => {
-        formDataToSend.append(`venueDetails[${key}]`, value);
-      });
+      // Venue details
+      formDataToSend.append('venueName', formData.venueDetails.venueName);
+      formDataToSend.append('address', formData.venueDetails.address);
+      formDataToSend.append('gstInformation', formData.venueDetails.gstInfo);
 
-      // Append venue images
-      formData.images.forEach((image, index) => {
-        formDataToSend.append(`images[${index}]`, image);
-      });
+      // Contact info
+      formDataToSend.append('contactPhone', formData.contactInfo.phone);
+      formDataToSend.append('email', formData.contactInfo.email);
+      formDataToSend.append('password', formData.contactInfo.password);
+      formDataToSend.append('website', formData.contactInfo.website);
 
-      // Append contact information
-      Object.entries(formData.contactInfo).forEach(([key, value]) => {
-        formDataToSend.append(`contactInfo[${key}]`, value);
-      });
-
-      // Append menu products if exists
+      // Menu related
+      formDataToSend.append('hasMenu', hasMenuItems);
       if (hasMenuItems) {
-        formData.menuProducts.forEach((product, index) => {
-          formDataToSend.append(`menuProducts[${index}][name]`, product.name);
-          formDataToSend.append(`menuProducts[${index}][price]`, product.price);
-          formDataToSend.append(`menuProducts[${index}][image]`, product.image);
+        const menuProductsData = formData.menuProducts.map(product => ({
+          name: product.name,
+          price: Number(product.price)
+        }));
+        formDataToSend.append('menuProducts', JSON.stringify(menuProductsData));
+        
+        // Menu images
+        formData.menuProducts.forEach((product) => {
+          if (product.image) {
+            formDataToSend.append('menuImages', product.image);
+          }
         });
       }
 
+      // Venue images
+      formData.images.forEach((image) => {
+        formDataToSend.append('venueImages', image);
+      });
+
+      console.log(Object.fromEntries(formDataToSend));
       // Here you'll add your API call
       const response = await axiosInstance.post(
-        "/auth/register/venue",
+        "/auth/register/venue-owner",
         formDataToSend
       );
+      console.log(response);
 
-      if (response.curator) {
+      if (response.data.data) {
         toast.success("Registration successful!");
         navigate("/login");
       } else {
-        toast.error(response.message);
+        toast.error(response.data.message);
       }
     } catch (error) {
       toast.error(error.response?.data?.message || "Registration failed");
@@ -390,7 +401,9 @@ const VenueOwnerRegistration = () => {
                   </div>
                 ))}
 
-                <label className="aspect-square flex flex-col items-center justify-center border-2 border-dashed border-gray-600 rounded-lg cursor-pointer hover:border-purple-500">
+                <label className={`aspect-square flex flex-col items-center justify-center border-2 border-dashed border-gray-600 rounded-lg cursor-pointer hover:border-purple-500 ${
+                  previews.venueImages.length >= 1 ? "hidden" : ""
+                }`}>
                   <input
                     type="file"
                     multiple
@@ -658,7 +671,7 @@ const VenueOwnerRegistration = () => {
                     </div>
                   ))}
 
-                  <button
+                  {/* <button
                     type="button"
                     onClick={handleAddProduct}
                     className="text-[#00FFB3] hover:text-[#00FFB3]/80 flex items-center"
@@ -677,7 +690,7 @@ const VenueOwnerRegistration = () => {
                       />
                     </svg>
                     Add another product
-                  </button>
+                  </button> */}
                 </div>
               )}
             </div>
