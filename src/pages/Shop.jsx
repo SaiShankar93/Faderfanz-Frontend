@@ -441,7 +441,7 @@ const Shop = () => {
               {events.length > 0 &&
                 events.map((event) => (
                   <Link
-                    to={`/event/${event._id}`}
+                    to={`/event/${event.id}`}
                     key={event._id}
                     className="bg-[#1C1D24]/50 backdrop-blur-sm rounded-xl overflow-hidden hover:bg-[#1C1D24]/70 transition-colors"
                   >
