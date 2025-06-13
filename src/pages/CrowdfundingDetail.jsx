@@ -25,38 +25,14 @@ const CrowdfundingDetail = () => {
         donors: []
     });
 
-    const [otherCampaigns] = useState([
-        {
-            id: 1,
-            title: "Holiday Picnic",
-            raised: 16900,
-            target: 35000,
-            deadline: "23rd March, 2025",
-            createdBy: "Raihan Khan",
-            creatorImage: "/Images/testimonial.png",
-            image: "/Images/blogcard.jpg"
-        },
-        {
-            id: 2,
-            title: "Holiday Picnic",
-            raised: 16900,
-            target: 35000,
-            deadline: "23rd March, 2025",
-            createdBy: "Raihan Khan",
-            creatorImage: "/Images/testimonial.png",
-            image: "/Images/blogcard.jpg"
-        },
-        {
-            id: 3,
-            title: "Holiday Picnic",
-            raised: 16900,
-            target: 35000,
-            deadline: "23rd March, 2025",
-            createdBy: "Raihan Khan",
-            creatorImage: "/Images/testimonial.png",
-            image: "/Images/blogcard.jpg"
-        }
-    ]);
+    const [otherCampaigns, setOtherCampaigns] = useState([]);
+    useEffect(() => {
+        const fetchOtherCampaigns = async () => {
+            const { data } = await axiosInstance.get(`management/campaigns`);
+            setOtherCampaigns(data);
+        };
+        fetchOtherCampaigns();
+    }, []);
 
     useEffect(() => {
         const fetchCampaignDetails = async () => {
@@ -288,37 +264,39 @@ const CrowdfundingDetail = () => {
                             <div className="space-y-3">
                                 {otherCampaigns.map((campaign) => (
                                     <div
-                                        key={campaign.id}
-                                        onClick={() => navigate(`/crowdfunding/${campaign.id}`)}
+                                        key={campaign._id}
+                                        onClick={() => navigate(`/crowdfunding/${campaign._id}`)}
                                         className="bg-[#1A1A1A]/80 backdrop-blur-sm border border-white/5 rounded-xl p-4 space-y-3 cursor-pointer hover:bg-[#1A1A1A]/90 transition-all duration-300"
                                     >
                                         <div className="flex items-center gap-3">
-                                            <img src={campaign.image} alt={campaign.title} className="w-12 h-12 rounded-lg object-cover border border-white/10" />
+                                            <img src={campaign.banner?.url} alt={campaign.banner?.alt || campaign.title} className="w-12 h-12 rounded-lg object-cover border border-white/10" />
                                             <h3 className="font-medium text-sm md:text-base text-white/90">{campaign.title}</h3>
                                         </div>
                                         <div>
                                             <div className="text-xs md:text-sm text-white/60">
-                                                ${campaign.raised.toLocaleString()} raised
+                                                ${campaign.amountRaised?.toLocaleString()} raised
                                             </div>
                                             <div className="relative h-1 bg-[#1A1A1A] rounded-full overflow-hidden mt-2">
                                                 <div
                                                     className="absolute top-0 left-0 h-full bg-[#00FFB2] transition-all duration-300 ease-in-out"
-                                                    style={{ width: `${calculateProgress(campaign.raised, campaign.target)}%` }}
+                                                    style={{ width: `${calculateProgress(campaign.amountRaised || 0, campaign.goal || 0)}%` }}
                                                 >
                                                     <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-white"></div>
                                                 </div>
                                             </div>
                                             <div className="flex justify-between text-xs md:text-sm mt-1">
                                                 <span className="text-white/60">Target</span>
-                                                <span className="text-white/60">${campaign.target.toLocaleString()}</span>
+                                                <span className="text-white/60">${campaign.goal?.toLocaleString()}</span>
                                             </div>
                                         </div>
                                         <div className="flex items-center justify-between text-xs md:text-sm text-white/60">
                                             <div className="flex items-center gap-2">
-                                                <img src={campaign.creatorImage} alt={campaign.createdBy} className="w-4 h-4 rounded-full object-cover border border-white/10" />
-                                                <span>{campaign.createdBy}</span>
+                                                <div className="w-4 h-4 rounded-full bg-[#1A1A1A] flex items-center justify-center border border-white/10">
+                                                    <span className="text-xs">👤</span>
+                                                </div>
+                                                <span>{campaign.creator?.stageName || `${campaign.creator?.firstName} ${campaign.creator?.lastName}`}</span>
                                             </div>
-                                            <span>{campaign.deadline}</span>
+                                            <span>{formatDate(campaign.endDate)}</span>
                                         </div>
                                     </div>
                                 ))}

@@ -55,6 +55,7 @@ const PopularEvents = ({ showTitle = true, showBackground = true }) => {
     const [activeFilter, setActiveFilter] = React.useState('all');
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [showAllEvents, setShowAllEvents] = useState(false);
     const navigate = useNavigate();
 
     const fetchEvents = async () => {
@@ -190,7 +191,7 @@ const PopularEvents = ({ showTitle = true, showBackground = true }) => {
                     </div>
                 ) : events.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {events.map((event) => (
+                        {events.slice(0, showAllEvents ? events.length : 3).map((event) => (
                             <PopularEventCard key={event._id} event={event} />
                         ))}
                     </div>
@@ -200,9 +201,14 @@ const PopularEvents = ({ showTitle = true, showBackground = true }) => {
                     </div>
                 )}
 
-                <button className="w-full mt-8 py-4 bg-[#1C1D24] text-gray-400 rounded-xl hover:bg-[#262626] transition-colors" onClick={() => navigate('/events/all/all')}>
-                    See More
-                </button>
+                {events.length > 3 && (
+                    <button 
+                        className="w-full mt-8 py-4 bg-[#1C1D24] text-gray-400 rounded-xl hover:bg-[#262626] transition-colors" 
+                        onClick={() => setShowAllEvents(!showAllEvents)}
+                    >
+                        {showAllEvents ? 'Show Less' : 'See More'}
+                    </button>
+                )}
             </div>
         </div>
     );

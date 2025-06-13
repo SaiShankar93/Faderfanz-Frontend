@@ -5,7 +5,7 @@ import {
   InformationCircleIcon,
   ServerStackIcon,
   RectangleStackIcon,
-  PencilSquareIcon
+  PencilSquareIcon,
 } from "@heroicons/react/24/solid";
 import { Home } from "@/pages/dashboard";
 import { SignIn, SignUp } from "@/pages/auth";
@@ -40,6 +40,9 @@ import Transactions from "./pages/dashboard/Transaction";
 import { AiFillStar } from "react-icons/ai";
 import TestimonialPage from "./pages/dashboard/Testimonial";
 import Blogs from "./pages/dashboard/Blogs";
+import CreateVenue from "./pages/dashboard/CreateVenue";
+import CreateEvent from "./pages/dashboard/CreateEvent";
+import CreateCampaign from "./pages/dashboard/CreateCampaign";
 // import PrivacyPolicy from "./pages/dashboard/PrivacyPolicy";
 
 const icon = {
@@ -61,6 +64,24 @@ export const routes = [
         name: "Blogs",
         path: "/blogs",
         element: <Blogs />,
+      },
+      {
+        icon: <PencilSquareIcon {...icon} />,
+        name: "Create Event",
+        path: "/create-event",
+        element: <CreateEvent />,
+      },
+      {
+        icon: <PencilSquareIcon {...icon} />,
+        name: "Create Venue",
+        path: "/register-venue",
+        element: <CreateVenue />,
+      },
+      {
+        icon: <PencilSquareIcon {...icon} />,
+        name: "Create Campaign",
+        path: "/raise-fund",
+        element: <CreateCampaign />,
       },
       
       {

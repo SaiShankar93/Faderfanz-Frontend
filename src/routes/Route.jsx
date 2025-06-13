@@ -16,6 +16,7 @@ import Faq from "@/pages/Faq";
 import ForgotPassword from "@/pages/ForgotPassword";
 import Home from "@/pages/Home";
 import Login from "@/pages/Login.save";
+import CreateVenue from "@/pages/CreateVenue";
 // import Login from "@/pages/Login";
 import MyFeed from "@/pages/MyFeed";
 import PrivacyPol from "@/pages/PrivacyPol";
@@ -50,6 +51,7 @@ import EventVenuePage from "@/pages/EventVenuePage";
 import UserProfile from "@/pages/UserProfile";
 import AllCrowdfunding from "@/components/AllCrowdfunding";
 import AllVenueOwners from "@/pages/AllVenueOwners";
+import CreateCampaign from "@/pages/createCampaign";
 
 export const userRoutes = [
   {
@@ -123,6 +125,18 @@ export const userRoutes = [
     title: "Create Event page",
     component: <CreateEvent />,
     path: "/create-event",
+  },
+  {
+    name: "Create Event page",
+    title: "Create Event page",
+    component: <CreateVenue />,
+    path: "/register-venue",
+  },
+  {
+    name: "Create Event page",
+    title: "Create Event page",
+    component: <CreateCampaign />,
+    path: "/raise-fund",
   },
   {
     name: "All Blogs",

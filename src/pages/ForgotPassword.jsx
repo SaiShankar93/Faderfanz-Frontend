@@ -4,6 +4,7 @@ import OtpInput from "react-otp-input";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import axiosInstance from "@/configs/axiosConfig";
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
@@ -41,8 +42,11 @@ const ForgotPassword = () => {
 
   const sendOtp = async (e) => {
     try {
-      await axios.post(`${import.meta.env.VITE_SERVER_URL}/auth/forgot`, {
-        email,
+      await axiosInstance.put(`/auth/forgot`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
       });
       toast.success("OTP sent successfully to your email");
       setOtpHidden(false);

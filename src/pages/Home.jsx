@@ -512,6 +512,13 @@ const Home = () => {
   const handleContribute = (id) => {
     navigate(`/crowdfunding/${id}`);
   };
+  const [user,setUser] = useState(null);
+  useEffect(() => {
+    const user = localStorage.getItem('user');
+    if (user) {
+      setUser(JSON.parse(user));
+    }
+  }, []);
 
   return (
     <section className="bg-[#0E0F13] min-h-screen text-white font-sen">
@@ -544,7 +551,7 @@ const Home = () => {
         <HeroSlider slider={slider} />
         <ExploreCategories categories={categories}/>
         <PopularEvents events={filteredProducts} />
-        <CreateEventBanner />
+        {user?.role === 'curator' && <CreateEventBanner />}
 
         {/* Popular Venue Owners Section */}
         <div className="w-full max-w-7xl mx-auto px-4 py-16 mb-24 relative overflow-hidden">
@@ -683,9 +690,9 @@ const Home = () => {
         </div>
 
         {/* Become a Curator Banner */}
-        <div className="mt-16">
+        {/* <div className="mt-16">
           <BecomeCuratorBanner />
-        </div>
+        </div> */}
 
         {/* Crowdfunding Section */}
         <div className="w-full max-w-7xl mx-auto px-4 py-16 relative overflow-hidden">

@@ -156,15 +156,16 @@ const BlogPage = () => {
                 modules={[Autoplay, Pagination]}
                 className="w-full h-full rounded-lg overflow-hidden"
               >
-                {allImages?.map((image, index) => (
+                {blogData?.contentImages?.length > 0 && blogData?.contentImages?.map((image, index) => {
+                  return (
                   <SwiperSlide key={index}>
                     <img
                       className="w-full h-full object-cover"
-                      src={image}
+                      src={`${import.meta.env.VITE_SERVER_URL}${image}`}
                       alt="Event"
                     />
                   </SwiperSlide>
-                ))}
+                )})}
               </Swiper>
             </div>
             <svg
