@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axiosInstance from '@/configs/axiosConfig';
 import { toast } from 'react-toastify';
 import FileUpload from '@/assets/svgs/FileUpload';
+import axios from 'axios';
 
 const CreateCampaign = () => {
   const navigate = useNavigate();
@@ -10,17 +11,18 @@ const CreateCampaign = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState('');
   const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    event: '',
-    goal: '',
+    title: 'dfds',
+    description: 'dfds',
+    event: '684db4fed3b3e1f84eb524f8',
+    goal: '3000-',
     startDate: '',
     endDate: '',
+    category: 'other',
     rewards: [
       {
-        name: '',
-        description: '',
-        minimumDonation: ''
+        name: 'dsfsd',
+        description: 'sdsd',
+        minimumDonation: '3000'
       }
     ]
   });
@@ -89,25 +91,34 @@ const CreateCampaign = () => {
     setLoading(true);
 
     try {
-      const campaignData = {
-        title: formData.title,
-        description: formData.description,
-        event: formData.event,
-        goal: Number(formData.goal),
-        startDate: formData.startDate,
-        endDate: formData.endDate,
-        rewards: formData.rewards.map(reward => ({
-          name: reward.name,
-          description: reward.description,
-          minimumDonation: Number(reward.minimumDonation)
-        }))
-      };
+      const formDataToSend = new FormData();
+      formDataToSend.append('title', formData.title);
+      formDataToSend.append('description', formData.description);
+      formDataToSend.append('event', formData.event);
+      formDataToSend.append('goal', Number(formData.goal));
+      formDataToSend.append('startDate', formData.startDate);
+      formDataToSend.append('endDate', formData.endDate);
+      formDataToSend.append('category', formData.category);
+      formDataToSend.append('rewards', JSON.stringify(formData.rewards.map(reward => ({
+        name: reward.name,
+        description: reward.description,
+        minimumDonation: Number(reward.minimumDonation)
+      }))));
+      
+      if (selectedFile) {
+        formDataToSend.append('banner', selectedFile);
+      }
 
-      const { data } = await axiosInstance.post('/campaigns', campaignData);
+      const { data } = await axiosInstance.post('/crowdfunding', formDataToSend, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'multipart/form-data'
+        }
+      });
 
-      if (data.success) {
+      if (data.campaign) {
         toast.success('Campaign created successfully');
-        navigate('/campaigns');
+        navigate('/');
       } else {
         toast.error(data.message || 'Failed to create campaign');
       }
@@ -126,7 +137,7 @@ const CreateCampaign = () => {
 
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Image Upload Section */}
-          {/* <div className="border-2 border-dashed border-[#96A1AE] rounded-lg h-60 flex flex-col items-center justify-center cursor-pointer hover:bg-[#20222A] transition-colors">
+          <div className="border-2 border-dashed border-[#96A1AE] rounded-lg h-60 flex flex-col items-center justify-center cursor-pointer hover:bg-[#20222A] transition-colors">
             <input
               type="file"
               onChange={handleFileChange}
@@ -139,7 +150,7 @@ const CreateCampaign = () => {
                 <div className="relative w-full h-full">
                   <img
                     src={previewUrl}
-                    alt="Campaign preview"
+                    alt="Campaign banner"
                     className="w-full h-full object-cover rounded-lg"
                   />
                 </div>
@@ -147,7 +158,7 @@ const CreateCampaign = () => {
                 <>
                   <FileUpload />
                   <p className="text-[#96A1AE] text-lg font-sen mt-2">
-                    Drag and drop your image here to upload
+                    Drag and drop your banner image here
                   </p>
                   <p className="text-[#2FE2AF] mt-2 underline font-sen">
                     or browse for image
@@ -155,7 +166,7 @@ const CreateCampaign = () => {
                 </>
               )}
             </label>
-          </div> */}
+          </div>
 
           {/* Campaign Details */}
           <div className="bg-[#1A1C23] p-8 rounded-xl border border-[#2D2F36] space-y-6">
@@ -197,6 +208,24 @@ const CreateCampaign = () => {
                 className="w-full bg-[#1F1F1F] rounded-lg p-3 border border-[#2D2F36] focus:outline-none focus:border-[#2FE2AF]"
                 required
               />
+            </div>
+
+            <div>
+              <label className="block text-sm text-white mb-2">Category *</label>
+              <select
+                name="category"
+                value={formData.category}
+                onChange={handleChange}
+                className="w-full bg-[#1F1F1F] rounded-lg p-3 border border-[#2D2F36] focus:outline-none focus:border-[#2FE2AF]"
+                required
+              >
+                <option value="charity">Charity</option>
+                <option value="creative">Creative</option>
+                <option value="emergency">Emergency</option>
+                <option value="community">Community</option>
+                <option value="education">Education</option>
+                <option value="other">Other</option>
+              </select>
             </div>
 
             <div>

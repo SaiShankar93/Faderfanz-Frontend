@@ -1,4 +1,5 @@
 import axiosInstance from "@/configs/axiosConfig";
+import axios from "axios";
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify"; // Assuming you're using react-toastify for notifications
@@ -26,7 +27,22 @@ const SponsorRegistration = () => {
         ],
         email: "fd@gmail.com",
         password: "123456789",
-        role: "fd"
+        role: "fd",
+        facebook: "https://www.facebook.com/fd",
+        instagram: "https://www.instagram.com/fd",
+        twitter: "https://www.twitter.com/fd",
+        location: {
+            address: "fd",
+            city: "fd",
+            state: "fd",
+            country: "fd",
+            postalCode: "23232",
+            landmark: "swef",
+            coordinates: {
+                latitude: "37.774929",
+                longitude: "-122.419416"
+            }
+        }
     });
 
     // Preview states for uploaded images
@@ -37,12 +53,24 @@ const SponsorRegistration = () => {
     });
 
     // Handle text input changes
-    const handleInputChange = (e) => {
+    const handleInputChange = (e, nestedField = null) => {
         const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
+        
+        if (nestedField) {
+            setFormData(prev => ({
+                ...prev,
+                [nestedField]: {
+                    ...prev[nestedField],
+                    [name.split('.')[1]]: value
+                }
+            }));
+        } else {
+            setFormData(prev => ({
+                ...prev,
+                [name]: value
+            }));
+        }
+        
         // Clear error when user starts typing
         if (formErrors[name]) {
             setFormErrors(prev => ({ ...prev, [name]: "" }));
@@ -214,6 +242,10 @@ const SponsorRegistration = () => {
             formDataToSend.append('email', formData.email);
             formDataToSend.append('password', formData.password);
             formDataToSend.append('role', formData.role);
+            formDataToSend.append('facebook', formData.facebook);
+            formDataToSend.append('instagram', formData.instagram);
+            formDataToSend.append('twitter', formData.twitter);
+            formDataToSend.append('location', JSON.stringify(formData.location));
 
             // Append products
             formDataToSend.append('products', JSON.stringify(formData.products));
@@ -226,7 +258,7 @@ const SponsorRegistration = () => {
             });
 
             console.log(Object.fromEntries(formDataToSend));
-            const {data} = await axiosInstance.post('/auth/register/sponsor', formDataToSend);
+            const {data} = await axios.post('http://localhost:3001/auth/register/sponsor', formDataToSend);
 
             if (data.sponsor) {
                 toast.success("Registration successful!");
@@ -345,7 +377,7 @@ const SponsorRegistration = () => {
                                         className={`w-full p-3 bg-[#1A1B23] rounded-lg border ${formErrors.businessName ? 'border-red-500' : 'border-gray-600'
                                             } focus:border-purple-500 focus:outline-none`}
                                         value={formData.businessName}
-                                        onChange={handleInputChange}
+                                        onChange={(e) => handleInputChange(e)}
                                     />
                                     {formErrors.businessName && (
                                         <p className="text-red-500 text-sm mt-1">{formErrors.businessName}</p>
@@ -363,7 +395,7 @@ const SponsorRegistration = () => {
                                         className={`w-full p-3 bg-[#1A1B23] rounded-lg border ${formErrors.taxIdentificationNumber ? 'border-red-500' : 'border-gray-600'
                                             } focus:border-purple-500 focus:outline-none`}
                                         value={formData.taxIdentificationNumber}
-                                        onChange={handleInputChange}
+                                        onChange={(e) => handleInputChange(e)}
                                     />
                                     {formErrors.taxIdentificationNumber && (
                                         <p className="text-red-500 text-sm mt-1">{formErrors.taxIdentificationNumber}</p>
@@ -382,7 +414,7 @@ const SponsorRegistration = () => {
                                     className={`w-full p-3 bg-[#1A1B23] rounded-lg border ${formErrors.description ? 'border-red-500' : 'border-gray-600'
                                         } focus:border-purple-500 focus:outline-none`}
                                     value={formData.description}
-                                    onChange={handleInputChange}
+                                    onChange={(e) => handleInputChange(e)}
                                 />
                                 {formErrors.description && (
                                     <p className="text-red-500 text-sm mt-1">{formErrors.description}</p>
@@ -405,7 +437,7 @@ const SponsorRegistration = () => {
                                         className={`w-full p-3 bg-[#1A1B23] rounded-lg border ${formErrors.contactName ? 'border-red-500' : 'border-gray-600'
                                             } focus:border-purple-500 focus:outline-none`}
                                         value={formData.contactName}
-                                        onChange={handleInputChange}
+                                        onChange={(e) => handleInputChange(e)}
                                     />
                                     {formErrors.contactName && (
                                         <p className="text-red-500 text-sm mt-1">{formErrors.contactName}</p>
@@ -423,7 +455,7 @@ const SponsorRegistration = () => {
                                         className={`w-full p-3 bg-[#1A1B23] rounded-lg border ${formErrors.email ? 'border-red-500' : 'border-gray-600'
                                             } focus:border-purple-500 focus:outline-none`}
                                         value={formData.email}
-                                        onChange={handleInputChange}
+                                        onChange={(e) => handleInputChange(e)}
                                     />
                                     {formErrors.email && (
                                         <p className="text-red-500 text-sm mt-1">{formErrors.email}</p>
@@ -441,7 +473,7 @@ const SponsorRegistration = () => {
                                         className={`w-full p-3 bg-[#1A1B23] rounded-lg border ${formErrors.password ? 'border-red-500' : 'border-gray-600'
                                             } focus:border-purple-500 focus:outline-none`}
                                         value={formData.password}
-                                        onChange={handleInputChange}
+                                        onChange={(e) => handleInputChange(e)}
                                     />
                                     {formErrors.password && (
                                         <p className="text-red-500 text-sm mt-1">{formErrors.password}</p>
@@ -457,7 +489,7 @@ const SponsorRegistration = () => {
                                         className={`w-full p-3 bg-[#1A1B23] rounded-lg border ${formErrors.role ? 'border-red-500' : 'border-gray-600'
                                             } focus:border-purple-500 focus:outline-none`}
                                         value={formData.role}
-                                        onChange={handleInputChange}
+                                        onChange={(e) => handleInputChange(e)}
                                     >
                                         <option value="">Choose a role</option>
                                         <option value="owner">Owner</option>
@@ -467,6 +499,183 @@ const SponsorRegistration = () => {
                                     {formErrors.role && (
                                         <p className="text-red-500 text-sm mt-1">{formErrors.role}</p>
                                     )}
+                                </div>
+                            </div>
+
+                            {/* Social Media Links */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-400 mb-2">
+                                        Facebook
+                                    </label>
+                                    <input
+                                        type="url"
+                                        name="facebook"
+                                        placeholder="Enter Facebook profile URL"
+                                        className="w-full p-3 bg-[#1A1B23] rounded-lg border border-gray-600 focus:border-purple-500 focus:outline-none"
+                                        value={formData.facebook}
+                                        onChange={(e) => handleInputChange(e)}
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-400 mb-2">
+                                        Instagram
+                                    </label>
+                                    <input
+                                        type="url"
+                                        name="instagram"
+                                        placeholder="Enter Instagram profile URL"
+                                        className="w-full p-3 bg-[#1A1B23] rounded-lg border border-gray-600 focus:border-purple-500 focus:outline-none"
+                                        value={formData.instagram}
+                                        onChange={(e) => handleInputChange(e)}
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-400 mb-2">
+                                        Twitter
+                                    </label>
+                                    <input
+                                        type="url"
+                                        name="twitter"
+                                        placeholder="Enter Twitter profile URL"
+                                        className="w-full p-3 bg-[#1A1B23] rounded-lg border border-gray-600 focus:border-purple-500 focus:outline-none"
+                                        value={formData.twitter}
+                                        onChange={(e) => handleInputChange(e)}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Location Section */}
+                        <div className="space-y-6">
+                            <h2 className="text-xl font-semibold">Location Details</h2>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-400 mb-2">
+                                        Address <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="location.address"
+                                        placeholder="Enter street address"
+                                        className={`w-full p-3 bg-[#1A1B23] rounded-lg border ${formErrors['location.address'] ? 'border-red-500' : 'border-gray-600'} focus:border-purple-500 focus:outline-none`}
+                                        value={formData.location.address}
+                                        onChange={(e) => handleInputChange(e, 'location')}
+                                    />
+                                    {formErrors['location.address'] && (
+                                        <p className="text-red-500 text-sm mt-1">{formErrors['location.address']}</p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-400 mb-2">
+                                        City <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="location.city"
+                                        placeholder="Enter city"
+                                        className={`w-full p-3 bg-[#1A1B23] rounded-lg border ${formErrors['location.city'] ? 'border-red-500' : 'border-gray-600'} focus:border-purple-500 focus:outline-none`}
+                                        value={formData.location.city}
+                                        onChange={(e) => handleInputChange(e, 'location')}
+                                    />
+                                    {formErrors['location.city'] && (
+                                        <p className="text-red-500 text-sm mt-1">{formErrors['location.city']}</p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-400 mb-2">
+                                        State <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="location.state"
+                                        placeholder="Enter state"
+                                        className={`w-full p-3 bg-[#1A1B23] rounded-lg border ${formErrors['location.state'] ? 'border-red-500' : 'border-gray-600'} focus:border-purple-500 focus:outline-none`}
+                                        value={formData.location.state}
+                                        onChange={(e) => handleInputChange(e, 'location')}
+                                    />
+                                    {formErrors['location.state'] && (
+                                        <p className="text-red-500 text-sm mt-1">{formErrors['location.state']}</p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-400 mb-2">
+                                        Country <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="location.country"
+                                        placeholder="Enter country"
+                                        className={`w-full p-3 bg-[#1A1B23] rounded-lg border ${formErrors['location.country'] ? 'border-red-500' : 'border-gray-600'} focus:border-purple-500 focus:outline-none`}
+                                        value={formData.location.country}
+                                        onChange={(e) => handleInputChange(e, 'location')}
+                                    />
+                                    {formErrors['location.country'] && (
+                                        <p className="text-red-500 text-sm mt-1">{formErrors['location.country']}</p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-400 mb-2">
+                                        Postal Code
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="location.postalCode"
+                                        placeholder="Enter postal code"
+                                        className="w-full p-3 bg-[#1A1B23] rounded-lg border border-gray-600 focus:border-purple-500 focus:outline-none"
+                                        value={formData.location.postalCode}
+                                        onChange={(e) => handleInputChange(e, 'location')}
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-400 mb-2">
+                                        Landmark
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="location.landmark"
+                                        placeholder="Enter nearby landmark"
+                                        className="w-full p-3 bg-[#1A1B23] rounded-lg border border-gray-600 focus:border-purple-500 focus:outline-none"
+                                        value={formData.location.landmark}
+                                        onChange={(e) => handleInputChange(e, 'location')}
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-400 mb-2">
+                                        Latitude
+                                    </label>
+                                    <input
+                                        type="number"
+                                        step="any"
+                                        name="location.coordinates.latitude"
+                                        placeholder="Enter latitude"
+                                        className="w-full p-3 bg-[#1A1B23] rounded-lg border border-gray-600 focus:border-purple-500 focus:outline-none"
+                                        value={formData.location.coordinates.latitude}
+                                        onChange={(e) => handleInputChange(e, 'location')}
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-400 mb-2">
+                                        Longitude
+                                    </label>
+                                    <input
+                                        type="number"
+                                        step="any"
+                                        name="location.coordinates.longitude"
+                                        placeholder="Enter longitude"
+                                        className="w-full p-3 bg-[#1A1B23] rounded-lg border border-gray-600 focus:border-purple-500 focus:outline-none"
+                                        value={formData.location.coordinates.longitude}
+                                        onChange={(e) => handleInputChange(e, 'location')}
+                                    />
                                 </div>
                             </div>
                         </div>
@@ -483,7 +692,7 @@ const SponsorRegistration = () => {
                                     className={`w-full p-3 bg-[#1A1B23] rounded-lg border ${formErrors.preferredEvents ? 'border-red-500' : 'border-gray-600'
                                         } focus:border-purple-500 focus:outline-none`}
                                     value={formData.preferredEvents}
-                                    onChange={handleInputChange}
+                                    onChange={(e) => handleInputChange(e)}
                                 >
                                     <option value="">Choose event</option>
                                     <option value="Music Events">Music Events</option>

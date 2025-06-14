@@ -3,32 +3,33 @@ import { useNavigate } from 'react-router-dom';
 import axiosInstance from '@/configs/axiosConfig';
 import { toast } from 'react-toastify';
 import FileUpload from '@/assets/svgs/FileUpload';
+import axios from 'axios';
 
 const CreateVenue = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState('');
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [previewUrls, setPreviewUrls] = useState([]);
   const [formData, setFormData] = useState({
-    name: 'demo',
+    name: 'Demo Venue',
     location: {
-      address: 'demo',
-      city: 'demo',
-      state: 'demo',
-      country: 'demo',
+      address: '123 Main St',
+      city: 'San Francisco',
+      state: 'CA',
+      country: 'USA',
       postalCode: 'demo',
       gpsCoordinates: {
-        latitude: 'demo',
-        longitude: 'demo'
+        latitude: '37.774929',
+        longitude: '-122.419416'
       }
     },
-    capacity: 'demo',
+    capacity: '50',
     amenities: [],
-    description: 'demo',
+    description: 'This is a demo venue description',
     contactInformation: {
-      email: 'demo',
-      phone: 'demo',
-      website: 'demo'
+      email: 'demo@gmail.com',
+      phone: '0123456789',
+      website: 'https://demo.com'
     }
   });
 
@@ -79,26 +80,47 @@ const CreateVenue = () => {
   };
 
   const handleFileChange = (event) => {
-    const file = event.target.files[0];
+    const files = Array.from(event.target.files);
     
-    if (file) {
+    // Check if adding these files would exceed the limit (let's say 5 images max)
+    if (selectedFiles.length + files.length > 5) {
+      toast.error('You can upload a maximum of 5 images');
+      return;
+    }
+
+    const validFiles = files.filter(file => {
       // Check file type (only allow images)
       if (!file.type.startsWith('image/')) {
-        toast.error('Please upload an image file');
-        return;
+        toast.error(`${file.name} is not an image file`);
+        return false;
       }
 
       // Check file size (max 5MB)
       const maxSize = 5 * 1024 * 1024; // 5MB in bytes
       if (file.size > maxSize) {
-        toast.error('File size should be less than 5MB');
-        return;
+        toast.error(`${file.name} is larger than 5MB`);
+        return false;
       }
 
-      setSelectedFile(file);
-      const objectUrl = URL.createObjectURL(file);
-      setPreviewUrl(objectUrl);
+      return true;
+    });
+
+    if (validFiles.length > 0) {
+      setSelectedFiles(prev => [...prev, ...validFiles]);
+      
+      // Create preview URLs for new files
+      const newPreviewUrls = validFiles.map(file => URL.createObjectURL(file));
+      setPreviewUrls(prev => [...prev, ...newPreviewUrls]);
     }
+  };
+
+  const removeImage = (index) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+    setPreviewUrls(prev => {
+      const newUrls = [...prev];
+      URL.revokeObjectURL(newUrls[index]); // Clean up the object URL
+      return newUrls.filter((_, i) => i !== index);
+    });
   };
 
   const handleAmenityChange = (amenity) => {
@@ -123,19 +145,21 @@ const CreateVenue = () => {
       formDataToSend.append('description', formData.description);
       formDataToSend.append('contactInformation', JSON.stringify(formData.contactInformation));
       
-      if (selectedFile) {
-        formDataToSend.append('image', selectedFile);
-      }
+      // Append all selected files
+      selectedFiles.forEach((file, index) => {
+        formDataToSend.append('venueImages', file);
+      });
 
-      const { data } = await axiosInstance.post('/management/venues', formDataToSend, {
+      const { data } = await axiosInstance.post('/venues', formDataToSend, {
         headers: {
           'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
       });
 
-      if (data.success) {
+      if (data.venue) {
         toast.success('Venue created successfully');
-        navigate('/venues');
+        navigate('/');
       } else {
         toast.error(data.message || 'Failed to create venue');
       }
@@ -154,35 +178,51 @@ const CreateVenue = () => {
 
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Image Upload Section */}
-          <div className="border-2 border-dashed border-[#96A1AE] rounded-lg h-60 flex flex-col items-center justify-center cursor-pointer hover:bg-[#20222A] transition-colors">
-            <input
-              type="file"
-              onChange={handleFileChange}
-              className="hidden"
-              id="fileInput"
-              accept="image/*"
-            />
-            <label htmlFor="fileInput" className="cursor-pointer text-center">
-              {previewUrl ? (
-                <div className="relative w-full h-full">
-                  <img
-                    src={previewUrl}
-                    alt="Venue preview"
-                    className="w-full h-full object-cover rounded-lg"
-                  />
-                </div>
-              ) : (
-                <>
-                  <FileUpload />
-                  <p className="text-[#96A1AE] text-lg font-sen mt-2">
-                    Drag and drop your image here to upload
-                  </p>
-                  <p className="text-[#2FE2AF] mt-2 underline font-sen">
-                    or browse for image
-                  </p>
-                </>
-              )}
-            </label>
+          <div className="space-y-4">
+            <div className="border-2 border-dashed border-[#96A1AE] rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer hover:bg-[#20222A] transition-colors">
+              <input
+                type="file"
+                onChange={handleFileChange}
+                className="hidden"
+                id="fileInput"
+                accept="image/*"
+                multiple
+              />
+              <label htmlFor="fileInput" className="cursor-pointer text-center">
+                <FileUpload />
+                <p className="text-[#96A1AE] text-lg font-sen mt-2">
+                  Drag and drop your images here to upload
+                </p>
+                <p className="text-[#2FE2AF] mt-2 underline font-sen">
+                  or browse for images
+                </p>
+                <p className="text-[#96A1AE] text-sm mt-2">
+                  (Maximum 5 images, 5MB each)
+                </p>
+              </label>
+            </div>
+
+            {/* Image Previews */}
+            {previewUrls.length > 0 && (
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {previewUrls.map((url, index) => (
+                  <div key={index} className="relative group">
+                    <img
+                      src={url}
+                      alt={`Venue preview ${index + 1}`}
+                      className="w-full h-40 object-cover rounded-lg"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeImage(index)}
+                      className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Venue Details */}

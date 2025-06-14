@@ -618,9 +618,9 @@ const Home = () => {
         </div>
 
         {/* Register Venue Banner with added top margin */}
-        <div className="mt-16">
+        {(user?.role === 'venueOwner' || user?.role === 'admin') && <div className="mt-16">
           <RegisterVenueBanner />
-        </div>
+        </div>}
 
         {/* curators section */}
         <div className="w-full max-w-7xl mx-auto px-4 py-16 relative overflow-hidden">
@@ -764,9 +764,9 @@ const Home = () => {
         </div>
 
         {/* Raise Fund Banner */}
-        <div className="mt-16">
+        {( user?.role === 'curator' || user?.role === 'sponsor' || user?.role === 'admin') && <div className="mt-16">
           <RaiseFundBanner />
-        </div>
+        </div>}
 
         {/* Popular Fans/Guests Section */}
         <div className="w-full max-w-7xl mx-auto px-4 py-16 relative overflow-hidden">
