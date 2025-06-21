@@ -62,7 +62,7 @@ const PopularEvents = ({ showTitle = true, showBackground = true }) => {
         try {
             setLoading(true);
             const { data } = await axiosInstance.get('/events');
-            // console.log("data",data.data);
+            console.warn("event data",data.data);
             if (data && data.data.length > 0) {
                 setEvents(data.data);
             } else {

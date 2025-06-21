@@ -258,7 +258,7 @@ const SponsorRegistration = () => {
             });
 
             console.log(Object.fromEntries(formDataToSend));
-            const {data} = await axios.post('http://localhost:3001/auth/register/sponsor', formDataToSend);
+            const {data} = await axios.post(`${import.meta.env.VITE_SERVER_URL}/auth/register/sponsor`, formDataToSend);
 
             if (data.sponsor) {
                 toast.success("Registration successful!");

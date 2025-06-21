@@ -177,7 +177,7 @@ export const userRoutes = [
   {
     name: "profile",
     title: "Profile",
-    component: <Profile />,
+    component: <UserProfile />,
     path: "/profile",
   },
   {
@@ -317,12 +317,12 @@ export const userRoutes = [
     component: <RoleSelectionModal />,
     path: "/register-role",
   },
-  {
-    name: "user-profile",
-    title: "User Profile",
-    component: <UserProfile />,
-    path: "/user/:id",
-  },
+  // {
+  //   name: "user-profile",
+  //   title: "User Profile",
+  //   component: <UserProfile />,
+  //   path: "/user/:id",
+  // },
   {
     name: "settings",
     title: "Settings",
