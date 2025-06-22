@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState,useCallback, useEffect } from "react";
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { FaShare, FaStar, FaRegHeart, FaRegComment, FaHeart, FaEllipsisH } from 'react-icons/fa';
 import { IoLocationOutline, IoTimeOutline, IoCalendarOutline, IoEyeOutline } from 'react-icons/io5';
@@ -10,6 +10,7 @@ import { Dialog, Menu } from '@headlessui/react';
 import { CuratorCard } from "../components/CuratorCard";
 import { VenueOwnerCard } from "../components/VenueOwnerCard";
 import { toast } from 'react-hot-toast';
+import axiosInstance from "@/configs/axiosConfig";
 
 const UserProfile = () => {
     const { id } = useParams();
@@ -20,90 +21,20 @@ const UserProfile = () => {
     const [selectedNav, setSelectedNav] = useState("news_feed");
     const [isCreateMenuOpen, setIsCreateMenuOpen] = useState(false);
 
-    // User Data States
-    const [userData, setUserData] = useState({
-        name: "Sannidhan",
-        role: "Event Owner",
-        avatar: "/Images/testimonial.png",
-        stats: {
-            favorites: 23,
-            events: 7,
-            followers: 200
-        }
-    });
+    // Core API Data States
+    const [userData, setUserData] = useState(null);
+    const [venues, setVenues] = useState([]);
+    const [products, setProducts] = useState([]);
+    const [events, setEvents] = useState([]);
+    const [blogPosts, setBlogPosts] = useState([]);
+    const [reviews, setReviews] = useState([]);
+    const [stats, setStats] = useState({});
 
-    // Content States
-    const [posts, setPosts] = useState([
-        {
-            id: 1,
-            author: "George Lobko",
-            timeAgo: "2 hours ago",
-            content: "Hi Everyone, today i was at the most interesting event in the world. It was a great time spent with @Selena @essar and @essar",
-            images: [
-                "/Images/post.png",
-                "/Images/post.png",
-                "/Images/post.png"
-            ],
-            views: 3445,
-            likes: 32,
-            comments: 45,
-            isLiked: false
-        },
-        {
-            id: 2,
-            author: "Sharon Drakes",
-            timeAgo: "2 hours ago",
-            content: "Hi Everyone, today i was on the most beautiful mountain in the world. I also want to say hi to @Selena @essar and @essar",
-            views: 3445,
-            likes: 0,
-            comments: 0,
-            isLiked: false
-        }
-    ]);
+    // Loading and Error States
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-    const [upcomingEvents] = useState([
-        {
-            _id: 1,
-            title: "The Kazi-culture show",
-            location: "12 Lake Avenue, Mumbai, India",
-            date: "25th Jan, 2023",
-            time: "8:30 AM - 7:30 PM",
-            interested: 14,
-            image: "/Images/blogcard.jpg"
-        },
-        {
-            _id: 2,
-            title: "The Kazi-culture show",
-            location: "12 Lake Avenue, Mumbai, India",
-            date: "25th Jan, 2023",
-            time: "8:30 AM - 7:30 PM",
-            interested: 14,
-            image: "/Images/blogcard.jpg"
-        }
-    ]);
-
-    const [suggestions] = useState([
-        {
-            id: 1,
-            name: "Nick Ramsy",
-            rating: 4.6,
-            image: "/Images/default-avatar.jpg"
-        },
-        {
-            id: 2,
-            name: "Nick Ramsy",
-            rating: 4.6,
-            image: "/Images/default-avatar.jpg"
-        },
-        {
-            id: 3,
-            name: "Nick Ramsy",
-            rating: 4.6,
-            image: "/Images/default-avatar.jpg"
-        }
-    ]);
-
-    // Add these state variables after other state declarations
+    // UI Control States
     const [selectedImage, setSelectedImage] = useState(null);
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
     const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
@@ -111,333 +42,12 @@ const UserProfile = () => {
     const [isImageInputVisible, setIsImageInputVisible] = useState(false);
     const [isMapInputVisible, setIsMapInputVisible] = useState(false);
     const [postVisibility, setPostVisibility] = useState('public');
-
-    // Add this after other state declarations
     const [selectedFavTab, setSelectedFavTab] = useState('events');
     const [showAllEvents, setShowAllEvents] = useState(false);
-
-    const [favoriteEvents] = useState([
-        {
-            id: 1,
-            title: "The Kazi-culture show",
-            location: "12 Lake Avenue, Mumbai, India",
-            date: { month: "NOV", days: "25 - 26" },
-            time: "8:30 AM - 7:30 PM",
-            interested: 14,
-            image: "/Images/post.png",
-            isFree: true
-        },
-        {
-            id: 2,
-            title: "The Kazi-culture show",
-            location: "12 Lake Avenue, Mumbai, India",
-            date: { month: "NOV", days: "25 - 26" },
-            time: "8:30 AM - 7:30 PM",
-            interested: 14,
-            image: "/Images/post.png",
-            isFree: false
-        },
-        {
-            id: 3,
-            title: "Music Festival 2024",
-            location: "Central Park, New York, USA",
-            date: { month: "DEC", days: "15 - 16" },
-            time: "7:00 PM - 11:00 PM",
-            interested: 28,
-            image: "/Images/post.png",
-            isFree: false
-        },
-        {
-            id: 4,
-            title: "Summer Beach Party",
-            location: "Miami Beach, Florida, USA",
-            date: { month: "JUL", days: "10 - 11" },
-            time: "2:00 PM - 10:00 PM",
-            interested: 42,
-            image: "/Images/post.png",
-            isFree: true
-        },
-        {
-            id: 5,
-            title: "Electronic Music Night",
-            location: "Club Matrix, London, UK",
-            date: { month: "OCT", days: "05 - 06" },
-            time: "9:00 PM - 3:00 AM",
-            interested: 35,
-            image: "/Images/post.png",
-            isFree: false
-        }
-    ]);
-
-    // Add this after other state declarations
     const [showAllCurators, setShowAllCurators] = useState(false);
-
-    // Update favoriteCurators with more items
-    const [favoriteCurators] = useState([
-        {
-            id: 1,
-            name: "DJ Kazi",
-            image: "/Images/post.png",
-            performances: 235,
-            followers: 235,
-            rating: 4.6,
-            socialLinks: {
-                facebook: "#",
-                instagram: "#",
-                twitter: "#"
-            }
-        },
-        {
-            id: 2,
-            name: "DJ Kazi",
-            image: "/Images/post.png",
-            performances: 235,
-            followers: 235,
-            rating: 4.6,
-            socialLinks: {
-                facebook: "#",
-                instagram: "#",
-                twitter: "#"
-            }
-        },
-        {
-            id: 3,
-            name: "DJ Kazi",
-            image: "/Images/post.png",
-            performances: 235,
-            followers: 235,
-            rating: 4.6,
-            socialLinks: {
-                facebook: "#",
-                instagram: "#",
-                twitter: "#"
-            }
-        },
-        {
-            id: 4,
-            name: "DJ Kazi",
-            image: "/Images/post.png",
-            performances: 235,
-            followers: 235,
-            rating: 4.6,
-            socialLinks: {
-                facebook: "#",
-                instagram: "#",
-                twitter: "#"
-            }
-        },
-        {
-            id: 5,
-            name: "DJ Kazi",
-            image: "/Images/post.png",
-            performances: 235,
-            followers: 235,
-            rating: 4.6,
-            socialLinks: {
-                facebook: "#",
-                instagram: "#",
-                twitter: "#"
-            }
-        },
-        {
-            id: 6,
-            name: "DJ Kazi",
-            image: "/Images/post.png",
-            performances: 235,
-            followers: 235,
-            rating: 4.6,
-            socialLinks: {
-                facebook: "#",
-                instagram: "#",
-                twitter: "#"
-            }
-        }
-    ]);
-
-    // Add this after other state declarations
     const [showAllSponsors, setShowAllSponsors] = useState(false);
-
-    // Update favoriteSponsors state with appropriate data structure
-    const [favoriteSponsors] = useState([
-        {
-            id: 1,
-            name: "Zomato Events",
-            image: "/Images/Venueownercard.png",
-            venuesOwned: 235,
-            eventsHosted: 180,
-            rating: 4.6,
-            socialLinks: {
-                facebook: "#",
-                instagram: "#",
-                twitter: "#"
-            }
-        },
-        {
-            id: 2,
-            name: "Nike Sports",
-            image: "/Images/Venueownercard.png",
-            venuesOwned: 450,
-            eventsHosted: 320,
-            rating: 4.8,
-            socialLinks: {
-                facebook: "#",
-                instagram: "#",
-                twitter: "#"
-            }
-        },
-        {
-            id: 3,
-            name: "Spotify Music",
-            image: "/Images/Venueownercard.png",
-            venuesOwned: 320,
-            eventsHosted: 275,
-            rating: 4.7,
-            socialLinks: {
-                facebook: "#",
-                instagram: "#",
-                twitter: "#"
-            }
-        },
-        {
-            id: 4,
-            name: "Red Bull Events",
-            image: "/Images/Venueownercard.png",
-            venuesOwned: 520,
-            eventsHosted: 420,
-            rating: 4.9,
-            socialLinks: {
-                facebook: "#",
-                instagram: "#",
-                twitter: "#"
-            }
-        },
-        {
-            id: 5,
-            name: "Adobe Create",
-            image: "/Images/sponsors/adobe.png",
-            venuesOwned: 280,
-            eventsHosted: 230,
-            rating: 4.5,
-            socialLinks: {
-                facebook: "#",
-                instagram: "#",
-                twitter: "#"
-            }
-        },
-        {
-            id: 6,
-            name: "Samsung Tech",
-            image: "/Images/sponsors/samsung.png",
-            venuesOwned: 410,
-            eventsHosted: 350,
-            rating: 4.7,
-            socialLinks: {
-                facebook: "#",
-                instagram: "#",
-                twitter: "#"
-            }
-        }
-    ]);
-
-    // Add these state declarations after other state declarations
     const [selectedEventTab, setSelectedEventTab] = useState('upcoming');
     const [showAllMyEvents, setShowAllMyEvents] = useState(false);
-
-    // Add myEvents state with sample data
-    const [myEvents, setMyEvents] = useState([
-        {
-            id: 1,
-            title: "The Kazi-culture show",
-            location: "12 Lake Avenue, Mumbai, India",
-            date: { month: "NOV", days: "25 - 26" },
-            time: "8:30 AM - 7:30 PM",
-            interested: 14,
-            image: "/Images/post.png",
-            isFree: true,
-            status: "upcoming"
-        },
-        {
-            id: 2,
-            title: "Music Festival 2024",
-            location: "Central Park, New York, USA",
-            date: { month: "DEC", days: "15 - 16" },
-            time: "7:00 PM - 11:00 PM",
-            interested: 28,
-            image: "/Images/post.png",
-            isFree: false,
-            status: "upcoming"
-        },
-        {
-            id: 3,
-            title: "Summer Beach Party",
-            location: "Miami Beach, Florida, USA",
-            date: { month: "JUL", days: "10 - 11" },
-            time: "2:00 PM - 10:00 PM",
-            interested: 42,
-            image: "/Images/post.png",
-            isFree: true,
-            status: "past"
-        },
-        {
-            id: 4,
-            title: "Electronic Music Night",
-            location: "Club Matrix, London, UK",
-            date: { month: "OCT", days: "05 - 06" },
-            time: "9:00 PM - 3:00 AM",
-            interested: 35,
-            image: "/Images/post.png",
-            isFree: false,
-            status: "past"
-        },
-        {
-            id: 5,
-            title: "Winter Wonderland",
-            location: "Hyde Park, London, UK",
-            date: { month: "DEC", days: "20 - 21" },
-            time: "11:00 AM - 9:00 PM",
-            interested: 56,
-            image: "/Images/post.png",
-            isFree: false,
-            status: "upcoming"
-        },
-        {
-            id: 6,
-            title: "Jazz in the Park",
-            location: "Central Park, New York, USA",
-            date: { month: "AUG", days: "12 - 13" },
-            time: "6:00 PM - 10:00 PM",
-            interested: 89,
-            image: "/Images/post.png",
-            isFree: true,
-            status: "upcoming"
-        },
-        {
-            id: 7,
-            title: "Tech Conference 2024",
-            location: "Convention Center, San Francisco, USA",
-            date: { month: "SEP", days: "18 - 20" },
-            time: "9:00 AM - 6:00 PM",
-            interested: 145,
-            image: "/Images/post.png",
-            isFree: false,
-            status: "upcoming"
-        },
-        {
-            id: 8,
-            title: "Food & Wine Festival",
-            location: "Waterfront Park, Seattle, USA",
-            date: { month: "JUL", days: "22 - 24" },
-            time: "12:00 PM - 8:00 PM",
-            interested: 78,
-            image: "/Images/post.png",
-            isFree: false,
-            status: "upcoming"
-        }
-    ]);
-
-    // Add these new states after other state declarations
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState(null);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [eventToDelete, setEventToDelete] = useState(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -450,48 +60,6 @@ const UserProfile = () => {
         isFree: false,
         image: ''
     });
-
-    // Add these state declarations after other state declarations
-    const [myProducts, setMyProducts] = useState([
-        {
-            id: 1,
-            title: "BASE BALL T-SHIRT",
-            price: 200,
-            stock: 32,
-            image: "/Images/post.png",
-            description: "High-quality baseball t-shirt with custom design"
-        },
-        {
-            id: 2,
-            title: "BASE BALL T-SHIRT",
-            price: 200,
-            stock: 32,
-            image: "/Images/post.png"
-        },
-        {
-            id: 3,
-            title: "BASE BALL T-SHIRT",
-            price: 200,
-            stock: 32,
-            image: "/Images/post.png"
-        },
-        {
-            id: 4,
-            title: "BASE BALL T-SHIRT",
-            price: 200,
-            stock: 32,
-            image: "/Images/post.png"
-        },
-        {
-            id: 5,
-            title: "BASE BALL T-SHIRT",
-            price: 200,
-            stock: 32,
-            image: "/Images/post.png"
-        }
-    ]);
-
-    // Add these state declarations after other state declarations
     const [isProductEditModalOpen, setIsProductEditModalOpen] = useState(false);
     const [productToEdit, setProductToEdit] = useState(null);
     const [productEditFormData, setProductEditFormData] = useState({
@@ -501,156 +69,122 @@ const UserProfile = () => {
         image: '',
         description: ''
     });
-
-    // Add these state declarations after other state declarations
     const [selectedUserType, setSelectedUserType] = useState('all_users');
     const [searchQuery, setSearchQuery] = useState('');
-    const [followers] = useState([
-        {
-            id: 1,
-            name: "George Williams",
-            role: "Curator",
-            image: "/Images/default-avatar.jpg",
-            isFollowing: true,
-            type: "curator",
-            rating: 4.8
-        },
-        {
-            id: 2,
-            name: "Nike Sports",
-            role: "Sponsor",
-            image: "/Images/default-avatar.jpg",
-            isFollowing: false,
-            type: "sponsor",
-            eventsSponsored: 45
-        },
-        {
-            id: 3,
-            name: "Sarah Johnson",
-            role: "Fan",
-            image: "/Images/default-avatar.jpg",
-            isFollowing: true,
-            type: "fan",
-            eventsAttended: 12
-        },
-        {
-            id: 4,
-            name: "DJ Maxwell",
-            role: "Curator",
-            image: "/Images/default-avatar.jpg",
-            isFollowing: false,
-            type: "curator",
-            rating: 4.6
-        },
-        {
-            id: 5,
-            name: "Red Bull Events",
-            role: "Sponsor",
-            image: "/Images/default-avatar.jpg",
-            isFollowing: true,
-            type: "sponsor",
-            eventsSponsored: 89
-        }
-    ]);
-
-    // Add these state declarations after other state declarations
     const [selectedFollowTab, setSelectedFollowTab] = useState('followers');
-    const [following] = useState([
-        {
-            id: 1,
-            name: "Spotify Events",
-            role: "Sponsor",
-            image: "/Images/default-avatar.jpg",
-            isFollowing: true,
-            type: "sponsor",
-            eventsSponsored: 67
-        },
-        {
-            id: 2,
-            name: "John Smith",
-            role: "Curator",
-            image: "/Images/default-avatar.jpg",
-            isFollowing: true,
-            type: "curator",
-            rating: 4.9
-        },
-        {
-            id: 3,
-            name: "Emma Davis",
-            role: "Fan",
-            image: "/Images/default-avatar.jpg",
-            isFollowing: true,
-            type: "fan",
-            eventsAttended: 8
-        }
-    ]);
-
-    // Add these state declarations after other state declarations
     const [showAllProducts, setShowAllProducts] = useState(false);
     const [showAllFollowers, setShowAllFollowers] = useState(false);
     const [followLoading, setFollowLoading] = useState({});
-
-    // Add these state declarations after other state declarations
     const [selectedMediaTab, setSelectedMediaTab] = useState('images');
     const [showAllMedia, setShowAllMedia] = useState(false);
-    const [mediaItems] = useState([
-        {
-            id: 1,
-            type: 'image',
-            url: '/Images/post.png',
-            views: 3445,
-            likes: 32
-        },
-        {
-            id: 2,
-            type: 'video',
-            url: 'https://www.example.com/sample-video-1.mp4',
-            thumbnail: '/Images/post.png',
-            views: 2890,
-            likes: 45
-        },
-        {
-            id: 3,
-            type: 'image',
-            url: '/Images/post.png',
-            views: 3445,
-            likes: 32
-        },
-        {
-            id: 4,
-            type: 'video',
-            url: 'https://www.example.com/sample-video-2.mp4',
-            thumbnail: '/Images/post.png',
-            views: 1567,
-            likes: 89
-        },
-        {
-            id: 5,
-            type: 'image',
-            url: '/Images/post.png',
-            views: 3445,
-            likes: 32
-        },
-        {
-            id: 6,
-            type: 'video',
-            url: 'https://www.example.com/sample-video-3.mp4',
-            thumbnail: '/Images/post.png',
-            views: 4231,
-            likes: 156
-        }
-    ]);
 
-    // Navigation Items
-    const navItems = [
-        { id: 'news_feed', label: 'News Feed', icon: BsNewspaper },
-        { id: 'favorites', label: 'My Favourites', icon: AiOutlineHeart, count: userData.stats.favorites },
-        { id: 'events', label: 'My Events', icon: MdEvent, count: userData.stats.events },
-        { id: 'products', label: 'My Products', icon: RiFileList2Line },
-        { id: 'followers', label: 'Followers', icon: FaShare, count: userData.stats.followers },
-        { id: 'media', label: 'Media', icon: MdPhotoLibrary },
-        { id: 'settings', label: 'Settings', icon: RiSettings4Line }
-    ];
+    // Share Post State
+    const [newPost, setNewPost] = useState({
+        content: '',
+        files: [],
+        images: [],
+        location: '',
+        visibility: 'public'
+    });
+
+    // Refs for file inputs
+    const fileInputRef = React.useRef(null);
+    const imageInputRef = React.useRef(null);
+
+    // API call to fetch user profile data
+    const fetchUserProfile = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+            
+            const token = localStorage.getItem('accessToken');
+            if (!token) {
+                setError('No authentication token found');
+                navigate('/login');
+                return;
+            }
+
+            const response = await axiosInstance.get('/profiles/me', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            console.log(response.data);
+            if (response.data && response.data.success) {
+                const { profile, venues: venuesData, events: eventsData, products: productsData, 
+                       blogPosts: blogPostsData, reviews: reviewsData, stats: statsData } = response.data.data;
+                
+                setUserData(profile);
+                setStats(statsData || {});
+                setReviews(reviewsData || []);
+                if (venuesData) setVenues(venuesData);
+                if (productsData) setProducts(productsData);
+                if (eventsData) setEvents(eventsData);
+                if (blogPostsData) setBlogPosts(blogPostsData);
+            } else {
+                setError('Failed to fetch profile data');
+            }
+        } catch (error) {
+            console.error('Error fetching user profile:', error);
+            setError(error.response?.data?.message || 'Failed to load profile');
+            
+            if (error.response?.status === 401) {
+                localStorage.removeItem('accessToken');
+                navigate('/login');
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Fetch data on component mount
+    useEffect(() => {
+        fetchUserProfile();
+    }, []);
+
+    // Dynamic navigation items based on user role
+    const getNavItems = () => {
+        if (!userData) return [];
+        
+        const baseItems = [
+            { id: 'news_feed', label: 'News Feed', icon: BsNewspaper },
+            { id: 'favorites', label: 'My Favourites', icon: AiOutlineHeart, count: userData.stats.favorites }
+        ];
+
+        if (userData.role === 'venueOwner') {
+            return [
+                ...baseItems,
+                { id: 'venues', label: 'My Venues', icon: MdEvent, count: userData.stats.venues },
+                { id: 'events', label: 'My Events', icon: MdEvent, count: userData.stats.events },
+                { id: 'followers', label: 'Followers', icon: FaShare, count: userData.stats.followers },
+                { id: 'media', label: 'Media', icon: MdPhotoLibrary },
+                { id: 'settings', label: 'Settings', icon: RiSettings4Line }
+            ];
+        } else if (userData.role === 'sponsor') {
+            return [
+                ...baseItems,
+                { id: 'products', label: 'My Products', icon: RiFileList2Line, count: userData.stats.products },
+                { id: 'events', label: 'Sponsored Events', icon: MdEvent, count: userData.stats.events },
+                { id: 'followers', label: 'Followers', icon: FaShare, count: userData.stats.followers },
+                { id: 'media', label: 'Media', icon: MdPhotoLibrary },
+                { id: 'settings', label: 'Settings', icon: RiSettings4Line }
+            ];
+        } else if (userData.role === 'curator') {
+            return [
+                ...baseItems,
+                { id: 'events', label: 'My Events', icon: MdEvent, count: userData.stats.events },
+                { id: 'followers', label: 'Followers', icon: FaShare, count: userData.stats.followers },
+                { id: 'media', label: 'Media', icon: MdPhotoLibrary },
+                { id: 'settings', label: 'Settings', icon: RiSettings4Line }
+            ];
+        } else {
+            return [
+                ...baseItems,
+                { id: 'followers', label: 'Followers', icon: FaShare, count: userData.stats.followers },
+                { id: 'settings', label: 'Settings', icon: RiSettings4Line }
+            ];
+        }
+    };
 
     // Post Actions
     const handleLikePost = useCallback((postId) => {
@@ -667,20 +201,7 @@ const UserProfile = () => {
         // Implement comment functionality
     }, []);
 
-    // Share Post State and Handler
-    const [newPost, setNewPost] = useState({
-        content: '',
-        files: [],
-        images: [],
-        location: '',
-        visibility: 'public'
-    });
-
-    // Add these refs for file inputs
-    const fileInputRef = React.useRef(null);
-    const imageInputRef = React.useRef(null);
-
-    // Add file handling functions
+    // File handling functions
     const handleFileSelect = (e) => {
         const files = Array.from(e.target.files);
         setNewPost(prev => ({
@@ -743,27 +264,24 @@ const UserProfile = () => {
         setIsFileInputVisible(false);
         setIsImageInputVisible(false);
         setIsMapInputVisible(false);
-    }, [newPost, userData.name]);
+        
+        toast.success('Post shared successfully!');
+    }, [newPost, userData?.name]);
 
     const formatPostContent = useCallback((content) => {
-        const parts = content.split(/(@\w+)/g);
-        return (
-            <div className="text-white/80">
-                {parts.map((part, index) => {
-                    if (part.startsWith('@')) {
-                        return (
-                            <span key={index} className="text-[#00FFB2] cursor-pointer hover:underline">
-                                {part}
-                            </span>
-                        );
-                    }
-                    return part;
-                })}
-            </div>
-        );
+        return content.split(' ').map((word, index) => {
+            if (word.startsWith('@')) {
+                return (
+                    <span key={index} className="text-[#00FFB2] cursor-pointer hover:underline">
+                        {word}{' '}
+                    </span>
+                );
+            }
+            return word + ' ';
+        });
     }, []);
 
-    // Add these functions after other function declarations
+    // Image viewer functions
     const openImageViewer = (image, index) => {
         setSelectedImage(image);
         setSelectedImageIndex(index);
@@ -771,27 +289,29 @@ const UserProfile = () => {
     };
 
     const closeImageViewer = () => {
+        setIsImageViewerOpen(false);
         setSelectedImage(null);
         setSelectedImageIndex(0);
-        setIsImageViewerOpen(false);
     };
 
     const navigateImage = (direction) => {
-        const currentPost = posts.find(post => post.images?.some(img => img === selectedImage));
-        if (!currentPost?.images) return;
+        const currentPost = posts.find(post => post.images && post.images.includes(selectedImage));
+        if (!currentPost || !currentPost.images) return;
 
+        const currentIndex = currentPost.images.indexOf(selectedImage);
         let newIndex;
+
         if (direction === 'next') {
-            newIndex = (selectedImageIndex + 1) % currentPost.images.length;
+            newIndex = (currentIndex + 1) % currentPost.images.length;
         } else {
-            newIndex = selectedImageIndex - 1;
-            if (newIndex < 0) newIndex = currentPost.images.length - 1;
+            newIndex = currentIndex === 0 ? currentPost.images.length - 1 : currentIndex - 1;
         }
-        setSelectedImageIndex(newIndex);
+
         setSelectedImage(currentPost.images[newIndex]);
+        setSelectedImageIndex(newIndex);
     };
 
-    // Add these functions after other function declarations
+    // Event management functions
     const handleEditEvent = (event) => {
         setEventToEdit(event);
         setEditFormData({
@@ -807,39 +327,18 @@ const UserProfile = () => {
 
     const handleUpdateEvent = async () => {
         try {
-            setIsLoading(true);
-            setError(null);
-
-            // TODO: Replace with actual API call
-            // const response = await axios.put(`/api/events/${eventToEdit.id}`, editFormData);
-
-            // Update local state
-            setMyEvents(prevEvents =>
-                prevEvents.map(event =>
-                    event.id === eventToEdit.id
+            // API call to update event would go here
+            setEvents(prev => 
+                prev.map(event => 
+                    event.id === eventToEdit.id 
                         ? { ...event, ...editFormData }
                         : event
                 )
             );
-
             setIsEditModalOpen(false);
-            setEventToEdit(null);
-            setEditFormData({
-                title: '',
-                location: '',
-                date: { month: '', days: '' },
-                time: '',
-                isFree: false,
-                image: ''
-            });
-
-            // Show success message
-            toast.success('Event updated successfully');
-        } catch (err) {
-            setError(err.message || 'Failed to update event');
+            toast.success('Event updated successfully!');
+        } catch (error) {
             toast.error('Failed to update event');
-        } finally {
-            setIsLoading(false);
         }
     };
 
@@ -850,566 +349,97 @@ const UserProfile = () => {
 
     const confirmDelete = async () => {
         try {
-            setIsLoading(true);
-            setError(null);
-
-            // TODO: Replace with actual API call
-            // await axios.delete(`/api/events/${eventToDelete.id}`);
-
-            // Update local state
-            setMyEvents(prevEvents => prevEvents.filter(event => event.id !== eventToDelete.id));
-
+            // API call to delete event would go here
+            setEvents(prev => prev.filter(event => event.id !== eventToDelete.id));
             setIsDeleteModalOpen(false);
-            setEventToDelete(null);
-
-            // Update event count in userData
-            setUserData(prev => ({
-                ...prev,
-                stats: {
-                    ...prev.stats,
-                    events: prev.stats.events - 1
-                }
-            }));
-
-            // Show success message
-            toast.success('Event deleted successfully');
-        } catch (err) {
-            setError(err.message || 'Failed to delete event');
+            toast.success('Event deleted successfully!');
+        } catch (error) {
             toast.error('Failed to delete event');
-        } finally {
-            setIsLoading(false);
         }
     };
 
-    // Add useEffect for initial data fetching
-    useEffect(() => {
-        const fetchUserEvents = async () => {
-            try {
-                setIsLoading(true);
-                setError(null);
+    // Product management functions
+    const handleEditProduct = (product) => {
+        setProductToEdit(product);
+        setProductEditFormData({
+            title: product.title || product.name,
+            price: product.price,
+            stock: product.stock,
+            image: product.image || product.images?.[0],
+            description: product.description
+        });
+        setIsProductEditModalOpen(true);
+    };
 
-                // TODO: Replace with actual API calls
-                // const response = await axios.get('/api/events');
-                // setMyEvents(response.data);
+    const handleUpdateProduct = async () => {
+        try {
+            // API call to update product would go here
+            setProducts(prev => 
+                prev.map(product => 
+                    product.id === productToEdit.id || product._id === productToEdit._id
+                        ? { ...product, ...productEditFormData }
+                        : product
+                )
+            );
+            setIsProductEditModalOpen(false);
+            toast.success('Product updated successfully!');
+        } catch (error) {
+            toast.error('Failed to update product');
+        }
+    };
 
-                // For now, we're using the static data
-
-            } catch (err) {
-                setError(err.message || 'Failed to fetch events');
-                toast.error('Failed to fetch events');
-            } finally {
-                setIsLoading(false);
+    // Follow functionality
+    const handleFollowToggle = async (userId, currentList) => {
+        setFollowLoading(prev => ({ ...prev, [userId]: true }));
+        try {
+            // API call for follow/unfollow would go here
+            // For now, just toggle in the UI
+            if (currentList === 'followers') {
+                // Toggle following status
+            } else {
+                // Toggle follower status
             }
-        };
+            toast.success('Follow status updated!');
+        } catch (error) {
+            toast.error('Failed to update follow status');
+        } finally {
+            setFollowLoading(prev => ({ ...prev, [userId]: false }));
+        }
+    };
 
-        fetchUserEvents();
-    }, []);
+    // Filter users function
+    const filterUsers = (users) => {
+        return users.filter(user => {
+            const matchesType = selectedUserType === 'all_users' || user.type === selectedUserType;
+            const matchesSearch = user.name.toLowerCase().includes(searchQuery.toLowerCase());
+            return matchesType && matchesSearch;
+        });
+    };
 
-    // Add this function to render different content based on selected nav
+    // Format date for events
+    const formatEventDate = (dateString) => {
+        if (!dateString) return { month: 'JAN', days: '1' };
+        
+        try {
+            const date = new Date(dateString);
+            const month = date.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
+            const day = date.getDate();
+            return { month, days: day.toString() };
+        } catch (error) {
+            return { month: 'JAN', days: '1' };
+        }
+    };
+
+    // Main content renderer based on selected navigation
     const renderMainContent = () => {
         switch (selectedNav) {
-            case 'followers':
-                const filteredUsers = filterUsers(selectedFollowTab === 'followers' ? followers : following);
-                const displayedUsers = showAllFollowers ? filteredUsers : filteredUsers.slice(0, 5);
-
-                return (
-                    <div className="space-y-4 md:space-y-6">
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                                <h2 className="text-white text-xl md:text-2xl font-medium">
-                                    {selectedFollowTab === 'followers' ? 'Followers' : 'Following'} ({userData.stats.followers})
-                                </h2>
-                                <div className="flex gap-2 bg-[#231D30] rounded-lg p-1">
-                                    {['Followers', 'Following'].map((tab) => (
-                                        <button
-                                            key={tab.toLowerCase()}
-                                            onClick={() => setSelectedFollowTab(tab.toLowerCase())}
-                                            className={`px-3 py-1 md:px-4 md:py-1 rounded-lg transition-all duration-300 text-sm md:text-base ${selectedFollowTab === tab.toLowerCase()
-                                                ? 'bg-[#00FFB2] text-black'
-                                                : 'text-white hover:bg-[#2a2339]'
-                                                }`}
-                                        >
-                                            {tab}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                            <Menu as="div" className="relative w-full sm:w-auto">
-                                <Menu.Button className="w-full sm:w-auto flex items-center justify-between gap-2 bg-[#2A2339] text-white px-4 py-2 rounded-lg text-sm md:text-base">
-                                    {selectedUserType === 'all_users' ? 'All users' :
-                                        selectedUserType === 'curator' ? 'Curators' :
-                                            selectedUserType === 'sponsor' ? 'Sponsors' : 'Fans'}
-                                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
-                                        <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                    </svg>
-                                </Menu.Button>
-                                <Menu.Items className="absolute right-0 mt-2 w-48 bg-[#2A2339] rounded-lg shadow-lg py-1 z-10">
-                                    {[
-                                        { id: 'all_users', label: 'All users' },
-                                        { id: 'curator', label: 'Curators' },
-                                        { id: 'sponsor', label: 'Sponsors' },
-                                        { id: 'fan', label: 'Fans' }
-                                    ].map((type) => (
-                                        <Menu.Item key={type.id}>
-                                            {({ active }) => (
-                                                <button
-                                                    onClick={() => setSelectedUserType(type.id)}
-                                                    className={`${active ? 'bg-[#231D30]' : ''
-                                                        } text-white group flex w-full items-center px-4 py-2 text-sm`}
-                                                >
-                                                    {type.label}
-                                                </button>
-                                            )}
-                                        </Menu.Item>
-                                    ))}
-                                </Menu.Items>
-                            </Menu>
-                        </div>
-
-                        <div className="relative">
-                            <input
-                                type="text"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                placeholder="Search by name or role"
-                                className="w-full bg-[#231D30] text-white rounded-lg pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#00FFB2]"
-                            />
-                            <svg
-                                className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                                />
-                            </svg>
-                        </div>
-
-                        <div className="space-y-4">
-                            {displayedUsers.map((user) => (
-                                <div
-                                    key={user.id}
-                                    className="flex items-center justify-between bg-[#231D30] rounded-lg p-4"
-                                >
-                                    <div className="flex items-center gap-4">
-                                        <img
-                                            src={user.image}
-                                            alt={user.name}
-                                            className="w-12 h-12 rounded-full"
-                                        />
-                                        <div>
-                                            <h3 className="text-white font-medium">{user.name}</h3>
-                                            <div className="flex items-center gap-2">
-                                                <p className="text-gray-400 text-sm">{user.role}</p>
-                                                {user.type === 'curator' && (
-                                                    <span className="text-[#C5FF32] text-sm">★ {user.rating}</span>
-                                                )}
-                                                {user.type === 'sponsor' && (
-                                                    <span className="text-[#C5FF32] text-sm">{user.eventsSponsored} events</span>
-                                                )}
-                                                {user.type === 'fan' && (
-                                                    <span className="text-[#C5FF32] text-sm">{user.eventsAttended} events attended</span>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-4">
-                                        {user.isFollowing && (
-                                            <span className="text-[#00FFB2]">Following</span>
-                                        )}
-                                        <button
-                                            onClick={() => handleFollowToggle(user.id, selectedFollowTab)}
-                                            disabled={followLoading[user.id]}
-                                            className={`px-6 py-2 rounded-lg transition-colors ${user.isFollowing
-                                                ? 'border border-[#C5FF32] text-[#C5FF32] hover:bg-[#C5FF32] hover:text-black'
-                                                : 'bg-[#00FFB2] text-black hover:bg-[#00FFB2]/90'
-                                                } disabled:opacity-50`}
-                                        >
-                                            {followLoading[user.id] ? 'Loading...' : user.isFollowing ? 'Unfollow' : 'Follow'}
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
-
-                            {filteredUsers.length === 0 && (
-                                <div className="text-center text-gray-400 py-8">
-                                    No users found matching your criteria
-                                </div>
-                            )}
-
-                            {filteredUsers.length > 5 && (
-                                <div className="flex justify-center mt-6">
-                                    <button
-                                        onClick={() => setShowAllFollowers(!showAllFollowers)}
-                                        className="bg-transparent border border-[#00FFB2] text-[#00FFB2] px-6 py-2 rounded-lg hover:bg-[#00FFB2] hover:text-black transition-all duration-300 flex items-center gap-2"
-                                    >
-                                        {showAllFollowers ? 'Show Less' : 'See More'}
-                                        {!showAllFollowers && (
-                                            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                            </svg>
-                                        )}
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                );
-            case 'favorites':
-                return (
-                    <div className="space-y-6">
-                        <div className="flex items-center justify-between">
-                            <h2 className="text-white text-2xl font-medium">My Favourites ({userData.stats.favorites})</h2>
-                            <div className="flex gap-2">
-                                {['Events', 'Curators', 'Sponsors'].map((tab) => (
-                                    <button
-                                        key={tab.toLowerCase()}
-                                        onClick={() => setSelectedFavTab(tab.toLowerCase())}
-                                        className={`px-4 py-1 rounded-lg transition-all duration-300 ${selectedFavTab === tab.toLowerCase()
-                                            ? 'bg-[#00FFB2] text-black shadow-[0_0_15px_rgba(0,255,178,0.5)]'
-                                            : 'bg-[#231D30] text-white hover:bg-[#2a2339]'
-                                            }`}
-                                    >
-                                        {tab}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        {selectedFavTab === 'events' && (
-                            <>
-                                <div className="grid grid-cols-1 gap-4">
-                                    {(showAllEvents ? favoriteEvents : favoriteEvents.slice(0, 3)).map((event) => (
-                                        <Link
-                                            key={event.id}
-                                            to={`/event/${event.id}`}
-                                            className="block bg-[#231D30] rounded-lg p-4 hover:bg-[#231D30]/90 transition-colors"
-                                        >
-                                            <div className="flex gap-4">
-                                                <div className="relative w-[200px] h-[120px] flex-shrink-0">
-                                                    <img
-                                                        src={event.image}
-                                                        alt={event.title}
-                                                        className="w-full h-full object-cover rounded-lg"
-                                                    />
-                                                    {event.isFree && (
-                                                        <span className="absolute top-2 left-2 bg-[#00FFB2] text-black text-xs px-2 py-1 rounded">
-                                                            FREE
-                                                        </span>
-                                                    )}
-                                                </div>
-
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="flex justify-between items-start">
-                                                        <div className="bg-[#1A1625] px-3 py-1 rounded text-center">
-                                                            <div className="text-[#00FFB2] text-sm font-medium">{event.date.month}</div>
-                                                            <div className="text-white text-sm">{event.date.days}</div>
-                                                        </div>
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.preventDefault();
-                                                                // Add your like/unlike logic here
-                                                            }}
-                                                            className="text-[#00FFB2] hover:text-[#00FFB2]/80"
-                                                        >
-                                                            <AiFillHeart className="w-5 h-5" />
-                                                        </button>
-                                                    </div>
-
-                                                    <h3 className="text-white text-lg font-medium mt-2">{event.title}</h3>
-
-                                                    <div className="space-y-2 mt-2">
-                                                        <div className="flex items-center gap-2 text-gray-400">
-                                                            <IoLocationOutline className="w-5 h-5 flex-shrink-0" />
-                                                            <span className="text-sm">{event.location}</span>
-                                                        </div>
-                                                        <div className="flex items-center gap-2 text-gray-400">
-                                                            <IoTimeOutline className="w-5 h-5 flex-shrink-0" />
-                                                            <span className="text-sm">{event.time}</span>
-                                                        </div>
-                                                        <div className="flex items-center gap-1">
-                                                            <FaStar className="w-4 h-4 text-[#7c7d7b]" />
-                                                            <span className="text-[#C5FF32] text-sm">{event.interested} interested</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </Link>
-                                    ))}
-                                </div>
-
-                                {favoriteEvents.length > 3 && (
-                                    <div className="flex justify-center mt-6">
-                                        <button
-                                            onClick={() => setShowAllEvents(!showAllEvents)}
-                                            className="bg-transparent border border-[#00FFB2] text-[#00FFB2] px-6 py-2 rounded-lg hover:bg-[#00FFB2] hover:text-black transition-all duration-300 flex items-center gap-2"
-                                        >
-                                            {showAllEvents ? 'Show Less' : 'See More'}
-                                            {!showAllEvents && (
-                                                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                    <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                                </svg>
-                                            )}
-                                        </button>
-                                    </div>
-                                )}
-                            </>
-                        )}
-
-                        {selectedFavTab === 'curators' && (
-                            <>
-                                <div className="grid grid-cols-2 gap-6">
-                                    {(showAllCurators ? favoriteCurators : favoriteCurators.slice(0, 4)).map((curator) => (
-                                        <div key={curator.id} className="bg-[#231D30]/50 backdrop-blur-sm rounded-2xl overflow-hidden hover:bg-[#231D30]/60 transition-colors">
-                                            <CuratorCard event={curator} />
-                                        </div>
-                                    ))}
-                                </div>
-
-                                {favoriteCurators.length > 4 && (
-                                    <div className="flex justify-center mt-6">
-                                        <button
-                                            onClick={() => setShowAllCurators(!showAllCurators)}
-                                            className="bg-transparent border border-[#00FFB2] text-[#00FFB2] px-6 py-2 rounded-lg hover:bg-[#00FFB2] hover:text-black transition-all duration-300 flex items-center gap-2"
-                                        >
-                                            {showAllCurators ? 'Show Less' : 'See More'}
-                                            {!showAllCurators && (
-                                                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                    <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                                </svg>
-                                            )}
-                                        </button>
-                                    </div>
-                                )}
-                            </>
-                        )}
-
-                        {selectedFavTab === 'sponsors' && (
-                            <>
-                                <div className="grid grid-cols-2 gap-6">
-                                    {(showAllSponsors ? favoriteSponsors : favoriteSponsors.slice(0, 4)).map((sponsor) => (
-                                        <div key={sponsor.id}>
-                                            <VenueOwnerCard event={sponsor} />
-                                        </div>
-                                    ))}
-                                </div>
-
-                                {favoriteSponsors.length > 4 && (
-                                    <div className="flex justify-center mt-6">
-                                        <button
-                                            onClick={() => setShowAllSponsors(!showAllSponsors)}
-                                            className="bg-transparent border border-[#00FFB2] text-[#00FFB2] px-6 py-2 rounded-lg hover:bg-[#00FFB2] hover:text-black transition-all duration-300 flex items-center gap-2"
-                                        >
-                                            {showAllSponsors ? 'Show Less' : 'See More'}
-                                            {!showAllSponsors && (
-                                                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                    <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                                </svg>
-                                            )}
-                                        </button>
-                                    </div>
-                                )}
-                            </>
-                        )}
-                    </div>
-                );
-            case 'events':
-                return (
-                    <div className="space-y-6">
-                        <div className="flex items-center justify-between">
-                            <h2 className="text-white text-2xl font-medium">My Events ({userData.stats.events})</h2>
-                            <div className="flex gap-2">
-                                {['Upcoming', 'Past'].map((tab) => (
-                                    <button
-                                        key={tab.toLowerCase()}
-                                        onClick={() => setSelectedEventTab(tab.toLowerCase())}
-                                        className={`px-4 py-1 rounded-lg transition-all duration-300 ${selectedEventTab === tab.toLowerCase()
-                                            ? 'bg-[#00FFB2] text-black shadow-[0_0_15px_rgba(0,255,178,0.5)]'
-                                            : 'bg-[#231D30] text-white hover:bg-[#2a2339]'
-                                            }`}
-                                    >
-                                        {tab}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 gap-4">
-                            {(showAllMyEvents ? myEvents : myEvents.slice(0, 3))
-                                .filter(event => event.status === selectedEventTab)
-                                .map((event) => (
-                                    <div
-                                        key={event.id}
-                                        className="block bg-[#231D30] rounded-lg p-4 hover:bg-[#231D30]/90 transition-colors"
-                                    >
-                                        <div className="flex gap-4">
-                                            <div className="relative w-[200px] h-[120px] flex-shrink-0">
-                                                <img
-                                                    src={event.image}
-                                                    alt={event.title}
-                                                    className="w-full h-full object-cover rounded-lg"
-                                                />
-                                                {event.isFree && (
-                                                    <span className="absolute top-2 left-2 bg-[#00FFB2] text-black text-xs px-2 py-1 rounded">
-                                                        FREE
-                                                    </span>
-                                                )}
-                                            </div>
-
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex justify-between items-start">
-                                                    <div className="bg-[#1A1625] px-3 py-1 rounded text-center">
-                                                        <div className="text-[#00FFB2] text-sm font-medium">{event.date.month}</div>
-                                                        <div className="text-white text-sm">{event.date.days}</div>
-                                                    </div>
-                                                    <Menu as="div" className="relative">
-                                                        <Menu.Button className="text-[#00FFB2] hover:text-[#00FFB2]/80 p-1">
-                                                            <FaEllipsisH className="w-5 h-5" />
-                                                        </Menu.Button>
-                                                        <Menu.Items className="absolute right-0 mt-2 w-36 bg-[#1A1625] rounded-lg shadow-lg py-1 z-10">
-                                                            <Menu.Item>
-                                                                {({ active }) => (
-                                                                    <button
-                                                                        onClick={() => handleEditEvent(event)}
-                                                                        className={`${active ? 'bg-[#231D30]' : ''
-                                                                            } text-white group flex w-full items-center px-4 py-2 text-sm`}
-                                                                    >
-                                                                        Edit
-                                                                    </button>
-                                                                )}
-                                                            </Menu.Item>
-                                                            <Menu.Item>
-                                                                {({ active }) => (
-                                                                    <button
-                                                                        onClick={() => handleDeleteEvent(event)}
-                                                                        className={`${active ? 'bg-[#231D30]' : ''
-                                                                            } text-red-500 group flex w-full items-center px-4 py-2 text-sm`}
-                                                                    >
-                                                                        Delete
-                                                                    </button>
-                                                                )}
-                                                            </Menu.Item>
-                                                        </Menu.Items>
-                                                    </Menu>
-                                                </div>
-
-                                                <h3 className="text-white text-lg font-medium mt-2">{event.title}</h3>
-
-                                                <div className="space-y-2 mt-2">
-                                                    <div className="flex items-center gap-2 text-gray-400">
-                                                        <IoLocationOutline className="w-5 h-5 flex-shrink-0" />
-                                                        <span className="text-sm">{event.location}</span>
-                                                    </div>
-                                                    <div className="flex items-center gap-2 text-gray-400">
-                                                        <IoTimeOutline className="w-5 h-5 flex-shrink-0" />
-                                                        <span className="text-sm">{event.time}</span>
-                                                    </div>
-                                                    <div className="flex items-center gap-1">
-                                                        <FaStar className="w-4 h-4 text-[#7c7d7b]" />
-                                                        <span className="text-[#C5FF32] text-sm">{event.interested} interested</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                        </div>
-
-                        {myEvents.filter(event => event.status === selectedEventTab).length > 3 && (
-                            <div className="flex justify-center mt-6">
-                                <button
-                                    onClick={() => setShowAllMyEvents(!showAllMyEvents)}
-                                    className="bg-transparent border border-[#00FFB2] text-[#00FFB2] px-6 py-2 rounded-lg hover:bg-[#00FFB2] hover:text-black transition-all duration-300 flex items-center gap-2"
-                                >
-                                    {showAllMyEvents ? 'Show Less' : 'See More'}
-                                    {!showAllMyEvents && (
-                                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                        </svg>
-                                    )}
-                                </button>
-                            </div>
-                        )}
-                    </div>
-                );
-            case 'products':
-                const displayedProducts = showAllProducts ? myProducts : myProducts.slice(0, 3);
-
-                return (
-                    <div className="space-y-6">
-                        <div className="flex items-center justify-between">
-                            <h2 className="text-white text-2xl font-medium">Products</h2>
-                        </div>
-
-                        <div className="space-y-4">
-                            {displayedProducts.map((product) => (
-                                <div key={product.id} className="bg-[#231D30] rounded-lg p-4">
-                                    <div className="flex gap-4">
-                                        <div className="relative w-[200px] h-[200px] flex-shrink-0">
-                                            <img
-                                                src={product.image}
-                                                alt={product.title}
-                                                className="w-full h-full object-cover rounded-lg"
-                                            />
-                                        </div>
-
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex justify-between items-start">
-                                                <h3 className="text-white text-xl font-medium">{product.title}</h3>
-                                                <div className="flex items-center gap-2">
-                                                    <button
-                                                        onClick={() => handleEditProduct(product)}
-                                                        className="bg-[#00FFB2] text-black px-8 py-2 rounded-lg hover:bg-[#00FFB2]/90 transition-colors"
-                                                    >
-                                                        Edit
-                                                    </button>
-                                                </div>
-                                            </div>
-
-                                            <div className="mt-4 space-y-2">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-gray-400">Price:</span>
-                                                    <span className="text-white">${product.price}</span>
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-gray-400">Stock:</span>
-                                                    <span className="text-white">{product.stock}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-
-                        {myProducts.length > 3 && (
-                            <div className="flex justify-center mt-6">
-                                <button
-                                    onClick={() => setShowAllProducts(!showAllProducts)}
-                                    className="bg-transparent border border-[#00FFB2] text-[#00FFB2] px-6 py-2 rounded-lg hover:bg-[#00FFB2] hover:text-black transition-all duration-300 flex items-center gap-2"
-                                >
-                                    {showAllProducts ? 'Show Less' : 'See More'}
-                                    {!showAllProducts && (
-                                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                        </svg>
-                                    )}
-                                </button>
-                            </div>
-                        )}
-                    </div>
-                );
             case 'news_feed':
                 return (
                     <div className="space-y-4 md:space-y-6">
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                             <div>
                                 <h1 className="text-white text-xl md:text-2xl font-medium">Welcome back,</h1>
-                                <p className="text-gray-400 text-sm md:text-base">Username</p>
+                                <p className="text-gray-400 text-sm md:text-base">{userData.name}</p>
                             </div>
                             <div className="relative w-full sm:w-auto">
                                 <button
@@ -1427,9 +457,16 @@ const UserProfile = () => {
                                         <button className="w-full text-left px-4 py-2 text-sm md:text-base text-white hover:bg-[#1E1B33]">
                                             Create Post
                                         </button>
-                                        <button className="w-full text-left px-4 py-2 text-sm md:text-base text-white hover:bg-[#1E1B33]">
-                                            Create Event
-                                        </button>
+                                        {(userData.role === 'curator' || userData.role === 'venueOwner') && (
+                                            <button className="w-full text-left px-4 py-2 text-sm md:text-base text-white hover:bg-[#1E1B33]">
+                                                Create Event
+                                            </button>
+                                        )}
+                                        {userData.role === 'sponsor' && (
+                                            <button className="w-full text-left px-4 py-2 text-sm md:text-base text-white hover:bg-[#1E1B33]">
+                                                Create Product
+                                            </button>
+                                        )}
                                     </div>
                                 )}
                             </div>
@@ -1583,155 +620,459 @@ const UserProfile = () => {
                             </div>
 
                             {/* Posts List */}
-                            {posts.map((post) => (
-                                <div key={post.id} className="bg-[#231D30] rounded-lg p-4 md:p-6">
-                                    <div className="flex justify-between items-start mb-4">
-                                        <div className="flex items-center gap-2 md:gap-3">
-                                            <img
-                                                src={userData.avatar}
-                                                alt={post.author}
-                                                className="w-10 h-10 md:w-12 md:h-12 rounded-full"
-                                            />
-                                            <div>
-                                                <h3 className="text-white text-sm md:text-base font-medium">{post.author}</h3>
-                                                <p className="text-white/60 text-xs md:text-sm">{post.timeAgo}</p>
+                            {posts.length > 0 ? (
+                                posts.map((post) => (
+                                    <div key={post.id || post._id} className="bg-[#231D30] rounded-lg p-4 md:p-6">
+                                        <div className="flex justify-between items-start mb-4">
+                                            <div className="flex items-center gap-2 md:gap-3">
+                                                <img
+                                                    src={userData.avatar}
+                                                    alt={post.author}
+                                                    className="w-10 h-10 md:w-12 md:h-12 rounded-full"
+                                                />
+                                                <div>
+                                                    <h3 className="text-white text-sm md:text-base font-medium">{post.author}</h3>
+                                                    <p className="text-white/60 text-xs md:text-sm">{post.timeAgo}</p>
+                                                </div>
+                                            </div>
+                                            <button className="text-white/60 hover:text-white">•••</button>
+                                        </div>
+
+                                        <div className="mb-4">
+                                            <div className="text-sm md:text-base text-white/80">
+                                                {formatPostContent(post.content)}
                                             </div>
                                         </div>
-                                        <button className="text-white/60 hover:text-white">•••</button>
-                                    </div>
 
-                                    <div className="mb-4">
-                                        <div className="text-sm md:text-base text-white/80">
-                                            {formatPostContent(post.content)}
+                                        {post.images && (
+                                            <div className="grid grid-cols-2 gap-2 mb-4">
+                                                {post.images.map((image, index) => (
+                                                    <button
+                                                        key={index}
+                                                        onClick={() => openImageViewer(image, index)}
+                                                        className="relative overflow-hidden rounded-lg group"
+                                                    >
+                                                        <img
+                                                            src={image}
+                                                            alt={`Post ${index + 1}`}
+                                                            className="w-full h-32 md:h-48 object-cover transition-transform duration-300 group-hover:scale-105"
+                                                        />
+                                                        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
+
+                                        <div className="flex items-center gap-4 md:gap-6 text-white/60 text-sm md:text-base">
+                                            <div className="flex items-center gap-1 md:gap-2">
+                                                <IoEyeOutline className="w-4 h-4 md:w-5 md:h-5" />
+                                                <span>{post.views}</span>
+                                            </div>
+                                            <button
+                                                onClick={() => handleLikePost(post.id)}
+                                                className="flex items-center gap-1 md:gap-2 hover:text-[#00FFB2]"
+                                            >
+                                                {post.isLiked ? (
+                                                    <AiFillHeart className="w-4 h-4 md:w-5 md:h-5 text-[#00FFB2]" />
+                                                ) : (
+                                                    <AiOutlineHeart className="w-4 h-4 md:w-5 md:h-5" />
+                                                )}
+                                                <span className={post.isLiked ? "text-[#00FFB2]" : ""}>
+                                                    {post.likes} Like
+                                                </span>
+                                            </button>
+                                            <button
+                                                onClick={() => handleCommentPost(post.id)}
+                                                className="flex items-center gap-1 md:gap-2 hover:text-[#00FFB2]"
+                                            >
+                                                <FaRegComment className="w-4 h-4 md:w-5 md:h-5" />
+                                                <span>{post.comments} Comment</span>
+                                            </button>
                                         </div>
                                     </div>
-
-                                    {post.images && (
-                                        <div className="grid grid-cols-2 gap-2 mb-4">
-                                            {post.images.map((image, index) => (
-                                                <button
-                                                    key={index}
-                                                    onClick={() => openImageViewer(image, index)}
-                                                    className="relative overflow-hidden rounded-lg group"
-                                                >
-                                                    <img
-                                                        src={image}
-                                                        alt={`Post ${index + 1}`}
-                                                        className="w-full h-32 md:h-48 object-cover transition-transform duration-300 group-hover:scale-105"
-                                                    />
-                                                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                                                </button>
-                                            ))}
-                                        </div>
-                                    )}
-
-                                    <div className="flex items-center gap-4 md:gap-6 text-white/60 text-sm md:text-base">
-                                        <div className="flex items-center gap-1 md:gap-2">
-                                            <IoEyeOutline className="w-4 h-4 md:w-5 md:h-5" />
-                                            <span>{post.views}</span>
-                                        </div>
-                                        <button
-                                            onClick={() => handleLikePost(post.id)}
-                                            className="flex items-center gap-1 md:gap-2 hover:text-[#00FFB2]"
-                                        >
-                                            {post.isLiked ? (
-                                                <AiFillHeart className="w-4 h-4 md:w-5 md:h-5 text-[#00FFB2]" />
-                                            ) : (
-                                                <AiOutlineHeart className="w-4 h-4 md:w-5 md:h-5" />
-                                            )}
-                                            <span className={post.isLiked ? "text-[#00FFB2]" : ""}>
-                                                {post.likes} Like
-                                            </span>
-                                        </button>
-                                        <button
-                                            onClick={() => handleCommentPost(post.id)}
-                                            className="flex items-center gap-1 md:gap-2 hover:text-[#00FFB2]"
-                                        >
-                                            <FaRegComment className="w-4 h-4 md:w-5 md:h-5" />
-                                            <span>{post.comments} Comment</span>
-                                        </button>
-                                    </div>
+                                ))
+                            ) : (
+                                <div className="bg-[#231D30] rounded-lg p-8 text-center">
+                                    <p className="text-white/60 text-lg">No posts yet</p>
+                                    <p className="text-white/40 text-sm mt-2">Share your first post to get started!</p>
                                 </div>
-                            ))}
+                            )}
                         </div>
                     </div>
                 );
-            case 'media':
+
+            case 'favorites':
                 return (
-                    <div className="space-y-4 md:space-y-6">
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                            <h2 className="text-white text-xl md:text-2xl font-medium">
-                                Media {selectedMediaTab === 'image' ? '(3)' : '(3)'}
-                            </h2>
-                            <div className="flex gap-2">
-                                {['Images', 'Videos'].map((tab) => (
-                                    <button
-                                        key={tab.toLowerCase()}
-                                        onClick={() => setSelectedMediaTab(tab.toLowerCase().slice(0, -1))}
-                                        className={`px-3 py-1 md:px-4 md:py-1 rounded-lg transition-all duration-300 text-sm md:text-base ${selectedMediaTab === tab.toLowerCase().slice(0, -1)
-                                            ? 'bg-[#6E6B7B] text-white'
-                                            : 'bg-transparent text-white/60 hover:bg-[#2a2339]'
-                                            }`}
-                                    >
-                                        {tab}
-                                    </button>
-                                ))}
-                            </div>
+                    <div className="space-y-6">
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-white text-2xl font-medium">My Favourites</h2>
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
-                            {mediaItems.filter(item => selectedMediaTab === item.type).map((item) => (
-                                <div
-                                    key={item.id}
-                                    className="relative group cursor-pointer"
-                                    onClick={() => {
-                                        if (item.type === 'video') {
-                                            console.log('Play video:', item.url);
-                                        } else {
-                                            openImageViewer(item.url, 0);
-                                        }
-                                    }}
-                                >
-                                    <div className="relative aspect-square overflow-hidden rounded-lg">
-                                        <img
-                                            src={item.type === 'video' ? item.thumbnail : item.url}
-                                            alt={`Media ${item.id}`}
-                                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                                        />
-                                        {item.type === 'video' && (
-                                            <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="flex gap-6 border-b border-white/10">
+                            <button
+                                onClick={() => setSelectedFavTab('events')}
+                                className={`pb-2 relative ${selectedFavTab === 'events' ? 'text-[#00FFB2]' : 'text-white/60'}`}
+                            >
+                                Events
+                                {selectedFavTab === 'events' && (
+                                    <div className="absolute bottom-0 left-0 w-full h-0.5 bg-[#00FFB2]" />
+                                )}
+                            </button>
+                            <button
+                                onClick={() => setSelectedFavTab('curators')}
+                                className={`pb-2 relative ${selectedFavTab === 'curators' ? 'text-[#00FFB2]' : 'text-white/60'}`}
+                            >
+                                Curators
+                                {selectedFavTab === 'curators' && (
+                                    <div className="absolute bottom-0 left-0 w-full h-0.5 bg-[#00FFB2]" />
+                                )}
+                            </button>
+                            <button
+                                onClick={() => setSelectedFavTab('sponsors')}
+                                className={`pb-2 relative ${selectedFavTab === 'sponsors' ? 'text-[#00FFB2]' : 'text-white/60'}`}
+                            >
+                                Sponsors
+                                {selectedFavTab === 'sponsors' && (
+                                    <div className="absolute bottom-0 left-0 w-full h-0.5 bg-[#00FFB2]" />
+                                )}
+                            </button>
+                        </div>
+
+                        <div className="space-y-4">
+                            {favorites.length > 0 ? (
+                                favorites.map((favorite) => (
+                                    <div key={favorite._id || favorite.id} className="bg-[#231D30] rounded-lg p-4">
+                                        <div className="flex gap-4">
+                                            <div className="relative w-[200px] h-[200px] flex-shrink-0">
                                                 <img
-                                                    src="/icons/play.svg"
-                                                    alt="Play"
-                                                    className="w-8 h-8 md:w-12 md:h-12"
+                                                    src={favorite.image || "/Images/post.png"}
+                                                    alt={favorite.title || favorite.name}
+                                                    className="w-full h-full object-cover rounded-lg"
                                                 />
                                             </div>
-                                        )}
-                                        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                                    </div>
-                                    <div className="absolute bottom-2 md:bottom-3 left-2 md:left-3 right-2 md:right-3 flex items-center justify-between text-xs md:text-sm text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                        <div className="flex items-center gap-1 md:gap-2">
-                                            <IoEyeOutline className="w-3 h-3 md:w-4 md:h-4" />
-                                            <span>{item.views}</span>
+                                            <div className="flex-1 min-w-0">
+                                                <h3 className="text-white text-xl font-medium">{favorite.title || favorite.name}</h3>
+                                                <p className="text-gray-400 mt-2">{favorite.location || favorite.description}</p>
+                                                {favorite.date && (
+                                                    <p className="text-gray-400 mt-1">{favorite.date}</p>
+                                                )}
+                                                {favorite.rating && (
+                                                    <div className="flex items-center gap-2 mt-2">
+                                                        <div className="flex items-center">
+                                                            {[...Array(5)].map((_, i) => (
+                                                                <FaStar
+                                                                    key={i}
+                                                                    className={`w-4 h-4 ${i < Math.floor(favorite.rating) ? 'text-yellow-400' : 'text-gray-600'}`}
+                                                                />
+                                                            ))}
+                                                        </div>
+                                                        <span className="text-white text-sm">{favorite.rating}</span>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
-                                        <div className="flex items-center gap-1 md:gap-2">
-                                            <AiOutlineHeart className="w-3 h-3 md:w-4 md:h-4" />
-                                            <span>{item.likes}</span>
-                                        </div>
                                     </div>
+                                ))
+                            ) : (
+                                <div className="bg-[#231D30] rounded-lg p-8 text-center">
+                                    <p className="text-white/60 text-lg">No favorites yet</p>
+                                    <p className="text-white/40 text-sm mt-2">Start adding items to your favorites!</p>
                                 </div>
-                            ))}
+                            )}
+                        </div>
+                    </div>
+                );
+
+            case 'events':
+                const title = userData.role === 'sponsor' ? 'Sponsored Events' : 'My Events';
+                return (
+                    <div className="space-y-6">
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-white text-2xl font-medium">{title}</h2>
                         </div>
 
-                        {mediaItems.filter(item => selectedMediaTab === item.type).length > 6 && (
-                            <div className="flex justify-center mt-4 md:mt-6">
+                        <div className="flex gap-6 border-b border-white/10">
+                            <button
+                                onClick={() => setSelectedEventTab('upcoming')}
+                                className={`pb-2 relative ${selectedEventTab === 'upcoming' ? 'text-[#00FFB2]' : 'text-white/60'}`}
+                            >
+                                Upcoming
+                                {selectedEventTab === 'upcoming' && (
+                                    <div className="absolute bottom-0 left-0 w-full h-0.5 bg-[#00FFB2]" />
+                                )}
+                            </button>
+                            <button
+                                onClick={() => setSelectedEventTab('past')}
+                                className={`pb-2 relative ${selectedEventTab === 'past' ? 'text-[#00FFB2]' : 'text-white/60'}`}
+                            >
+                                Past
+                                {selectedEventTab === 'past' && (
+                                    <div className="absolute bottom-0 left-0 w-full h-0.5 bg-[#00FFB2]" />
+                                )}
+                            </button>
+                        </div>
+
+                        <div className="space-y-4">
+                            {events.length > 0 ? (
+                                events
+                                    .filter(event => {
+                                        const eventDate = new Date(event.startDate || event.date);
+                                        const isUpcoming = eventDate > new Date();
+                                        return selectedEventTab === 'upcoming' ? isUpcoming : !isUpcoming;
+                                    })
+                                    .slice(0, showAllMyEvents ? events.length : 6)
+                                    .map((event) => (
+                                        <div key={event._id || event.id} className="bg-[#231D30] rounded-lg p-4">
+                                            <div className="flex gap-4">
+                                                <div className="relative w-[200px] h-[200px] flex-shrink-0">
+                                                    <img
+                                                        src={event.images?.[0] || event.image || "/Images/post.png"}
+                                                        alt={event.title || event.name}
+                                                        className="w-full h-full object-cover rounded-lg"
+                                                    />
+                                                    {event.isFree && (
+                                                        <div className="absolute top-2 left-2 bg-green-500 text-white px-2 py-1 rounded text-xs">
+                                                            FREE
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex justify-between items-start">
+                                                        <h3 className="text-white text-xl font-medium">{event.title || event.name}</h3>
+                                                        {userData.role !== 'sponsor' && (
+                                                            <div className="flex items-center gap-2">
+                                                                <button
+                                                                    onClick={() => handleEditEvent(event)}
+                                                                    className="bg-[#00FFB2] text-black px-4 py-2 rounded-lg hover:bg-[#00FFB2]/90 transition-colors text-sm"
+                                                                >
+                                                                    Edit
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => handleDeleteEvent(event)}
+                                                                    className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors text-sm"
+                                                                >
+                                                                    Delete
+                                                                </button>
+                                                            </div>
+                                                        )}
+                                                    </div>
+
+                                                    <div className="mt-4 space-y-2">
+                                                        <div className="flex items-center gap-2">
+                                                            <IoLocationOutline className="w-5 h-5 text-gray-400" />
+                                                            <span className="text-white">
+                                                                {event.venue?.location?.address || event.location?.address || event.location || 'Location TBD'}
+                                                            </span>
+                                                        </div>
+                                                        <div className="flex items-center gap-2">
+                                                            <IoCalendarOutline className="w-5 h-5 text-gray-400" />
+                                                            <span className="text-white">
+                                                                {event.startDate ? new Date(event.startDate).toLocaleDateString() : event.date || 'Date TBD'}
+                                                            </span>
+                                                        </div>
+                                                        <div className="flex items-center gap-2">
+                                                            <IoTimeOutline className="w-5 h-5 text-gray-400" />
+                                                            <span className="text-white">
+                                                                {event.startTime && event.endTime 
+                                                                    ? `${event.startTime} - ${event.endTime}`
+                                                                    : event.time || 'Time TBD'
+                                                                }
+                                                            </span>
+                                                        </div>
+                                                        {event.attendeesCount !== undefined && (
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-gray-400">Interested:</span>
+                                                                <span className="text-white">{event.attendeesCount || event.interested || 0}</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))
+                            ) : (
+                                <div className="bg-[#231D30] rounded-lg p-8 text-center">
+                                    <p className="text-white/60 text-lg">No events yet</p>
+                                    <p className="text-white/40 text-sm mt-2">
+                                        {userData.role === 'sponsor' 
+                                            ? 'Start sponsoring events to see them here!' 
+                                            : 'Create your first event to get started!'
+                                        }
+                                    </p>
+                                </div>
+                            )}
+
+                            {events.length > 6 && (
+                                <div className="flex justify-center mt-6">
+                                    <button
+                                        onClick={() => setShowAllMyEvents(!showAllMyEvents)}
+                                        className="bg-transparent border border-[#00FFB2] text-[#00FFB2] px-6 py-2 rounded-lg hover:bg-[#00FFB2] hover:text-black transition-all duration-300 flex items-center gap-2"
+                                    >
+                                        {showAllMyEvents ? 'Show Less' : 'See More'}
+                                        {!showAllMyEvents && (
+                                            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                            </svg>
+                                        )}
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                );
+
+            case 'venues':
+                if (userData.role !== 'venueOwner') return null;
+                return (
+                    <div className="space-y-6">
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-white text-2xl font-medium">My Venues</h2>
+                        </div>
+
+                        <div className="space-y-4">
+                            {venues.length > 0 ? (
+                                venues.map((venueData) => {
+                                    const venue = venueData.venue || venueData;
+                                    const venueEvents = venueData.events || [];
+                                    
+                                    return (
+                                        <div key={venue._id} className="bg-[#231D30] rounded-lg p-4">
+                                            <div className="flex gap-4">
+                                                <div className="relative w-[200px] h-[200px] flex-shrink-0">
+                                                    <img
+                                                        src={venue.gallery?.photos?.[0]?.url || "/Images/post.png"}
+                                                        alt={venue.name}
+                                                        className="w-full h-full object-cover rounded-lg"
+                                                    />
+                                                </div>
+
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex justify-between items-start">
+                                                        <h3 className="text-white text-xl font-medium">{venue.name}</h3>
+                                                        <div className="flex items-center gap-2">
+                                                            <button className="bg-[#00FFB2] text-black px-4 py-2 rounded-lg hover:bg-[#00FFB2]/90 transition-colors text-sm">
+                                                                Edit Venue
+                                                            </button>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="mt-4 space-y-2">
+                                                        <div className="flex items-center gap-2">
+                                                            <IoLocationOutline className="w-5 h-5 text-gray-400" />
+                                                            <span className="text-white">
+                                                                {venue.location?.address}, {venue.location?.city}, {venue.location?.state}
+                                                            </span>
+                                                        </div>
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-gray-400">Capacity:</span>
+                                                            <span className="text-white">{venue.capacity}</span>
+                                                        </div>
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-gray-400">Events Hosted:</span>
+                                                            <span className="text-white">{venueEvents.length}</span>
+                                                        </div>
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-gray-400">Amenities:</span>
+                                                            <span className="text-white">{venue.amenities?.join(', ') || 'None listed'}</span>
+                                                        </div>
+                                                        {venue.description && (
+                                                            <div className="flex items-start gap-2">
+                                                                <span className="text-gray-400">Description:</span>
+                                                                <span className="text-white">{venue.description}</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })
+                            ) : (
+                                <div className="bg-[#231D30] rounded-lg p-8 text-center">
+                                    <p className="text-white/60 text-lg">No venues yet</p>
+                                    <p className="text-white/40 text-sm mt-2">Add your first venue to get started!</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                );
+
+            case 'products':
+                if (userData.role !== 'sponsor') return null;
+                const displayedProducts = showAllProducts ? products : products.slice(0, 3);
+
+                return (
+                    <div className="space-y-6">
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-white text-2xl font-medium">My Products</h2>
+                        </div>
+
+                        <div className="space-y-4">
+                            {displayedProducts.length > 0 ? (
+                                displayedProducts.map((product) => (
+                                    <div key={product._id || product.id} className="bg-[#231D30] rounded-lg p-4">
+                                        <div className="flex gap-4">
+                                            <div className="relative w-[200px] h-[200px] flex-shrink-0">
+                                                <img
+                                                    src={product.images?.[0] || product.image || "/Images/post.png"}
+                                                    alt={product.name || product.title}
+                                                    className="w-full h-full object-cover rounded-lg"
+                                                />
+                                            </div>
+
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex justify-between items-start">
+                                                    <h3 className="text-white text-xl font-medium">{product.name || product.title}</h3>
+                                                    <div className="flex items-center gap-2">
+                                                        <button
+                                                            onClick={() => handleEditProduct(product)}
+                                                            className="bg-[#00FFB2] text-black px-8 py-2 rounded-lg hover:bg-[#00FFB2]/90 transition-colors"
+                                                        >
+                                                            Edit
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                                <div className="mt-4 space-y-2">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-gray-400">Price:</span>
+                                                        <span className="text-white">${product.price}</span>
+                                                    </div>
+                                                    {product.stock !== undefined && (
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-gray-400">Stock:</span>
+                                                            <span className="text-white">{product.stock}</span>
+                                                        </div>
+                                                    )}
+                                                    {product.description && (
+                                                        <div className="flex items-start gap-2">
+                                                            <span className="text-gray-400">Description:</span>
+                                                            <span className="text-white">{product.description}</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="bg-[#231D30] rounded-lg p-8 text-center">
+                                    <p className="text-white/60 text-lg">No products yet</p>
+                                    <p className="text-white/40 text-sm mt-2">Create your first product to get started!</p>
+                                </div>
+                            )}
+                        </div>
+
+                        {products.length > 3 && (
+                            <div className="flex justify-center mt-6">
                                 <button
-                                    onClick={() => setShowAllMedia(!showAllMedia)}
-                                    className="bg-transparent border border-[#00FFB2] text-[#00FFB2] px-4 py-2 md:px-6 md:py-2 text-sm md:text-base rounded-lg hover:bg-[#00FFB2] hover:text-black transition-all duration-300 flex items-center gap-2"
+                                    onClick={() => setShowAllProducts(!showAllProducts)}
+                                    className="bg-transparent border border-[#00FFB2] text-[#00FFB2] px-6 py-2 rounded-lg hover:bg-[#00FFB2] hover:text-black transition-all duration-300 flex items-center gap-2"
                                 >
-                                    {showAllMedia ? 'Show Less' : 'See More'}
-                                    {!showAllMedia && (
-                                        <svg className="w-3 h-3 md:w-4 md:h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    {showAllProducts ? 'Show Less' : 'See More'}
+                                    {!showAllProducts && (
+                                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                             <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                         </svg>
                                     )}
@@ -1740,126 +1081,294 @@ const UserProfile = () => {
                         )}
                     </div>
                 );
+
+            case 'followers':
+                return (
+                    <div className="space-y-6">
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-white text-2xl font-medium">Followers & Following</h2>
+                        </div>
+
+                        <div className="flex gap-6 border-b border-white/10">
+                            <button
+                                onClick={() => setSelectedFollowTab('followers')}
+                                className={`pb-2 relative ${selectedFollowTab === 'followers' ? 'text-[#00FFB2]' : 'text-white/60'}`}
+                            >
+                                Followers ({followers.length})
+                                {selectedFollowTab === 'followers' && (
+                                    <div className="absolute bottom-0 left-0 w-full h-0.5 bg-[#00FFB2]" />
+                                )}
+                            </button>
+                            <button
+                                onClick={() => setSelectedFollowTab('following')}
+                                className={`pb-2 relative ${selectedFollowTab === 'following' ? 'text-[#00FFB2]' : 'text-white/60'}`}
+                            >
+                                Following ({following.length})
+                                {selectedFollowTab === 'following' && (
+                                    <div className="absolute bottom-0 left-0 w-full h-0.5 bg-[#00FFB2]" />
+                                )}
+                            </button>
+                        </div>
+
+                        <div className="space-y-4">
+                            {(selectedFollowTab === 'followers' ? followers : following).length > 0 ? (
+                                (selectedFollowTab === 'followers' ? followers : following).map((user) => (
+                                    <div key={user._id || user.id} className="bg-[#231D30] rounded-lg p-4">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-4">
+                                                <img
+                                                    src={user.profileImage || user.image || "/Images/default-avatar.jpg"}
+                                                    alt={user.name}
+                                                    className="w-12 h-12 rounded-full"
+                                                />
+                                                <div>
+                                                    <h3 className="text-white font-medium">{user.name}</h3>
+                                                    <p className="text-gray-400 text-sm">{user.role}</p>
+                                                    {user.rating && (
+                                                        <div className="flex items-center gap-1 mt-1">
+                                                            <FaStar className="w-3 h-3 text-yellow-400" />
+                                                            <span className="text-white text-xs">{user.rating}</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <button
+                                                onClick={() => handleFollowToggle(user._id || user.id, selectedFollowTab)}
+                                                disabled={followLoading[user._id || user.id]}
+                                                className="bg-[#00FFB2] text-black px-4 py-2 rounded-lg hover:bg-[#00FFB2]/90 transition-colors disabled:opacity-50"
+                                            >
+                                                {followLoading[user._id || user.id] ? 'Loading...' : 'View Profile'}
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="bg-[#231D30] rounded-lg p-8 text-center">
+                                    <p className="text-white/60 text-lg">
+                                        No {selectedFollowTab} yet
+                                    </p>
+                                    <p className="text-white/40 text-sm mt-2">
+                                        {selectedFollowTab === 'followers' 
+                                            ? 'Start engaging with others to gain followers!'
+                                            : 'Start following other users to see them here!'
+                                        }
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                );
+
+            case 'media':
+                const filteredMedia = mediaItems.filter(item => 
+                    selectedMediaTab === 'all' || item.type === selectedMediaTab.slice(0, -1)
+                );
+                const displayedMedia = showAllMedia ? filteredMedia : filteredMedia.slice(0, 6);
+
+                return (
+                    <div className="space-y-6">
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-white text-2xl font-medium">Media</h2>
+                        </div>
+
+                        <div className="flex gap-6 border-b border-white/10">
+                            {['all', 'images', 'videos'].map((tab) => (
+                                <button
+                                    key={tab}
+                                    onClick={() => setSelectedMediaTab(tab)}
+                                    className={`pb-2 relative capitalize ${selectedMediaTab === tab ? 'text-[#00FFB2]' : 'text-white/60'}`}
+                                >
+                                    {tab}
+                                    {selectedMediaTab === tab && (
+                                        <div className="absolute bottom-0 left-0 w-full h-0.5 bg-[#00FFB2]" />
+                                    )}
+                                </button>
+                            ))}
+                        </div>
+
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            {displayedMedia.length > 0 ? (
+                                displayedMedia.map((item) => (
+                                    <div key={item.id} className="relative group">
+                                        <div className="aspect-square bg-[#231D30] rounded-lg overflow-hidden">
+                                            {item.type === 'image' ? (
+                                                <img
+                                                    src={item.url}
+                                                    alt="Media"
+                                                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                                />
+                                            ) : (
+                                                <div className="relative w-full h-full">
+                                                    <img
+                                                        src={item.thumbnail}
+                                                        alt="Video thumbnail"
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                    <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                                                        <div className="w-12 h-12 bg-white/80 rounded-full flex items-center justify-center">
+                                                            <svg className="w-6 h-6 text-black ml-1" fill="currentColor" viewBox="0 0 24 24">
+                                                                <path d="M8 5v14l11-7z"/>
+                                                            </svg>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg flex items-end">
+                                            <div className="p-3 text-white text-sm">
+                                                <div className="flex items-center gap-3">
+                                                    <span>{item.views} views</span>
+                                                    <span>{item.likes} likes</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="col-span-full bg-[#231D30] rounded-lg p-8 text-center">
+                                    <p className="text-white/60 text-lg">No media yet</p>
+                                    <p className="text-white/40 text-sm mt-2">Share posts with images or videos to see them here!</p>
+                                </div>
+                            )}
+                        </div>
+
+                        {filteredMedia.length > 6 && (
+                            <div className="flex justify-center mt-6">
+                                <button
+                                    onClick={() => setShowAllMedia(!showAllMedia)}
+                                    className="bg-transparent border border-[#00FFB2] text-[#00FFB2] px-6 py-2 rounded-lg hover:bg-[#00FFB2] hover:text-black transition-all duration-300 flex items-center gap-2"
+                                >
+                                    {showAllMedia ? 'Show Less' : 'See More'}
+                                    {!showAllMedia && (
+                                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                        </svg>
+                                    )}
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                );
+
+            case 'settings':
+                return (
+                    <div className="space-y-6">
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-white text-2xl font-medium">Settings</h2>
+                        </div>
+
+                        <div className="bg-[#231D30] rounded-lg p-6">
+                            <h3 className="text-white text-xl font-medium mb-4">Profile Information</h3>
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-gray-400 text-sm mb-2">Name</label>
+                                    <input
+                                        type="text"
+                                        value={userData.name}
+                                        className="w-full bg-[#1A1625] text-white p-3 rounded-lg border border-white/10 focus:border-[#00FFB2] outline-none"
+                                        readOnly
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-gray-400 text-sm mb-2">Email</label>
+                                    <input
+                                        type="email"
+                                        value={userData.email}
+                                        className="w-full bg-[#1A1625] text-white p-3 rounded-lg border border-white/10 focus:border-[#00FFB2] outline-none"
+                                        readOnly
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-gray-400 text-sm mb-2">Role</label>
+                                    <input
+                                        type="text"
+                                        value={userData.role}
+                                        className="w-full bg-[#1A1625] text-white p-3 rounded-lg border border-white/10 focus:border-[#00FFB2] outline-none"
+                                        readOnly
+                                    />
+                                </div>
+                                {userData.bio && (
+                                    <div>
+                                        <label className="block text-gray-400 text-sm mb-2">Bio</label>
+                                        <textarea
+                                            value={userData.bio}
+                                            rows="3"
+                                            className="w-full bg-[#1A1625] text-white p-3 rounded-lg border border-white/10 focus:border-[#00FFB2] outline-none"
+                                            readOnly
+                                        />
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="bg-[#231D30] rounded-lg p-6">
+                            <h3 className="text-white text-xl font-medium mb-4">Statistics</h3>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                <div className="text-center">
+                                    <div className="text-2xl font-bold text-[#00FFB2]">{userData.stats.followers}</div>
+                                    <div className="text-gray-400 text-sm">Followers</div>
+                                </div>
+                                <div className="text-center">
+                                    <div className="text-2xl font-bold text-[#00FFB2]">{userData.stats.following}</div>
+                                    <div className="text-gray-400 text-sm">Following</div>
+                                </div>
+                                <div className="text-center">
+                                    <div className="text-2xl font-bold text-[#00FFB2]">{userData.stats.events}</div>
+                                    <div className="text-gray-400 text-sm">Events</div>
+                                </div>
+                                <div className="text-center">
+                                    <div className="text-2xl font-bold text-[#00FFB2]">{userData.stats.rating.toFixed(1)}</div>
+                                    <div className="text-gray-400 text-sm">Rating</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+
             default:
-                return null;
-        };
-    };
-
-    // Add these functions after other function declarations
-    const handleEditProduct = (product) => {
-        setProductToEdit(product);
-        setProductEditFormData({
-            title: product.title,
-            price: product.price,
-            stock: product.stock,
-            image: product.image,
-            description: product.description || ''
-        });
-        setIsProductEditModalOpen(true);
-    };
-
-    const handleUpdateProduct = async () => {
-        try {
-            setIsLoading(true);
-            setError(null);
-
-            // TODO: Replace with actual API call
-            // const response = await axios.put(`/api/products/${productToEdit.id}`, productEditFormData);
-
-            // Update local state
-            setMyProducts(prevProducts =>
-                prevProducts.map(product =>
-                    product.id === productToEdit.id
-                        ? { ...product, ...productEditFormData }
-                        : product
-                )
-            );
-
-            setIsProductEditModalOpen(false);
-            setProductToEdit(null);
-            setProductEditFormData({
-                title: '',
-                price: 0,
-                stock: 0,
-                image: '',
-                description: ''
-            });
-
-            // Show success message
-            toast.success('Product updated successfully');
-        } catch (err) {
-            setError(err.message || 'Failed to update product');
-            toast.error('Failed to update product');
-        } finally {
-            setIsLoading(false);
+                return (
+                    <div className="bg-[#231D30] rounded-lg p-8 text-center">
+                        <p className="text-white/60 text-lg">Content not available</p>
+                    </div>
+                );
         }
     };
 
-    // Add this function after other function declarations
-    const handleFollowToggle = async (userId, currentList) => {
-        try {
-            setFollowLoading(prev => ({ ...prev, [userId]: true }));
+    // Show loading state
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-[#0F0B1A] flex items-center justify-center">
+                <div className="text-white text-xl">Loading profile...</div>
+            </div>
+        );
+    }
 
-            // TODO: Replace with actual API call
-            // const response = await axios.post(`/api/users/${userId}/follow`);
-            // Simulate API delay
-            await new Promise(resolve => setTimeout(resolve, 500));
+    // Show error state
+    if (error) {
+        return (
+            <div className="min-h-screen bg-[#0F0B1A] flex items-center justify-center">
+                <div className="text-center">
+                    <div className="text-red-500 text-xl mb-4">Error loading profile</div>
+                    <div className="text-gray-400 mb-4">{error}</div>
+                    <button 
+                        onClick={fetchUserProfile}
+                        className="bg-[#00FFB2] text-black px-6 py-2 rounded-lg hover:bg-[#00FFB2]/90"
+                    >
+                        Retry
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
-            if (currentList === 'followers') {
-                setFollowers(prevFollowers =>
-                    prevFollowers.map(follower =>
-                        follower.id === userId
-                            ? { ...follower, isFollowing: !follower.isFollowing }
-                            : follower
-                    )
-                );
-            } else {
-                setFollowing(prevFollowing =>
-                    prevFollowing.map(user =>
-                        user.id === userId
-                            ? { ...user, isFollowing: !user.isFollowing }
-                            : user
-                    )
-                );
-            }
-
-            // Update user stats if unfollowing
-            const targetUser = [...followers, ...following].find(user => user.id === userId);
-            if (targetUser?.isFollowing) {
-                setUserData(prev => ({
-                    ...prev,
-                    stats: {
-                        ...prev.stats,
-                        followers: prev.stats.followers - 1
-                    }
-                }));
-            } else {
-                setUserData(prev => ({
-                    ...prev,
-                    stats: {
-                        ...prev.stats,
-                        followers: prev.stats.followers + 1
-                    }
-                }));
-            }
-
-            toast.success(targetUser?.isFollowing ? 'Unfollowed successfully' : 'Followed successfully');
-        } catch (err) {
-            toast.error('Failed to update follow status');
-        } finally {
-            setFollowLoading(prev => ({ ...prev, [userId]: false }));
-        }
-    };
-
-    // Add this function to filter users based on type and search query
-    const filterUsers = (users) => {
-        return users.filter(user => {
-            const matchesType = selectedUserType === 'all_users' || user.type === selectedUserType;
-            const matchesSearch = user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                user.role.toLowerCase().includes(searchQuery.toLowerCase());
-            return matchesType && matchesSearch;
-        });
-    };
+    // Show no data state
+    if (!userData) {
+        return (
+            <div className="min-h-screen bg-[#0F0B1A] flex items-center justify-center">
+                <div className="text-white text-xl">No profile data found</div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-[#1E1B33] p-4 md:p-6 font-sen">
@@ -1879,7 +1388,7 @@ const UserProfile = () => {
 
                     {/* Navigation Links */}
                     <div className="grid grid-cols-2 md:grid-cols-1 gap-2">
-                        {navItems.map(item => {
+                        {getNavItems().map(item => {
                             const Icon = item.icon;
                             return (
                                 item.id === 'settings' ? (
@@ -1925,7 +1434,7 @@ const UserProfile = () => {
                     <div className="bg-[#231D30] rounded-lg p-6">
                         <h2 className="text-white text-xl mb-4">Upcoming Events</h2>
                         <div className="space-y-4">
-                            {upcomingEvents.map((event) => (
+                            {events.filter(event => event.status === 'upcoming').map((event) => (
                                 <Link
                                     key={event._id}
                                     to={`/event/${event._id}`}
@@ -1942,7 +1451,7 @@ const UserProfile = () => {
 
                                         <div className="flex-1 min-w-0">
                                             <h3 className="text-white text-lg font-medium mb-2">{event.title}</h3>
-                                            <div className="space-y-2">
+                                            <div className="space-y-2 mt-2">
                                                 <div className="flex items-center gap-2 text-gray-400">
                                                     <IoLocationOutline className="w-5 h-5 flex-shrink-0" />
                                                     <span className="text-sm">{event.location}</span>
@@ -2095,26 +1604,25 @@ const UserProfile = () => {
             >
                 <div className="fixed inset-0 bg-black/70" aria-hidden="true" />
                 <div className="fixed inset-0 flex items-center justify-center p-4">
-                    <Dialog.Panel className="bg-[#1A1625] rounded-lg p-4 md:p-6 max-w-sm w-full mx-4">
-                        <Dialog.Title className="text-lg md:text-xl font-medium text-white mb-3 md:mb-4">
-                            Delete Event
+                    <Dialog.Panel className="bg-[#231D30] rounded-lg p-6 md:p-8 w-full max-w-md">
+                        <Dialog.Title className="text-white text-lg md:text-xl font-medium mb-4">
+                            Confirm Deletion
                         </Dialog.Title>
-                        <p className="text-sm md:text-base text-gray-400 mb-4 md:mb-6">
-                            Are you sure you want to delete "{eventToDelete?.title}"? This action cannot be undone.
-                        </p>
-                        <div className="flex justify-end gap-3 md:gap-4">
+                        <Dialog.Description className="text-white/60 text-sm md:text-base mb-4">
+                            Are you sure you want to delete this item? This action cannot be undone.
+                        </Dialog.Description>
+                        <div className="flex justify-end gap-2">
                             <button
                                 onClick={() => setIsDeleteModalOpen(false)}
-                                className="px-3 md:px-4 py-1.5 md:py-2 text-sm md:text-base rounded-lg text-white hover:bg-[#231D30] transition-colors"
+                                className="bg-transparent text-white border border-white/20 px-4 py-2 rounded-lg text-sm md:text-base hover:bg-white/10 transition-colors"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={confirmDelete}
-                                disabled={isLoading}
-                                className="px-3 md:px-4 py-1.5 md:py-2 text-sm md:text-base rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors disabled:opacity-50"
+                                className="bg-red-500 text-white px-4 py-2 rounded-lg text-sm md:text-base hover:bg-red-600 transition-colors"
                             >
-                                {isLoading ? 'Deleting...' : 'Delete'}
+                                Delete
                             </button>
                         </div>
                     </Dialog.Panel>
@@ -2129,87 +1637,90 @@ const UserProfile = () => {
             >
                 <div className="fixed inset-0 bg-black/70" aria-hidden="true" />
                 <div className="fixed inset-0 flex items-center justify-center p-4">
-                    <Dialog.Panel className="bg-[#1A1625] rounded-lg p-4 md:p-6 max-w-lg w-full mx-4">
-                        <Dialog.Title className="text-lg md:text-xl font-medium text-white mb-4">
+                    <Dialog.Panel className="bg-[#231D30] rounded-lg p-6 md:p-8 w-full max-w-md">
+                        <Dialog.Title className="text-white text-lg md:text-xl font-medium mb-4">
                             Edit Event
                         </Dialog.Title>
-                        <div className="space-y-3 md:space-y-4">
+                        <div className="space-y-4">
                             <div>
-                                <label className="block text-white text-sm mb-2">Title</label>
+                                <label className="block text-gray-400 text-sm mb-2">Title</label>
                                 <input
                                     type="text"
                                     value={editFormData.title}
                                     onChange={(e) => setEditFormData({ ...editFormData, title: e.target.value })}
-                                    className="w-full bg-[#231D30] text-white text-sm md:text-base rounded-lg px-3 md:px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#00FFB2]"
+                                    className="w-full bg-[#1A1625] text-white p-3 rounded-lg border border-white/10 focus:border-[#00FFB2] outline-none"
                                 />
                             </div>
                             <div>
-                                <label className="block text-white text-sm mb-2">Location</label>
+                                <label className="block text-gray-400 text-sm mb-2">Location</label>
                                 <input
                                     type="text"
                                     value={editFormData.location}
                                     onChange={(e) => setEditFormData({ ...editFormData, location: e.target.value })}
-                                    className="w-full bg-[#231D30] text-white text-sm md:text-base rounded-lg px-3 md:px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#00FFB2]"
+                                    className="w-full bg-[#1A1625] text-white p-3 rounded-lg border border-white/10 focus:border-[#00FFB2] outline-none"
                                 />
                             </div>
-                            <div className="grid grid-cols-2 gap-3 md:gap-4">
+                            <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-white text-sm mb-2">Month</label>
+                                    <label className="block text-gray-400 text-sm mb-2">Date</label>
                                     <input
-                                        type="text"
-                                        value={editFormData.date.month}
-                                        onChange={(e) => setEditFormData({
-                                            ...editFormData,
-                                            date: { ...editFormData.date, month: e.target.value }
-                                        })}
-                                        className="w-full bg-[#231D30] text-white text-sm md:text-base rounded-lg px-3 md:px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#00FFB2]"
+                                        type="date"
+                                        value={editFormData.date}
+                                        onChange={(e) => setEditFormData({ ...editFormData, date: e.target.value })}
+                                        className="w-full bg-[#1A1625] text-white p-3 rounded-lg border border-white/10 focus:border-[#00FFB2] outline-none"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-white text-sm mb-2">Days</label>
+                                    <label className="block text-gray-400 text-sm mb-2">Time</label>
                                     <input
-                                        type="text"
-                                        value={editFormData.date.days}
-                                        onChange={(e) => setEditFormData({
-                                            ...editFormData,
-                                            date: { ...editFormData.date, days: e.target.value }
-                                        })}
-                                        className="w-full bg-[#231D30] text-white text-sm md:text-base rounded-lg px-3 md:px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#00FFB2]"
+                                        type="time"
+                                        value={editFormData.time}
+                                        onChange={(e) => setEditFormData({ ...editFormData, time: e.target.value })}
+                                        className="w-full bg-[#1A1625] text-white p-3 rounded-lg border border-white/10 focus:border-[#00FFB2] outline-none"
                                     />
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-white text-sm mb-2">Time</label>
+                                <label className="block text-gray-400 text-sm mb-2">Image</label>
                                 <input
-                                    type="text"
-                                    value={editFormData.time}
-                                    onChange={(e) => setEditFormData({ ...editFormData, time: e.target.value })}
-                                    className="w-full bg-[#231D30] text-white text-sm md:text-base rounded-lg px-3 md:px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#00FFB2]"
+                                    type="file"
+                                    onChange={(e) => {
+                                        const file = e.target.files[0];
+                                        if (file) {
+                                            const reader = new FileReader();
+                                            reader.onloadend = () => {
+                                                setEditFormData({ ...editFormData, image: reader.result });
+                                            };
+                                            reader.readAsDataURL(file);
+                                        }
+                                    }}
+                                    className="w-full bg-[#1A1625] text-white p-3 rounded-lg border border-white/10 focus:border-[#00FFB2] outline-none"
                                 />
                             </div>
-                            <div className="flex items-center">
+                            <div className="flex items-center gap-2">
                                 <input
                                     type="checkbox"
                                     checked={editFormData.isFree}
-                                    onChange={(e) => setEditFormData({ ...editFormData, isFree: e.target.checked })}
-                                    className="mr-2"
+                                    onChange={() => setEditFormData({ ...editFormData, isFree: !editFormData.isFree })}
+                                    className="w-5 h-5 text-[#00FFB2] rounded-lg focus:ring-0"
                                 />
-                                <label className="text-white text-sm">Free Event</label>
+                                <label className="text-white/80 text-sm cursor-pointer">
+                                    This event is free
+                                </label>
                             </div>
                         </div>
-                        <div className="flex justify-end gap-3 md:gap-4 mt-4 md:mt-6">
+                        <div className="mt-4 flex justify-end gap-2">
                             <button
                                 onClick={() => setIsEditModalOpen(false)}
-                                className="px-3 md:px-4 py-1.5 md:py-2 text-sm md:text-base rounded-lg text-white hover:bg-[#231D30] transition-colors"
+                                className="bg-transparent text-white border border-white/20 px-4 py-2 rounded-lg text-sm md:text-base hover:bg-white/10 transition-colors"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={handleUpdateEvent}
-                                disabled={isLoading}
-                                className="px-3 md:px-4 py-1.5 md:py-2 text-sm md:text-base rounded-lg bg-[#00FFB2] text-black hover:bg-[#00FFB2]/90 transition-colors disabled:opacity-50"
+                                className="bg-[#00FFB2] text-black px-4 py-2 rounded-lg text-sm md:text-base hover:bg-[#00FFB2]/90"
                             >
-                                {isLoading ? 'Saving...' : 'Save Changes'}
+                                Update Event
                             </button>
                         </div>
                     </Dialog.Panel>
@@ -2224,98 +1735,77 @@ const UserProfile = () => {
             >
                 <div className="fixed inset-0 bg-black/70" aria-hidden="true" />
                 <div className="fixed inset-0 flex items-center justify-center p-4">
-                    <Dialog.Panel className="bg-[#1A1625] rounded-lg p-4 md:p-6 max-w-lg w-full mx-4">
-                        <div className="flex justify-between items-center mb-4 md:mb-6">
-                            <Dialog.Title className="text-lg md:text-xl font-medium text-white">
-                                Edit Product
-                            </Dialog.Title>
-                            <button
-                                onClick={() => setIsProductEditModalOpen(false)}
-                                className="text-gray-400 hover:text-white"
-                            >
-                                <span className="text-xl md:text-2xl">×</span>
-                            </button>
-                        </div>
-
-                        {/* Image Section */}
-                        <div className="mb-6 md:mb-8">
-                            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 md:gap-6">
-                                <div className="w-[160px] h-[160px] md:w-[200px] md:h-[200px] bg-[#00FFB2]/10 rounded-lg overflow-hidden">
-                                    <img
-                                        src={productEditFormData.image}
-                                        alt={productEditFormData.title}
-                                        className="w-full h-full object-cover"
-                                    />
-                                </div>
-                                <button
-                                    onClick={() => {
-                                        // Handle image change
-                                        const input = document.createElement('input');
-                                        input.type = 'file';
-                                        input.accept = 'image/*';
-                                        input.onchange = (e) => {
-                                            const file = e.target.files[0];
-                                            if (file) {
-                                                const reader = new FileReader();
-                                                reader.onload = (e) => {
-                                                    setProductEditFormData({
-                                                        ...productEditFormData,
-                                                        image: e.target.result
-                                                    });
-                                                };
-                                                reader.readAsDataURL(file);
-                                            }
-                                        };
-                                        input.click();
-                                    }}
-                                    className="px-3 md:px-4 py-1.5 md:py-2 text-sm md:text-base border border-[#00FFB2] text-[#00FFB2] rounded-lg hover:bg-[#00FFB2] hover:text-black transition-colors"
-                                >
-                                    Change image
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Form Fields */}
-                        <div className="space-y-4 md:space-y-6">
+                    <Dialog.Panel className="bg-[#231D30] rounded-lg p-6 md:p-8 w-full max-w-md">
+                        <Dialog.Title className="text-white text-lg md:text-xl font-medium mb-4">
+                            Edit Product
+                        </Dialog.Title>
+                        <div className="space-y-4">
                             <div>
-                                <label className="block text-gray-400 text-sm md:text-base mb-2">Product name</label>
+                                <label className="block text-gray-400 text-sm mb-2">Title</label>
                                 <input
                                     type="text"
                                     value={productEditFormData.title}
                                     onChange={(e) => setProductEditFormData({ ...productEditFormData, title: e.target.value })}
-                                    placeholder="Enter name here"
-                                    className="w-full bg-transparent text-white text-sm md:text-base border border-gray-700 rounded-lg px-3 md:px-4 py-2 md:py-3 focus:outline-none focus:border-[#00FFB2]"
+                                    className="w-full bg-[#1A1625] text-white p-3 rounded-lg border border-white/10 focus:border-[#00FFB2] outline-none"
                                 />
                             </div>
                             <div>
-                                <label className="block text-gray-400 text-sm md:text-base mb-2">Price</label>
+                                <label className="block text-gray-400 text-sm mb-2">Price</label>
                                 <input
-                                    type="text"
+                                    type="number"
                                     value={productEditFormData.price}
                                     onChange={(e) => setProductEditFormData({ ...productEditFormData, price: e.target.value })}
-                                    placeholder="Enter price here"
-                                    className="w-full bg-transparent text-white text-sm md:text-base border border-gray-700 rounded-lg px-3 md:px-4 py-2 md:py-3 focus:outline-none focus:border-[#00FFB2]"
+                                    className="w-full bg-[#1A1625] text-white p-3 rounded-lg border border-white/10 focus:border-[#00FFB2] outline-none"
                                 />
                             </div>
                             <div>
-                                <label className="block text-gray-400 text-sm md:text-base mb-2">Description</label>
+                                <label className="block text-gray-400 text-sm mb-2">Stock</label>
+                                <input
+                                    type="number"
+                                    value={productEditFormData.stock}
+                                    onChange={(e) => setProductEditFormData({ ...productEditFormData, stock: e.target.value })}
+                                    className="w-full bg-[#1A1625] text-white p-3 rounded-lg border border-white/10 focus:border-[#00FFB2] outline-none"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-gray-400 text-sm mb-2">Image</label>
+                                <input
+                                    type="file"
+                                    onChange={(e) => {
+                                        const file = e.target.files[0];
+                                        if (file) {
+                                            const reader = new FileReader();
+                                            reader.onloadend = () => {
+                                                setProductEditFormData({ ...productEditFormData, image: reader.result });
+                                            };
+                                            reader.readAsDataURL(file);
+                                        }
+                                    }}
+                                    className="w-full bg-[#1A1625] text-white p-3 rounded-lg border border-white/10 focus:border-[#00FFB2] outline-none"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-gray-400 text-sm mb-2">Description</label>
                                 <textarea
                                     value={productEditFormData.description}
                                     onChange={(e) => setProductEditFormData({ ...productEditFormData, description: e.target.value })}
-                                    placeholder="Enter product description here"
-                                    className="w-full bg-transparent text-white text-sm md:text-base border border-gray-700 rounded-lg px-3 md:px-4 py-2 md:py-3 focus:outline-none focus:border-[#00FFB2] min-h-[80px] md:min-h-[100px]"
+                                    rows="3"
+                                    className="w-full bg-[#1A1625] text-white p-3 rounded-lg border border-white/10 focus:border-[#00FFB2] outline-none"
                                 />
                             </div>
                         </div>
-
-                        {/* Save Button */}
-                        <div className="mt-6 md:mt-8">
+                        <div className="mt-4 flex justify-end gap-2">
+                            <button
+                                onClick={() => setIsProductEditModalOpen(false)}
+                                className="bg-transparent text-white border border-white/20 px-4 py-2 rounded-lg text-sm md:text-base hover:bg-white/10 transition-colors"
+                            >
+                                Cancel
+                            </button>
                             <button
                                 onClick={handleUpdateProduct}
-                                disabled={isLoading}
-                                className="w-full bg-[#00FFB2] text-black py-3 md:py-4 rounded-lg text-base md:text-lg font-medium hover:bg-[#00FFB2]/90 transition-colors disabled:opacity-50"
+                                className="bg-[#00FFB2] text-black px-4 py-2 rounded-lg text-sm md:text-base hover:bg-[#00FFB2]/90"
                             >
-                                Save
+                                Update Product
                             </button>
                         </div>
                     </Dialog.Panel>
@@ -2325,4 +1815,4 @@ const UserProfile = () => {
     );
 };
 
-export default UserProfile; 
+export default UserProfile;

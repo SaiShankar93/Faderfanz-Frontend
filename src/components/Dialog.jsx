@@ -12,7 +12,6 @@ import {
 } from "react-icons/ri";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import { Menu } from "@headlessui/react";
-import { CurrencyList } from "../utilities/Currency";
 import { AppContext } from "../context/AppContext";
 import { MainAppContext } from "@/context/MainContext";
 import { useAuth } from "@/context/AuthContext";
