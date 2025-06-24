@@ -32,7 +32,7 @@ const CuratorPage = () => {
         createdAt: "",
         updatedAt: ""
     });
-    const {id} = useParams();
+    const { id } = useParams();
     const [reviews, setReviews] = useState([
         {
             id: 1,
@@ -69,7 +69,7 @@ const CuratorPage = () => {
         const fetchCurator = async () => {
             setLoading(true);
             try {
-                const {data} = await axiosInstance.get(`management/curators/${id}`);
+                const { data } = await axiosInstance.get(`management/curators/${id}`);
                 if (data) {
                     setCurator(data);
                     // TODO: Uncomment when API is ready

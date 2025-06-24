@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { IoChevronDown } from 'react-icons/io5';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'react-hot-toast';
+import axiosInstance from '@/configs/axiosConfig'; // Import your axios instance
 
 const Settings = () => {
     const navigate = useNavigate();
@@ -17,6 +18,7 @@ const Settings = () => {
     const [profileData, setProfileData] = useState({
         firstName: '',
         lastName: '',
+        bio: '',
         website: '',
         company: '',
         phoneNumber: '',
@@ -24,11 +26,27 @@ const Settings = () => {
         city: '',
         country: '',
         pincode: '',
-        profileImage: null
+        profileImage: null,
+        stageName: '',
+        businessName: '',
+        venueName: '',
+        role: '',
+        location: {
+            address: '',
+            city: '',
+            state: '',
+            country: '',
+            postalCode: '',
+            landmark: '',
+            coordinates: {
+                latitude: '',
+                longitude: '',
+            },
+        },
     });
 
     const [emailData, setEmailData] = useState({
-        currentEmail: 'andreagomes@example.com',
+        currentEmail: '',
         newEmail: '',
         confirmEmail: ''
     });
@@ -56,27 +74,54 @@ const Settings = () => {
     const fetchUserData = async (userId) => {
         try {
             setIsLoading(true);
-            // TODO: Replace with actual API call
-            // const response = await api.get(`/users/${userId}`);
-            // setProfileData(response.data);
-
-            // Simulated data
-            setProfileData({
-                firstName: '',
-                lastName: '',
-                website: '',
-                company: '',
-                phoneNumber: '',
-                address: '',
-                city: '',
-                country: '',
-                pincode: ''
-            });
+            const { data } = await axiosInstance.get('/profiles/me');
+            if (data.success) {
+                const userProfile = data.data.profile;
+                setProfileData({
+                    firstName: userProfile.firstName || '',
+                    lastName: userProfile.lastName || '',
+                    bio: userProfile.bio || '',
+                    website: userProfile.website || '',
+                    company: userProfile.company || '',
+                    phoneNumber: userProfile.phoneNumber || '',
+                    address: userProfile.address || '',
+                    city: userProfile.city || '',
+                    country: userProfile.country || '',
+                    pincode: userProfile.pincode || '',
+                    stageName: userProfile.stageName || '',
+                    businessName: userProfile.businessName || '',
+                    venueName: userProfile.venueName || '',
+                    role: userProfile.role || '',
+                    location: userProfile.location || {
+                        address: '',
+                        city: '',
+                        state: '',
+                        country: '',
+                        postalCode: '',
+                        landmark: '',
+                        coordinates: {
+                            latitude: '',
+                            longitude: '',
+                        },
+                    },
+                });
+                setEmailData(prev => ({ ...prev, currentEmail: userProfile.email }));
+                setPreviewImage(userProfile.profileImage || userProfile.image);
+            } else {
+                toast.error('Could not fetch profile data.');
+            }
         } catch (error) {
-            toast.error('Failed to fetch user data');
+            toast.error('Failed to fetch user data. Please login again.');
+            console.error("Fetch user data error:", error);
+            // navigate('/login');
         } finally {
             setIsLoading(false);
         }
+    };
+
+    const handleProfileInputChange = (e) => {
+        const { name, value } = e.target;
+        setProfileData(prev => ({ ...prev, [name]: value }));
     };
 
     const handleProfileImageChange = (e) => {
@@ -91,16 +136,31 @@ const Settings = () => {
         e.preventDefault();
         try {
             setIsLoading(true);
-            // TODO: Replace with actual API call
-            // const formData = new FormData();
-            // Object.keys(profileData).forEach(key => formData.append(key, profileData[key]));
-            // await api.put('/users/profile', formData);
+            const formData = new FormData();
+            // Append all fields to formData, including the image if it's a file
+            Object.keys(profileData).forEach(key => {
+                if (key === 'profileImage' && profileData[key] instanceof File) {
+                    formData.append(key, profileData[key]);
+                } else if (key !== 'profileImage') {
+                    formData.append(key, profileData[key]);
+                }
+            });
+
+            await axiosInstance.put('/profiles/me/details', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+
             toast.success('Profile updated successfully');
         } catch (error) {
-            toast.error('Failed to update profile');
+            toast.error(error.response?.data?.message || 'Failed to update profile');
         } finally {
             setIsLoading(false);
         }
+    };
+
+    const handleEmailInputChange = (e) => {
+        const { name, value } = e.target;
+        setEmailData(prev => ({ ...prev, [name]: value }));
     };
 
     const handleEmailUpdate = async (e) => {
@@ -111,14 +171,24 @@ const Settings = () => {
         }
         try {
             setIsLoading(true);
-            // TODO: Replace with actual API call
-            // await api.put('/users/email', emailData);
-            toast.success('Email updated successfully');
+            // Use the current email from profileData or emailData
+            const oldEmail = emailData.currentEmail || profileData.email;
+            const newEmail = emailData.newEmail;
+            await axiosInstance.put('/auth/change-email', { oldEmail, newEmail });
+            toast.success('Email updated successfully. Please verify your new email.');
+            setEmailData(prev => ({ ...prev, currentEmail: newEmail, newEmail: '', confirmEmail: '' }));
+            // Optionally, refetch user data to update UI
+            fetchUserData();
         } catch (error) {
-            toast.error('Failed to update email');
+            toast.error(error.response?.data?.message || 'Failed to update email');
         } finally {
             setIsLoading(false);
         }
+    };
+
+    const handlePasswordInputChange = (e) => {
+        const { name, value } = e.target;
+        setPasswordData(prev => ({ ...prev, [name]: value }));
     };
 
     const handlePasswordUpdate = async (e) => {
@@ -129,11 +199,14 @@ const Settings = () => {
         }
         try {
             setIsLoading(true);
-            // TODO: Replace with actual API call
-            // await api.put('/users/password', passwordData);
+            await axiosInstance.put('/auth/change-password', {
+                oldPassword: passwordData.currentPassword,
+                newPassword: passwordData.newPassword,
+            });
             toast.success('Password updated successfully');
+            setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
         } catch (error) {
-            toast.error('Failed to update password');
+            toast.error(error.response?.data?.message || 'Failed to update password');
         } finally {
             setIsLoading(false);
         }
@@ -212,7 +285,7 @@ const Settings = () => {
                                     <div className="relative">
                                         <div className="w-24 h-24 rounded-full bg-[#1E1B33] overflow-hidden">
                                             <img
-                                                src={previewImage || "/Images/default-avatar.jpg"}
+                                                src={previewImage ? (previewImage.startsWith('blob:') ? previewImage : `${import.meta.env.VITE_SERVER_URL}/${previewImage}`) : "/Images/default-avatar.jpg"}
                                                 alt="Profile"
                                                 className="w-full h-full object-cover"
                                             />
@@ -238,32 +311,51 @@ const Settings = () => {
                             <div className="space-y-4">
                                 <h3 className="text-white/80 text-lg">Profile Information</h3>
                                 <div className="grid grid-cols-1 gap-4">
-                                    <div>
-                                        <label className="block text-white/60 text-sm mb-2">First Name:</label>
-                                        <input
-                                            type="text"
-                                            value={profileData.firstName}
-                                            onChange={(e) => setProfileData({ ...profileData, firstName: e.target.value })}
-                                            placeholder="Enter first name"
-                                            className="w-full bg-[#1E1B33] text-white/90 rounded-lg px-4 py-3 focus:outline-none"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-white/60 text-sm mb-2">Last Name:</label>
-                                        <input
-                                            type="text"
-                                            value={profileData.lastName}
-                                            onChange={(e) => setProfileData({ ...profileData, lastName: e.target.value })}
-                                            placeholder="Enter last name"
-                                            className="w-full bg-[#1E1B33] text-white/90 rounded-lg px-4 py-3 focus:outline-none"
-                                        />
-                                    </div>
+                                    {profileData.role === 'sponsor' ? (
+                                        <div>
+                                            <label className="block text-white/60 text-sm mb-2">Business Name:</label>
+                                            <input
+                                                type="text"
+                                                name="businessName"
+                                                value={profileData.businessName}
+                                                onChange={handleProfileInputChange}
+                                                placeholder="Enter business name"
+                                                className="w-full bg-[#1E1B33] text-white/90 rounded-lg px-4 py-3 focus:outline-none"
+                                            />
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <div>
+                                                <label className="block text-white/60 text-sm mb-2">First Name:</label>
+                                                <input
+                                                    type="text"
+                                                    name="firstName"
+                                                    value={profileData.firstName}
+                                                    onChange={handleProfileInputChange}
+                                                    placeholder="Enter first name"
+                                                    className="w-full bg-[#1E1B33] text-white/90 rounded-lg px-4 py-3 focus:outline-none"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-white/60 text-sm mb-2">Last Name:</label>
+                                                <input
+                                                    type="text"
+                                                    name="lastName"
+                                                    value={profileData.lastName}
+                                                    onChange={handleProfileInputChange}
+                                                    placeholder="Enter last name"
+                                                    className="w-full bg-[#1E1B33] text-white/90 rounded-lg px-4 py-3 focus:outline-none"
+                                                />
+                                            </div>
+                                        </>
+                                    )}
                                     <div>
                                         <label className="block text-white/60 text-sm mb-2">Website:</label>
                                         <input
                                             type="url"
+                                            name="website"
                                             value={profileData.website}
-                                            onChange={(e) => setProfileData({ ...profileData, website: e.target.value })}
+                                            onChange={handleProfileInputChange}
                                             placeholder="Enter website"
                                             className="w-full bg-[#1E1B33] text-white/90 rounded-lg px-4 py-3 focus:outline-none"
                                         />
@@ -272,8 +364,9 @@ const Settings = () => {
                                         <label className="block text-white/60 text-sm mb-2">Company:</label>
                                         <input
                                             type="text"
+                                            name="company"
                                             value={profileData.company}
-                                            onChange={(e) => setProfileData({ ...profileData, company: e.target.value })}
+                                            onChange={handleProfileInputChange}
                                             placeholder="Enter company name"
                                             className="w-full bg-[#1E1B33] text-white/90 rounded-lg px-4 py-3 focus:outline-none"
                                         />
@@ -290,52 +383,152 @@ const Settings = () => {
                                         <label className="block text-white/60 text-sm mb-2">Phone Number:</label>
                                         <input
                                             type="tel"
+                                            name="phoneNumber"
                                             value={profileData.phoneNumber}
-                                            onChange={(e) => setProfileData({ ...profileData, phoneNumber: e.target.value })}
+                                            onChange={handleProfileInputChange}
                                             placeholder="Enter phone number"
                                             className="w-full bg-[#1E1B33] text-white/90 rounded-lg px-4 py-3 focus:outline-none"
                                         />
                                     </div>
-                                    <div>
-                                        <label className="block text-white/60 text-sm mb-2">Address:</label>
-                                        <input
-                                            type="text"
-                                            value={profileData.address}
-                                            onChange={(e) => setProfileData({ ...profileData, address: e.target.value })}
-                                            placeholder="Enter Address"
-                                            className="w-full bg-[#1E1B33] text-white/90 rounded-lg px-4 py-3 focus:outline-none"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-white/60 text-sm mb-2">Town/City:</label>
-                                        <input
-                                            type="text"
-                                            value={profileData.city}
-                                            onChange={(e) => setProfileData({ ...profileData, city: e.target.value })}
-                                            placeholder="Enter Town/City"
-                                            className="w-full bg-[#1E1B33] text-white/90 rounded-lg px-4 py-3 focus:outline-none"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-white/60 text-sm mb-2">Country:</label>
-                                        <input
-                                            type="text"
-                                            value={profileData.country}
-                                            onChange={(e) => setProfileData({ ...profileData, country: e.target.value })}
-                                            placeholder="Enter Country"
-                                            className="w-full bg-[#1E1B33] text-white/90 rounded-lg px-4 py-3 focus:outline-none"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-white/60 text-sm mb-2">Pincode:</label>
-                                        <input
-                                            type="text"
-                                            value={profileData.pincode}
-                                            onChange={(e) => setProfileData({ ...profileData, pincode: e.target.value })}
-                                            placeholder="Enter Pincode"
-                                            className="w-full bg-[#1E1B33] text-white/90 rounded-lg px-4 py-3 focus:outline-none"
-                                        />
-                                    </div>
+                                    {profileData.role === 'sponsor' ? (
+                                        <>
+                                            <div>
+                                                <label className="block text-white/60 text-sm mb-2">Address:</label>
+                                                <input
+                                                    type="text"
+                                                    name="location.address"
+                                                    value={profileData.location.address}
+                                                    onChange={handleProfileInputChange}
+                                                    placeholder="Enter Address"
+                                                    className="w-full bg-[#1E1B33] text-white/90 rounded-lg px-4 py-3 focus:outline-none"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-white/60 text-sm mb-2">City:</label>
+                                                <input
+                                                    type="text"
+                                                    name="location.city"
+                                                    value={profileData.location.city}
+                                                    onChange={handleProfileInputChange}
+                                                    placeholder="Enter Town/City"
+                                                    className="w-full bg-[#1E1B33] text-white/90 rounded-lg px-4 py-3 focus:outline-none"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-white/60 text-sm mb-2">State:</label>
+                                                <input
+                                                    type="text"
+                                                    name="location.state"
+                                                    value={profileData.location.state}
+                                                    onChange={handleProfileInputChange}
+                                                    placeholder="Enter State"
+                                                    className="w-full bg-[#1E1B33] text-white/90 rounded-lg px-4 py-3 focus:outline-none"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-white/60 text-sm mb-2">Country:</label>
+                                                <input
+                                                    type="text"
+                                                    name="location.country"
+                                                    value={profileData.location.country}
+                                                    onChange={handleProfileInputChange}
+                                                    placeholder="Enter Country"
+                                                    className="w-full bg-[#1E1B33] text-white/90 rounded-lg px-4 py-3 focus:outline-none"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-white/60 text-sm mb-2">Postal Code:</label>
+                                                <input
+                                                    type="text"
+                                                    name="location.postalCode"
+                                                    value={profileData.location.postalCode}
+                                                    onChange={handleProfileInputChange}
+                                                    placeholder="Enter Postal Code"
+                                                    className="w-full bg-[#1E1B33] text-white/90 rounded-lg px-4 py-3 focus:outline-none"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-white/60 text-sm mb-2">Landmark:</label>
+                                                <input
+                                                    type="text"
+                                                    name="location.landmark"
+                                                    value={profileData.location.landmark}
+                                                    onChange={handleProfileInputChange}
+                                                    placeholder="Enter Landmark"
+                                                    className="w-full bg-[#1E1B33] text-white/90 rounded-lg px-4 py-3 focus:outline-none"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-white/60 text-sm mb-2">Latitude:</label>
+                                                <input
+                                                    type="text"
+                                                    name="location.latitude"
+                                                    value={profileData.location.coordinates.latitude}
+                                                    onChange={handleProfileInputChange}
+                                                    placeholder="Enter Latitude"
+                                                    className="w-full bg-[#1E1B33] text-white/90 rounded-lg px-4 py-3 focus:outline-none"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-white/60 text-sm mb-2">Longitude:</label>
+                                                <input
+                                                    type="text"
+                                                    name="location.longitude"
+                                                    value={profileData.location.coordinates.longitude}
+                                                    onChange={handleProfileInputChange}
+                                                    placeholder="Enter Longitude"
+                                                    className="w-full bg-[#1E1B33] text-white/90 rounded-lg px-4 py-3 focus:outline-none"
+                                                />
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <div>
+                                                <label className="block text-white/60 text-sm mb-2">Address:</label>
+                                                <input
+                                                    type="text"
+                                                    name="address"
+                                                    value={profileData.address}
+                                                    onChange={handleProfileInputChange}
+                                                    placeholder="Enter Address"
+                                                    className="w-full bg-[#1E1B33] text-white/90 rounded-lg px-4 py-3 focus:outline-none"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-white/60 text-sm mb-2">Town/City:</label>
+                                                <input
+                                                    type="text"
+                                                    name="city"
+                                                    value={profileData.city}
+                                                    onChange={handleProfileInputChange}
+                                                    placeholder="Enter Town/City"
+                                                    className="w-full bg-[#1E1B33] text-white/90 rounded-lg px-4 py-3 focus:outline-none"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-white/60 text-sm mb-2">Country:</label>
+                                                <input
+                                                    type="text"
+                                                    name="country"
+                                                    value={profileData.country}
+                                                    onChange={handleProfileInputChange}
+                                                    placeholder="Enter Country"
+                                                    className="w-full bg-[#1E1B33] text-white/90 rounded-lg px-4 py-3 focus:outline-none"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-white/60 text-sm mb-2">Pincode:</label>
+                                                <input
+                                                    type="text"
+                                                    name="pincode"
+                                                    value={profileData.pincode}
+                                                    onChange={handleProfileInputChange}
+                                                    placeholder="Enter Pincode"
+                                                    className="w-full bg-[#1E1B33] text-white/90 rounded-lg px-4 py-3 focus:outline-none"
+                                                />
+                                            </div>
+                                        </>
+                                    )}
                                 </div>
                             </div>
 
@@ -353,48 +546,26 @@ const Settings = () => {
                     )}
 
                     {activeTab === 'change_email' && (
-                        <div className="space-y-6">
+                        <form onSubmit={handleEmailUpdate} className="space-y-6">
                             <h2 className="text-white/90 text-xl font-medium">Change Email</h2>
-                            <div className="space-y-6">
-                                <div>
-                                    <p className="text-white/60 text-sm mb-2">Current Email:</p>
-                                    <p className="text-white/90">{emailData.currentEmail}</p>
-                                </div>
-                                <div>
-                                    <p className="text-white/60 text-sm mb-2">New Email:</p>
-                                    <input
-                                        type="email"
-                                        value={emailData.newEmail}
-                                        onChange={(e) => setEmailData({ ...emailData, newEmail: e.target.value })}
-                                        placeholder="Enter new email"
-                                        className="w-full bg-[#1E1B33] text-white/90 rounded-lg px-4 py-3 focus:outline-none"
-                                    />
-                                </div>
-                                <div>
-                                    <p className="text-white/60 text-sm mb-2">Confirm Email:</p>
-                                    <input
-                                        type="email"
-                                        value={emailData.confirmEmail}
-                                        onChange={(e) => setEmailData({ ...emailData, confirmEmail: e.target.value })}
-                                        placeholder="Enter again"
-                                        className="w-full bg-[#1E1B33] text-white/90 rounded-lg px-4 py-3 focus:outline-none"
-                                    />
-                                </div>
+                            <div>
+                                <label className="block text-white/60 text-sm mb-2">Current Email:</label>
+                                <input type="email" value={emailData.currentEmail} className="w-full bg-[#1E1B33] text-white/60 rounded-lg px-4 py-3" readOnly />
                             </div>
-                            <div className="flex justify-center mt-8">
-                                <button
-                                    onClick={handleEmailUpdate}
-                                    disabled={isLoading}
-                                    className="bg-[#00FFB2] text-black px-8 py-3 rounded-lg font-medium hover:bg-[#00FFB2]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    Save New Email
-                                </button>
+                            <div>
+                                <label className="block text-white/60 text-sm mb-2">New Email:</label>
+                                <input type="email" name="newEmail" value={emailData.newEmail} onChange={handleEmailInputChange} placeholder="Enter new email" className="w-full bg-[#1E1B33] text-white/90 rounded-lg px-4 py-3 focus:outline-none" required />
                             </div>
-                        </div>
+                            <div>
+                                <label className="block text-white/60 text-sm mb-2">Confirm Email:</label>
+                                <input type="email" name="confirmEmail" value={emailData.confirmEmail} onChange={handleEmailInputChange} placeholder="Enter again" className="w-full bg-[#1E1B33] text-white/90 rounded-lg px-4 py-3 focus:outline-none" required />
+                            </div>
+                            <button type="submit" disabled={isLoading} className="bg-[#00FFB2] text-black font-medium py-3 px-6 rounded-lg">{isLoading ? 'Saving...' : 'Save New Email'}</button>
+                        </form>
                     )}
 
                     {activeTab === 'password' && (
-                        <div className="space-y-6">
+                        <form onSubmit={handlePasswordUpdate} className="space-y-6">
                             <h2 className="text-white/90 text-xl font-medium">Set Password</h2>
                             {!showPasswordForm ? (
                                 <>
@@ -409,48 +580,23 @@ const Settings = () => {
                                     </div>
                                 </>
                             ) : (
-                                <form onSubmit={handlePasswordUpdate} className="space-y-6">
-                                    <div className="space-y-4">
-                                        <div>
-                                            <label className="block text-white/60 text-sm mb-2">New Password:</label>
-                                            <input
-                                                type="password"
-                                                value={passwordData.newPassword}
-                                                onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-                                                placeholder="Enter new password"
-                                                className="w-full bg-[#1E1B33] text-white/90 rounded-lg px-4 py-3 focus:outline-none"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-white/60 text-sm mb-2">Confirm Password:</label>
-                                            <input
-                                                type="password"
-                                                value={passwordData.confirmPassword}
-                                                onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
-                                                placeholder="Confirm new password"
-                                                className="w-full bg-[#1E1B33] text-white/90 rounded-lg px-4 py-3 focus:outline-none"
-                                            />
-                                        </div>
+                                <div>
+                                    <div>
+                                        <label className="block text-white/60 text-sm mb-2">Current Password:</label>
+                                        <input type="password" name="currentPassword" value={passwordData.currentPassword} onChange={handlePasswordInputChange} placeholder="Enter current password" className="w-full bg-[#1E1B33] text-white/90 rounded-lg px-4 py-3 focus:outline-none" required />
                                     </div>
-                                    <div className="flex justify-center gap-4 mt-8">
-                                        <button
-                                            type="button"
-                                            onClick={() => setShowPasswordForm(false)}
-                                            className="px-8 py-3 rounded-lg font-medium border border-white/20 text-white/60 hover:text-white hover:border-white/40 transition-colors"
-                                        >
-                                            Cancel
-                                        </button>
-                                        <button
-                                            type="submit"
-                                            disabled={isLoading}
-                                            className="bg-[#00FFB2] text-black px-8 py-3 rounded-lg font-medium hover:bg-[#00FFB2]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                        >
-                                            Save Password
-                                        </button>
+                                    <div>
+                                        <label className="block text-white/60 text-sm mb-2">New Password:</label>
+                                        <input type="password" name="newPassword" value={passwordData.newPassword} onChange={handlePasswordInputChange} placeholder="Enter new password" className="w-full bg-[#1E1B33] text-white/90 rounded-lg px-4 py-3 focus:outline-none" required />
                                     </div>
-                                </form>
+                                    <div>
+                                        <label className="block text-white/60 text-sm mb-2">Confirm Password:</label>
+                                        <input type="password" name="confirmPassword" value={passwordData.confirmPassword} onChange={handlePasswordInputChange} placeholder="Enter again" className="w-full bg-[#1E1B33] text-white/90 rounded-lg px-4 py-3 focus:outline-none" required />
+                                    </div>
+                                    <button type="submit" disabled={isLoading} className="bg-[#00FFB2] text-black font-medium py-3 px-6 rounded-lg">{isLoading ? 'Saving...' : 'Set Password'}</button>
+                                </div>
                             )}
-                        </div>
+                        </form>
                     )}
                 </div>
             </div>

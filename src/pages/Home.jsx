@@ -351,16 +351,16 @@ const Home = () => {
     }
   };
   const getAllCampaigns = async () => {
-      try {
-        const {data} = await axiosInstance.get(`management/campaigns`);
-        if (data) {
-          setCampaigns(data);
-        } else throw new Error("Fetching Crowdfunding campaigns failed");
-      } catch (error) {
-        console.error("Error fetching crowdfunding campaigns:", error);
-        toast.error("Failed to fetch crowdfunding campaigns");
-      }
-  
+    try {
+      const { data } = await axiosInstance.get(`management/campaigns`);
+      if (data) {
+        setCampaigns(data);
+      } else throw new Error("Fetching Crowdfunding campaigns failed");
+    } catch (error) {
+      console.error("Error fetching crowdfunding campaigns:", error);
+      toast.error("Failed to fetch crowdfunding campaigns");
+    }
+
   };
 
   const getCatalogue = async () => {
@@ -512,7 +512,7 @@ const Home = () => {
   const handleContribute = (id) => {
     navigate(`/crowdfunding/${id}`);
   };
-  const [user,setUser] = useState(null);
+  const [user, setUser] = useState(null);
   useEffect(() => {
     const user = localStorage.getItem('user');
     if (user) {
@@ -549,7 +549,7 @@ const Home = () => {
       {/* Rest of the content with relative positioning */}
       <div className="relative z-10">
         <HeroSlider slider={slider} />
-        <ExploreCategories categories={categories}/>
+        <ExploreCategories categories={categories} />
         <PopularEvents events={filteredProducts} />
         {user?.role === 'curator' && <CreateEventBanner />}
 
@@ -684,7 +684,7 @@ const Home = () => {
               >
                 {showAllCurators ? 'Show Less' : 'See More'}
               </button>
-              
+
             </div>
           </div>
         </div>
@@ -764,7 +764,7 @@ const Home = () => {
         </div>
 
         {/* Raise Fund Banner */}
-        {( user?.role === 'curator' || user?.role === 'sponsor' || user?.role === 'admin') && <div className="mt-16">
+        {(user?.role === 'curator' || user?.role === 'sponsor' || user?.role === 'admin') && <div className="mt-16">
           <RaiseFundBanner />
         </div>}
 
@@ -867,95 +867,95 @@ const Home = () => {
           </div>
 
           {/* Testimonials Section with Background Gradient */}
-        
-        <div className="relative">
-          {/* Testimonial Background Gradient */}
-          <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            <img
-              src="/Images/bg-grad-test.svg"
-              alt="background gradient"
-              className="absolute right-0 w-[940.82px] h-[940.82px] object-cover"
-              style={{
-                top: '50%',
-                transform: 'translateY(-50%) rotate(82.53deg)',
-                mixBlendMode: 'normal',
-                opacity: 0.6,
-              }}
-            />
-          </div>
 
-          {/* Testimonials Content */}
-          <div className="w-full max-w-7xl mx-auto px-4 py-16 relative overflow-hidden">
-            {/* Section Title */}
-            <div className="text-center mb-16">
-              <p className="text-[#C5FF32] text-sm uppercase mb-4">TESTIMONIALS</p>
-              <h2 className="text-4xl font-semibold text-white mb-4 font-sen">
-                What people says about us
-              </h2>
-              <p className="text-gray-400 text-sm">
-                This is what our users have to say about their experience using FaderFanz
-              </p>
+          <div className="relative">
+            {/* Testimonial Background Gradient */}
+            <div className="absolute inset-0 pointer-events-none overflow-hidden">
+              <img
+                src="/Images/bg-grad-test.svg"
+                alt="background gradient"
+                className="absolute right-0 w-[940.82px] h-[940.82px] object-cover"
+                style={{
+                  top: '50%',
+                  transform: 'translateY(-50%) rotate(82.53deg)',
+                  mixBlendMode: 'normal',
+                  opacity: 0.6,
+                }}
+              />
             </div>
 
-            {/* Testimonials Slider */}
-            <div
-              className="relative"
-              onMouseEnter={() => setIsHovered(true)}
-              onMouseLeave={() => setIsHovered(false)}
-            >
-              {/* Testimonials Container */}
-              <div className="overflow-hidden">
-                <div
-                  className="flex transition-transform duration-500 ease-in-out"
-                  style={{
-                    transform: `translateX(-${currentSlide * 100}%)`,
-                  }}
+            {/* Testimonials Content */}
+            <div className="w-full max-w-7xl mx-auto px-4 py-16 relative overflow-hidden">
+              {/* Section Title */}
+              <div className="text-center mb-16">
+                <p className="text-[#C5FF32] text-sm uppercase mb-4">TESTIMONIALS</p>
+                <h2 className="text-4xl font-semibold text-white mb-4 font-sen">
+                  What people says about us
+                </h2>
+                <p className="text-gray-400 text-sm">
+                  This is what our users have to say about their experience using FaderFanz
+                </p>
+              </div>
+
+              {/* Testimonials Slider */}
+              <div
+                className="relative"
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
+              >
+                {/* Testimonials Container */}
+                <div className="overflow-hidden">
+                  <div
+                    className="flex transition-transform duration-500 ease-in-out"
+                    style={{
+                      transform: `translateX(-${currentSlide * 100}%)`,
+                    }}
+                  >
+                    {/* Split testimonials into groups of 3 */}
+                    {Array.from({ length: Math.ceil(testimonials.length / 3) }, (_, i) => (
+                      <div key={i} className="min-w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-4">
+                        {testimonials.slice(i * 3, (i + 1) * 3).map((testimonial, index) => (
+                          <TestimonialCard key={index} testimonial={testimonial} />
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Navigation Arrows */}
+                <button
+                  onClick={() => setCurrentSlide(prev => (prev > 0 ? prev - 1 : 0))}
+                  className={`absolute -left-5 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-full bg-[#1A1A1A] text-white hover:bg-[#2A2A2A] transition-colors ${currentSlide === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  disabled={currentSlide === 0}
                 >
-                  {/* Split testimonials into groups of 3 */}
-                  {Array.from({ length: Math.ceil(testimonials.length / 3) }, (_, i) => (
-                    <div key={i} className="min-w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-4">
-                      {testimonials.slice(i * 3, (i + 1) * 3).map((testimonial, index) => (
-                        <TestimonialCard key={index} testimonial={testimonial} />
-                      ))}
-                    </div>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                <button
+                  onClick={() => setCurrentSlide(prev => (prev < Math.ceil(testimonials.length / 3) - 1 ? prev + 1 : prev))}
+                  className={`absolute -right-5 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-full bg-[#1A1A1A] text-white hover:bg-[#2A2A2A] transition-colors ${currentSlide === Math.ceil(testimonials.length / 3) - 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  disabled={currentSlide === Math.ceil(testimonials.length / 3) - 1}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+
+                {/* Slider Dots */}
+                <div className="flex justify-center gap-2 mt-8">
+                  {[...Array(Math.ceil(testimonials.length / 3))].map((_, index) => (
+                    <div
+                      key={index}
+                      className={`w-2 h-2 rounded-full cursor-pointer transition-colors
+                                  ${currentSlide === index ? 'bg-[#C5FF32]' : 'bg-gray-600'}`}
+                      onClick={() => setCurrentSlide(index)}
+                    />
                   ))}
                 </div>
               </div>
-
-              {/* Navigation Arrows */}
-              <button
-                onClick={() => setCurrentSlide(prev => (prev > 0 ? prev - 1 : 0))}
-                className={`absolute -left-5 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-full bg-[#1A1A1A] text-white hover:bg-[#2A2A2A] transition-colors ${currentSlide === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
-                disabled={currentSlide === 0}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-              <button
-                onClick={() => setCurrentSlide(prev => (prev < Math.ceil(testimonials.length / 3) - 1 ? prev + 1 : prev))}
-                className={`absolute -right-5 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-full bg-[#1A1A1A] text-white hover:bg-[#2A2A2A] transition-colors ${currentSlide === Math.ceil(testimonials.length / 3) - 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
-                disabled={currentSlide === Math.ceil(testimonials.length / 3) - 1}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-
-              {/* Slider Dots */}
-              <div className="flex justify-center gap-2 mt-8">
-                {[...Array(Math.ceil(testimonials.length / 3))].map((_, index) => (
-                  <div
-                    key={index}
-                    className={`w-2 h-2 rounded-full cursor-pointer transition-colors
-                                  ${currentSlide === index ? 'bg-[#C5FF32]' : 'bg-gray-600'}`}
-                    onClick={() => setCurrentSlide(index)}
-                  />
-                ))}
-              </div>
             </div>
           </div>
-        </div>
         </div>
 
       </div>

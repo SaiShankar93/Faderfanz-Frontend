@@ -24,36 +24,34 @@ const Login = () => {
     const { setUserLoggedIn } = useAuth();
     const { user, setUser } = useContext(MainAppContext);
     const { userData, setUserData } = useState({});
+    const [loading, setLoading] = useState(false);
 
     const onChange = (e) =>
         setFormData({ ...formData, [e.target.name]: e.target.value });
 
-    const onSubmit = async (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-
+        setLoading(true);
         try {
-            const res = await axiosInstance.post(
-                `/auth/login`,
-                formData,
-                {
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                }
-            );
+            const { data } = await axios.post("/auth/login", {
+                email: email,
+                password: password,
+                role: role,
+            });
 
-            console.log("bkj",res.data);
-            if (res.data.user) {
-                localStorage.setItem("user", JSON.stringify(res.data.user));
-                localStorage.setItem("token", JSON.stringify(res.data.token));
-                setUserLoggedIn(true);
-                setUser(res.data.user);
-                toast.success(res.data.message);
-                navigate("/");
+            if (data && data.token) {
+                localStorage.setItem("accessToken", data.token);
+                localStorage.setItem("user", JSON.stringify(data.user));
+                toast.success("Login successful");
+                navigate("/profile"); // Navigate to profile after login
+            } else {
+                toast.error(data.message || "Login failed");
             }
-        } catch (err) {
-            console.error("Login Error:", err.response.data);
-            toast.error("Incorrect email or password or role");
+        } catch (error) {
+            console.error("Login error:", error);
+            toast.error(error.response?.data?.message || "An error occurred");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -92,7 +90,7 @@ const Login = () => {
                         Sign In to FaderFanz
                     </h2>
 
-                    <form onSubmit={onSubmit} className="space-y-6">
+                    <form onSubmit={handleSubmit} className="space-y-6">
                         {/* Email Input */}
                         <div>
                             <label className="block text-gray-300 text-sm uppercase mb-2 font-medium">
@@ -151,9 +149,8 @@ const Login = () => {
                                 name="role"
                                 value={role}
                                 onChange={onChange}
-                                className={`w-full bg-transparent border border-gray-600 rounded-lg p-3 placeholder-gray-500 focus:border-[#00FFB3] focus:outline-none transition-colors ${
-                                    role ? "text-gray-300" : "text-black"
-                                }`}
+                                className={`w-full bg-transparent border border-gray-600 rounded-lg p-3 placeholder-gray-500 focus:border-[#00FFB3] focus:outline-none transition-colors ${role ? "text-gray-300" : "text-black"
+                                    }`}
                                 required
                             >
                                 <option value="sponsor" className="text-black">

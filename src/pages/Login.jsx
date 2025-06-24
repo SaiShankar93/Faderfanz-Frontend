@@ -18,9 +18,32 @@ const RegistrationForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const response = await axiosInstance.post("/login", formData);
-    console.log(response.json())
-    navigate("/");
+    // const response = await axiosInstance.post("/login", formData);
+    // console.log(response.json())
+    // navigate("/");
+    try {
+      // The backend login route is /auth/login
+      const response = await axiosInstance.post("/auth/login", formData);
+      if (response.data && response.data.token) {
+        // Upon successful login, save the token and user data to localStorage
+        localStorage.setItem('accessToken', response.data.token);
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+
+        // Notify the user of success
+        // toast.success("Login successful!"); // You can add a toast notification here if you like
+
+        // Navigate to the profile page
+        navigate("/profile");
+      } else {
+        // Handle cases where login is not successful but doesn't throw an error
+        console.error("Login failed:", response.data.message);
+        // toast.error(response.data.message || "Login failed. Please check your credentials.");
+      }
+    } catch (error) {
+      // Handle errors, e.g., show a notification to the user
+      console.error("An error occurred during login:", error.response?.data?.message || error.message);
+      // toast.error(error.response?.data?.message || "An error occurred during login.");
+    }
   };
 
   return (

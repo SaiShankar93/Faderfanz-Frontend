@@ -1,4 +1,4 @@
-import React, { useState,useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { FaShare, FaStar, FaRegHeart, FaRegComment, FaHeart, FaEllipsisH } from 'react-icons/fa';
 import { IoLocationOutline, IoTimeOutline, IoCalendarOutline, IoEyeOutline } from 'react-icons/io5';
@@ -29,6 +29,14 @@ const UserProfile = () => {
     const [blogPosts, setBlogPosts] = useState([]);
     const [reviews, setReviews] = useState([]);
     const [stats, setStats] = useState({});
+
+    // Additional data states
+    const [posts, setPosts] = useState([]);
+    const [followers, setFollowers] = useState([]);
+    const [following, setFollowing] = useState([]);
+    const [favorites, setFavorites] = useState([]);
+    const [mediaItems, setMediaItems] = useState([]);
+    const [suggestions, setSuggestions] = useState([]);
 
     // Loading and Error States
     const [loading, setLoading] = useState(true);
@@ -96,7 +104,7 @@ const UserProfile = () => {
         try {
             setLoading(true);
             setError(null);
-            
+
             const token = localStorage.getItem('accessToken');
             if (!token) {
                 setError('No authentication token found');
@@ -104,30 +112,61 @@ const UserProfile = () => {
                 return;
             }
 
-            const response = await axiosInstance.get('/profiles/me', {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-            console.log(response.data);
+            // The interceptor now handles the Authorization header automatically
+            const response = await axiosInstance.get('/profiles/me');
+
+            console.log('Profile response:', response.data);
+
             if (response.data && response.data.success) {
-                const { profile, venues: venuesData, events: eventsData, products: productsData, 
-                       blogPosts: blogPostsData, reviews: reviewsData, stats: statsData } = response.data.data;
-                
+                const { profile, venues: venuesData, events: eventsData, products: productsData,
+                    blogPosts: blogPostsData, reviews: reviewsData, stats: statsData,
+                    followers: followersData, following: followingData, favorites: favoritesData,
+                    feed: feedData } = response.data.data;
+
                 setUserData(profile);
+                // console.log("Profile Data Received:", profile);
                 setStats(statsData || {});
                 setReviews(reviewsData || []);
+
+                // Normalize posts from the backend to have a 'content' property and full image URLs
+                const normalizedPosts = (feedData || []).map(post => ({
+                    ...post,
+                    content: post.text, // Ensure 'content' property exists
+                    images: (post.images || []).map(img =>
+                        img.startsWith('http') ? img : `${import.meta.env.VITE_SERVER_URL}/${img}`
+                    )
+                }));
+                setPosts(normalizedPosts);
+
+                setFollowers(followersData || []);
+                setFollowing(followingData || []);
+                setFavorites(favoritesData || []);
+
                 if (venuesData) setVenues(venuesData);
                 if (productsData) setProducts(productsData);
                 if (eventsData) setEvents(eventsData);
                 if (blogPostsData) setBlogPosts(blogPostsData);
+
+                // Set default suggestions (can be replaced with API call later)
+                setSuggestions([
+                    { id: 1, name: "DJ Kazi", rating: 4.8, image: "/Images/curator-img.png" },
+                    { id: 2, name: "Event Pro", rating: 4.6, image: "/Images/curator-img.png" },
+                    { id: 3, name: "Music Master", rating: 4.9, image: "/Images/curator-img.png" }
+                ]);
+
+                // Set default media items (can be replaced with API call later)
+                setMediaItems([
+                    { id: 1, type: 'image', url: '/Images/post.png', views: 1200, likes: 45 },
+                    { id: 2, type: 'video', url: '/Images/post.png', thumbnail: '/Images/post.png', views: 800, likes: 32 },
+                    { id: 3, type: 'image', url: '/Images/post.png', views: 950, likes: 28 }
+                ]);
             } else {
                 setError('Failed to fetch profile data');
             }
         } catch (error) {
             console.error('Error fetching user profile:', error);
             setError(error.response?.data?.message || 'Failed to load profile');
-            
+
             if (error.response?.status === 401) {
                 localStorage.removeItem('accessToken');
                 navigate('/login');
@@ -145,42 +184,45 @@ const UserProfile = () => {
     // Dynamic navigation items based on user role
     const getNavItems = () => {
         if (!userData) return [];
-        
+
+        const userStats = stats || {};
+
         const baseItems = [
             { id: 'news_feed', label: 'News Feed', icon: BsNewspaper },
-            { id: 'favorites', label: 'My Favourites', icon: AiOutlineHeart, count: userData.stats.favorites }
+            // { id: 'favorites', label: 'My Favourites', icon: AiOutlineHeart, count: userStats.favorites || favorites.length } // COMMENTED OUT
         ];
 
         if (userData.role === 'venueOwner') {
             return [
                 ...baseItems,
-                { id: 'venues', label: 'My Venues', icon: MdEvent, count: userData.stats.venues },
-                { id: 'events', label: 'My Events', icon: MdEvent, count: userData.stats.events },
-                { id: 'followers', label: 'Followers', icon: FaShare, count: userData.stats.followers },
-                { id: 'media', label: 'Media', icon: MdPhotoLibrary },
+                { id: 'venues', label: 'My Venues', icon: MdEvent, count: userStats.venues || venues.length },
+                { id: 'events', label: 'My Events', icon: MdEvent, count: userStats.events || events.length },
+                { id: 'followers', label: 'Followers', icon: FaShare, count: userStats.followers || followers.length },
+                // { id: 'media', label: 'Media', icon: MdPhotoLibrary }, // MEDIA TAB COMMENTED OUT FOR NOW
                 { id: 'settings', label: 'Settings', icon: RiSettings4Line }
             ];
         } else if (userData.role === 'sponsor') {
             return [
                 ...baseItems,
-                { id: 'products', label: 'My Products', icon: RiFileList2Line, count: userData.stats.products },
-                { id: 'events', label: 'Sponsored Events', icon: MdEvent, count: userData.stats.events },
-                { id: 'followers', label: 'Followers', icon: FaShare, count: userData.stats.followers },
-                { id: 'media', label: 'Media', icon: MdPhotoLibrary },
+                { id: 'products', label: 'My Products', icon: RiFileList2Line, count: userStats.products || products.length },
+                { id: 'events', label: 'Sponsored Events', icon: MdEvent, count: userStats.events || events.length },
+                { id: 'followers', label: 'Followers', icon: FaShare, count: userStats.followers || followers.length },
+                // { id: 'media', label: 'Media', icon: MdPhotoLibrary }, // MEDIA TAB COMMENTED OUT FOR NOW
                 { id: 'settings', label: 'Settings', icon: RiSettings4Line }
             ];
         } else if (userData.role === 'curator') {
             return [
                 ...baseItems,
-                { id: 'events', label: 'My Events', icon: MdEvent, count: userData.stats.events },
-                { id: 'followers', label: 'Followers', icon: FaShare, count: userData.stats.followers },
-                { id: 'media', label: 'Media', icon: MdPhotoLibrary },
+                { id: 'events', label: 'My Events', icon: MdEvent, count: userStats.events || events.length },
+                { id: 'followers', label: 'Followers', icon: FaShare, count: userStats.followers || followers.length },
+                // { id: 'media', label: 'Media', icon: MdPhotoLibrary }, // MEDIA TAB COMMENTED OUT FOR NOW
                 { id: 'settings', label: 'Settings', icon: RiSettings4Line }
             ];
         } else {
+            // Guest user
             return [
                 ...baseItems,
-                { id: 'followers', label: 'Followers', icon: FaShare, count: userData.stats.followers },
+                { id: 'followers', label: 'Followers', icon: FaShare, count: userStats.followers || followers.length },
                 { id: 'settings', label: 'Settings', icon: RiSettings4Line }
             ];
         }
@@ -235,40 +277,87 @@ const UserProfile = () => {
         }));
     };
 
-    const handleSharePost = useCallback(() => {
+    const handleSharePost = useCallback(async () => {
         if (!newPost.content.trim() && !newPost.images.length && !newPost.files.length) return;
 
-        // Add new post to the list
-        const post = {
-            id: Date.now(),
-            author: userData.name,
-            timeAgo: "Just now",
-            content: newPost.content,
-            images: newPost.images,
-            files: newPost.files,
-            location: newPost.location,
-            views: 0,
-            likes: 0,
-            comments: 0,
-            isLiked: false
-        };
+        try {
+            const token = localStorage.getItem('accessToken');
+            if (!token) {
+                toast.error('Please login to share a post');
+                return;
+            }
 
-        setPosts(prev => [post, ...prev]);
-        setNewPost({
-            content: '',
-            files: [],
-            images: [],
-            location: '',
-            visibility: 'public'
-        });
-        setIsFileInputVisible(false);
-        setIsImageInputVisible(false);
-        setIsMapInputVisible(false);
-        
-        toast.success('Post shared successfully!');
-    }, [newPost, userData?.name]);
+            // Create FormData for file uploads
+            const formData = new FormData();
+            formData.append('text', newPost.content);
+            formData.append('visibility', newPost.visibility);
+
+            if (newPost.location) {
+                formData.append('location', newPost.location);
+            }
+
+            // Add images
+            newPost.images.forEach((image, index) => {
+                if (image instanceof File) {
+                    formData.append('images', image);
+                }
+            });
+
+            // Add files
+            newPost.files.forEach((file, index) => {
+                formData.append('files', file);
+            });
+
+            // API call to create post - interceptor handles Authorization and Content-Type
+            const response = await axiosInstance.post('/profiles/posts', formData, {
+                headers: {
+                    // The interceptor handles Authorization, but we still need multipart/form-data here
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+
+            if (response.data && response.data.success) {
+                const newPostFromServer = response.data.data;
+
+                const postForState = {
+                    ...newPostFromServer,
+                    content: newPostFromServer.text,
+                    author: newPostFromServer.author,
+                    timeAgo: "Just now",
+                    views: 0,
+                    likes: newPostFromServer.likes?.length || 0,
+                    comments: newPostFromServer.comments?.length || 0,
+                    isLiked: false,
+                    images: (newPostFromServer.images || []).map(img =>
+                        `${import.meta.env.VITE_SERVER_URL}/${img}`
+                    ),
+                    files: newPost.files,
+                    location: newPost.location
+                };
+
+                setPosts(prev => [postForState, ...prev]);
+
+                setNewPost({
+                    content: '',
+                    files: [],
+                    images: [],
+                    location: '',
+                    visibility: 'public'
+                });
+                setIsFileInputVisible(false);
+                setIsImageInputVisible(false);
+                setIsMapInputVisible(false);
+
+                toast.success('Post shared successfully!');
+            }
+        } catch (error) {
+            console.error('Error sharing post:', error);
+            toast.error(error.response?.data?.message || 'Failed to share post');
+        }
+    }, [newPost, userData]);
 
     const formatPostContent = useCallback((content) => {
+        if (!content) return null; // <-- FIX: Handle posts with no text
         return content.split(' ').map((word, index) => {
             if (word.startsWith('@')) {
                 return (
@@ -328,9 +417,9 @@ const UserProfile = () => {
     const handleUpdateEvent = async () => {
         try {
             // API call to update event would go here
-            setEvents(prev => 
-                prev.map(event => 
-                    event.id === eventToEdit.id 
+            setEvents(prev =>
+                prev.map(event =>
+                    event.id === eventToEdit.id
                         ? { ...event, ...editFormData }
                         : event
                 )
@@ -374,8 +463,8 @@ const UserProfile = () => {
     const handleUpdateProduct = async () => {
         try {
             // API call to update product would go here
-            setProducts(prev => 
-                prev.map(product => 
+            setProducts(prev =>
+                prev.map(product =>
                     product.id === productToEdit.id || product._id === productToEdit._id
                         ? { ...product, ...productEditFormData }
                         : product
@@ -392,16 +481,51 @@ const UserProfile = () => {
     const handleFollowToggle = async (userId, currentList) => {
         setFollowLoading(prev => ({ ...prev, [userId]: true }));
         try {
-            // API call for follow/unfollow would go here
-            // For now, just toggle in the UI
-            if (currentList === 'followers') {
-                // Toggle following status
-            } else {
-                // Toggle follower status
+            const token = localStorage.getItem('accessToken');
+            if (!token) {
+                toast.error('Please login to follow/unfollow');
+                return;
             }
-            toast.success('Follow status updated!');
+
+            // Determine if we're following this user
+            const isCurrentlyFollowing = following.some(user => user._id === userId || user.id === userId);
+            const endpoint = isCurrentlyFollowing ? 'unfollow' : 'follow';
+
+            // Get user role from the list
+            const targetUser = (currentList === 'followers' ? followers : following)
+                .find(user => user._id === userId || user.id === userId);
+
+            if (!targetUser) {
+                toast.error('User not found');
+                return;
+            }
+
+            // API call for follow/unfollow - interceptor handles Authorization
+            const response = await axiosInstance.post(`/profiles/${targetUser.role}/${userId}/${endpoint}`);
+
+            if (response.data && response.data.success) {
+                // Update the appropriate list
+                if (currentList === 'followers') {
+                    // This is a follower, so we're following them
+                    if (isCurrentlyFollowing) {
+                        setFollowing(prev => prev.filter(user => user._id !== userId && user.id !== userId));
+                    } else {
+                        setFollowing(prev => [...prev, targetUser]);
+                    }
+                } else {
+                    // This is someone we're following
+                    if (isCurrentlyFollowing) {
+                        setFollowing(prev => prev.filter(user => user._id !== userId && user.id !== userId));
+                    } else {
+                        setFollowing(prev => [...prev, targetUser]);
+                    }
+                }
+
+                toast.success(isCurrentlyFollowing ? 'Unfollowed successfully' : 'Followed successfully');
+            }
         } catch (error) {
-            toast.error('Failed to update follow status');
+            console.error('Error toggling follow:', error);
+            toast.error(error.response?.data?.message || 'Failed to update follow status');
         } finally {
             setFollowLoading(prev => ({ ...prev, [userId]: false }));
         }
@@ -419,7 +543,7 @@ const UserProfile = () => {
     // Format date for events
     const formatEventDate = (dateString) => {
         if (!dateString) return { month: 'JAN', days: '1' };
-        
+
         try {
             const date = new Date(dateString);
             const month = date.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
@@ -499,7 +623,7 @@ const UserProfile = () => {
                             <div className="bg-[#231D30] rounded-lg p-3 md:p-4">
                                 <div className="flex items-center gap-3 md:gap-4">
                                     <img
-                                        src={userData.avatar}
+                                        src={userData?.profileImage ? `${import.meta.env.VITE_SERVER_URL}/${userData.profileImage}` : "/Images/default-avatar.jpg"}
                                         alt="Profile"
                                         className="w-8 h-8 md:w-10 md:h-10 rounded-full"
                                     />
@@ -626,12 +750,12 @@ const UserProfile = () => {
                                         <div className="flex justify-between items-start mb-4">
                                             <div className="flex items-center gap-2 md:gap-3">
                                                 <img
-                                                    src={userData.avatar}
-                                                    alt={post.author}
+                                                    src={post.author?.profileImage ? `${import.meta.env.VITE_SERVER_URL}/${post.author.profileImage}` : "/Images/default-avatar.jpg"}
+                                                    alt={post.author?.name || 'User'}
                                                     className="w-10 h-10 md:w-12 md:h-12 rounded-full"
                                                 />
                                                 <div>
-                                                    <h3 className="text-white text-sm md:text-base font-medium">{post.author}</h3>
+                                                    <h3 className="text-white text-sm md:text-base font-medium">{post.author?.name || 'User'}</h3>
                                                     <p className="text-white/60 text-xs md:text-sm">{post.timeAgo}</p>
                                                 </div>
                                             </div>
@@ -874,7 +998,7 @@ const UserProfile = () => {
                                                         <div className="flex items-center gap-2">
                                                             <IoTimeOutline className="w-5 h-5 text-gray-400" />
                                                             <span className="text-white">
-                                                                {event.startTime && event.endTime 
+                                                                {event.startTime && event.endTime
                                                                     ? `${event.startTime} - ${event.endTime}`
                                                                     : event.time || 'Time TBD'
                                                                 }
@@ -895,8 +1019,8 @@ const UserProfile = () => {
                                 <div className="bg-[#231D30] rounded-lg p-8 text-center">
                                     <p className="text-white/60 text-lg">No events yet</p>
                                     <p className="text-white/40 text-sm mt-2">
-                                        {userData.role === 'sponsor' 
-                                            ? 'Start sponsoring events to see them here!' 
+                                        {userData.role === 'sponsor'
+                                            ? 'Start sponsoring events to see them here!'
                                             : 'Create your first event to get started!'
                                         }
                                     </p>
@@ -935,7 +1059,7 @@ const UserProfile = () => {
                                 venues.map((venueData) => {
                                     const venue = venueData.venue || venueData;
                                     const venueEvents = venueData.events || [];
-                                    
+
                                     return (
                                         <div key={venue._id} className="bg-[#231D30] rounded-lg p-4">
                                             <div className="flex gap-4">
@@ -1113,33 +1237,24 @@ const UserProfile = () => {
                         <div className="space-y-4">
                             {(selectedFollowTab === 'followers' ? followers : following).length > 0 ? (
                                 (selectedFollowTab === 'followers' ? followers : following).map((user) => (
-                                    <div key={user._id || user.id} className="bg-[#231D30] rounded-lg p-4">
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-4">
-                                                <img
-                                                    src={user.profileImage || user.image || "/Images/default-avatar.jpg"}
-                                                    alt={user.name}
-                                                    className="w-12 h-12 rounded-full"
-                                                />
-                                                <div>
-                                                    <h3 className="text-white font-medium">{user.name}</h3>
-                                                    <p className="text-gray-400 text-sm">{user.role}</p>
-                                                    {user.rating && (
-                                                        <div className="flex items-center gap-1 mt-1">
-                                                            <FaStar className="w-3 h-3 text-yellow-400" />
-                                                            <span className="text-white text-xs">{user.rating}</span>
-                                                        </div>
-                                                    )}
-                                                </div>
+                                    <div key={user._id || user.id} className="bg-[#231D30] rounded-lg p-4 flex items-center justify-between">
+                                        <div className="flex items-center gap-4">
+                                            <img
+                                                src={user.image ? `${import.meta.env.VITE_SERVER_URL}/${user.image}` : "/Images/default-avatar.jpg"}
+                                                alt={user.name}
+                                                className="w-12 h-12 rounded-full object-cover"
+                                            />
+                                            <div>
+                                                <h3 className="text-white font-medium">{user.name}</h3>
+                                                <p className="text-gray-400 text-sm capitalize">{user.role}</p>
                                             </div>
-                                            <button
-                                                onClick={() => handleFollowToggle(user._id || user.id, selectedFollowTab)}
-                                                disabled={followLoading[user._id || user.id]}
-                                                className="bg-[#00FFB2] text-black px-4 py-2 rounded-lg hover:bg-[#00FFB2]/90 transition-colors disabled:opacity-50"
-                                            >
-                                                {followLoading[user._id || user.id] ? 'Loading...' : 'View Profile'}
-                                            </button>
                                         </div>
+                                        <button
+                                            onClick={() => navigate(`/${user.role}/${user._id || user.id}`)}
+                                            className="bg-[#00FFB2] text-black px-4 py-2 rounded-lg hover:bg-[#00FFB2]/90 transition-colors"
+                                        >
+                                            View Profile
+                                        </button>
                                     </div>
                                 ))
                             ) : (
@@ -1148,10 +1263,9 @@ const UserProfile = () => {
                                         No {selectedFollowTab} yet
                                     </p>
                                     <p className="text-white/40 text-sm mt-2">
-                                        {selectedFollowTab === 'followers' 
+                                        {selectedFollowTab === 'followers'
                                             ? 'Start engaging with others to gain followers!'
-                                            : 'Start following other users to see them here!'
-                                        }
+                                            : 'Start following other users to see them here!'}
                                     </p>
                                 </div>
                             )}
@@ -1160,95 +1274,8 @@ const UserProfile = () => {
                 );
 
             case 'media':
-                const filteredMedia = mediaItems.filter(item => 
-                    selectedMediaTab === 'all' || item.type === selectedMediaTab.slice(0, -1)
-                );
-                const displayedMedia = showAllMedia ? filteredMedia : filteredMedia.slice(0, 6);
-
-                return (
-                    <div className="space-y-6">
-                        <div className="flex items-center justify-between">
-                            <h2 className="text-white text-2xl font-medium">Media</h2>
-                        </div>
-
-                        <div className="flex gap-6 border-b border-white/10">
-                            {['all', 'images', 'videos'].map((tab) => (
-                                <button
-                                    key={tab}
-                                    onClick={() => setSelectedMediaTab(tab)}
-                                    className={`pb-2 relative capitalize ${selectedMediaTab === tab ? 'text-[#00FFB2]' : 'text-white/60'}`}
-                                >
-                                    {tab}
-                                    {selectedMediaTab === tab && (
-                                        <div className="absolute bottom-0 left-0 w-full h-0.5 bg-[#00FFB2]" />
-                                    )}
-                                </button>
-                            ))}
-                        </div>
-
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                            {displayedMedia.length > 0 ? (
-                                displayedMedia.map((item) => (
-                                    <div key={item.id} className="relative group">
-                                        <div className="aspect-square bg-[#231D30] rounded-lg overflow-hidden">
-                                            {item.type === 'image' ? (
-                                                <img
-                                                    src={item.url}
-                                                    alt="Media"
-                                                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                                                />
-                                            ) : (
-                                                <div className="relative w-full h-full">
-                                                    <img
-                                                        src={item.thumbnail}
-                                                        alt="Video thumbnail"
-                                                        className="w-full h-full object-cover"
-                                                    />
-                                                    <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-                                                        <div className="w-12 h-12 bg-white/80 rounded-full flex items-center justify-center">
-                                                            <svg className="w-6 h-6 text-black ml-1" fill="currentColor" viewBox="0 0 24 24">
-                                                                <path d="M8 5v14l11-7z"/>
-                                                            </svg>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg flex items-end">
-                                            <div className="p-3 text-white text-sm">
-                                                <div className="flex items-center gap-3">
-                                                    <span>{item.views} views</span>
-                                                    <span>{item.likes} likes</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))
-                            ) : (
-                                <div className="col-span-full bg-[#231D30] rounded-lg p-8 text-center">
-                                    <p className="text-white/60 text-lg">No media yet</p>
-                                    <p className="text-white/40 text-sm mt-2">Share posts with images or videos to see them here!</p>
-                                </div>
-                            )}
-                        </div>
-
-                        {filteredMedia.length > 6 && (
-                            <div className="flex justify-center mt-6">
-                                <button
-                                    onClick={() => setShowAllMedia(!showAllMedia)}
-                                    className="bg-transparent border border-[#00FFB2] text-[#00FFB2] px-6 py-2 rounded-lg hover:bg-[#00FFB2] hover:text-black transition-all duration-300 flex items-center gap-2"
-                                >
-                                    {showAllMedia ? 'Show Less' : 'See More'}
-                                    {!showAllMedia && (
-                                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                        </svg>
-                                    )}
-                                </button>
-                            </div>
-                        )}
-                    </div>
-                );
+                // MEDIA TAB COMMENTED OUT - not rendered for now
+                return null;
 
             case 'settings':
                 return (
@@ -1264,7 +1291,10 @@ const UserProfile = () => {
                                     <label className="block text-gray-400 text-sm mb-2">Name</label>
                                     <input
                                         type="text"
-                                        value={userData.name}
+                                        value={userData?.firstName && userData?.lastName
+                                            ? `${userData.firstName} ${userData.lastName}`
+                                            : userData?.businessName || userData?.venueName || userData?.stageName || 'N/A'
+                                        }
                                         className="w-full bg-[#1A1625] text-white p-3 rounded-lg border border-white/10 focus:border-[#00FFB2] outline-none"
                                         readOnly
                                     />
@@ -1273,7 +1303,7 @@ const UserProfile = () => {
                                     <label className="block text-gray-400 text-sm mb-2">Email</label>
                                     <input
                                         type="email"
-                                        value={userData.email}
+                                        value={userData?.email || 'N/A'}
                                         className="w-full bg-[#1A1625] text-white p-3 rounded-lg border border-white/10 focus:border-[#00FFB2] outline-none"
                                         readOnly
                                     />
@@ -1282,12 +1312,12 @@ const UserProfile = () => {
                                     <label className="block text-gray-400 text-sm mb-2">Role</label>
                                     <input
                                         type="text"
-                                        value={userData.role}
+                                        value={userData?.role === 'venueOwner' ? 'Venue Owner' : userData?.role || 'N/A'}
                                         className="w-full bg-[#1A1625] text-white p-3 rounded-lg border border-white/10 focus:border-[#00FFB2] outline-none"
                                         readOnly
                                     />
                                 </div>
-                                {userData.bio && (
+                                {userData?.bio && (
                                     <div>
                                         <label className="block text-gray-400 text-sm mb-2">Bio</label>
                                         <textarea
@@ -1305,19 +1335,19 @@ const UserProfile = () => {
                             <h3 className="text-white text-xl font-medium mb-4">Statistics</h3>
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                 <div className="text-center">
-                                    <div className="text-2xl font-bold text-[#00FFB2]">{userData.stats.followers}</div>
+                                    <div className="text-2xl font-bold text-[#00FFB2]">{stats?.followers || followers.length}</div>
                                     <div className="text-gray-400 text-sm">Followers</div>
                                 </div>
                                 <div className="text-center">
-                                    <div className="text-2xl font-bold text-[#00FFB2]">{userData.stats.following}</div>
+                                    <div className="text-2xl font-bold text-[#00FFB2]">{stats?.following || following.length}</div>
                                     <div className="text-gray-400 text-sm">Following</div>
                                 </div>
                                 <div className="text-center">
-                                    <div className="text-2xl font-bold text-[#00FFB2]">{userData.stats.events}</div>
+                                    <div className="text-2xl font-bold text-[#00FFB2]">{stats?.events || events.length}</div>
                                     <div className="text-gray-400 text-sm">Events</div>
                                 </div>
                                 <div className="text-center">
-                                    <div className="text-2xl font-bold text-[#00FFB2]">{userData.stats.rating.toFixed(1)}</div>
+                                    <div className="text-2xl font-bold text-[#00FFB2]">{stats?.rating ? stats.rating.toFixed(1) : '0.0'}</div>
                                     <div className="text-gray-400 text-sm">Rating</div>
                                 </div>
                             </div>
@@ -1350,7 +1380,7 @@ const UserProfile = () => {
                 <div className="text-center">
                     <div className="text-red-500 text-xl mb-4">Error loading profile</div>
                     <div className="text-gray-400 mb-4">{error}</div>
-                    <button 
+                    <button
                         onClick={fetchUserProfile}
                         className="bg-[#00FFB2] text-black px-6 py-2 rounded-lg hover:bg-[#00FFB2]/90"
                     >
@@ -1378,12 +1408,22 @@ const UserProfile = () => {
                     {/* Profile Card */}
                     <div className="bg-[#231D30] rounded-lg p-4 text-center">
                         <img
-                            src={userData.avatar}
+                            src={userData?.profileImage ? `${import.meta.env.VITE_SERVER_URL}/${userData.profileImage}` : "/Images/default-avatar.jpg"}
                             alt="Profile"
                             className="w-20 h-20 md:w-24 md:h-24 rounded-full mx-auto mb-2"
                         />
-                        <h2 className="text-white font-medium">{userData.name}</h2>
-                        <p className="text-gray-400 text-sm">{userData.role}</p>
+                        <h2 className="text-white font-medium">
+                            {userData?.firstName && userData?.lastName
+                                ? `${userData.firstName} ${userData.lastName}`
+                                : userData?.businessName || userData?.venueName || userData?.stageName || 'User'
+                            }
+                        </h2>
+                        <p className="text-gray-400 text-sm capitalize">
+                            {userData?.role === 'venueOwner' ? 'Venue Owner' : userData?.role || 'User'}
+                        </p>
+                        {userData?.bio && (
+                            <p className="text-gray-500 text-xs mt-2 line-clamp-2">{userData.bio}</p>
+                        )}
                     </div>
 
                     {/* Navigation Links */}
