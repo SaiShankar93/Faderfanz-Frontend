@@ -101,7 +101,7 @@ const CrowdfundingDetail = () => {
 
     const handleContribute = () => {
         // Navigate to contribution page
-        navigate(`/crowdfunding/${id}/contribute`);
+        // navigate(`/crowdfunding/${id}/contribute`);
     };
 
     if (loading) {

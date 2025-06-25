@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState, Fragment } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   SlSocialFacebook,
@@ -27,6 +27,7 @@ import AttributeSlider from "@/components/AttributeSlider";
 import { Tooltip } from "@material-tailwind/react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import PopularEvents from "@/components/PopularEvents";
+import { Dialog, Transition } from '@headlessui/react';
 
 import "swiper/css";
 import "swiper/css/pagination";
@@ -72,7 +73,7 @@ const EventPage = ({}) => {
   const navigate = useNavigate();
   const { currency, cart, setCart, wishlist, setWishlist } =
     useContext(AppContext);
-  const { userLoggedIn, setUserLoggedIn } = useAuth();
+  const { userLoggedIn } = useAuth();
   const param = useParams();
   // const productId = param.id;
   const model = useRef();
@@ -84,27 +85,96 @@ const EventPage = ({}) => {
   const [newComment, setNewComment] = useState("");
   const [ticketCount, setTicketCount] = useState(1);
   const [liked, handleLiked] = useState(false);
-  const ticketPrice = product?.price || 0;
-
-  const handleIncrease = () => setTicketCount((prev) => prev + 1);
-  const handleDecrease = () =>
-    setTicketCount((prev) => (prev > 1 ? prev - 1 : 1));
+  const [ticketPrice, setTicketPrice] = useState(0);
+  const [selectedTicketType, setSelectedTicketType] = useState(null);
   const [event, setEvent] = useState({});
+  const [priceDetails, setPriceDetails] = useState({
+    subtotal: 0,
+    bookingFee: 0,
+    gst: 0,
+    total: 0
+  });
+
+  // Helper function to calculate price details (matching backend calculation)
+  const calculatePriceDetails = (price, quantity) => {
+    const subtotal = price * quantity;
+    // Calculate booking fee (2%)
+    const bookingFee = (subtotal * 2) / 100;
+    // Calculate GST (18% on subtotal + booking fee)
+    const gst = ((subtotal + bookingFee) * 18) / 100;
+    // Calculate total
+    const total = subtotal + bookingFee + gst;
+    
+    return {
+      subtotal,
+      bookingFee,
+      gst,
+      total
+    };
+  };
+
+  const handleIncrease = () => {
+    const newCount = ticketCount + 1;
+    setTicketCount(newCount);
+    // Update price details
+    setPriceDetails(calculatePriceDetails(ticketPrice, newCount));
+  };
+  
+  const handleDecrease = () => {
+    if (ticketCount > 1) {
+      const newCount = ticketCount - 1;
+      setTicketCount(newCount);
+      // Update price details
+      setPriceDetails(calculatePriceDetails(ticketPrice, newCount));
+    }
+  };
+  
+  // Handler for selecting ticket type
+  const handleSelectTicketType = (ticket) => {
+    setSelectedTicketType(ticket);
+    setTicketPrice(ticket.price);
+    // Update price details when ticket type changes
+    setPriceDetails(calculatePriceDetails(ticket.price, ticketCount));
+  };
 
   const getEvent = async () => {
     try {
+      setLoading(true);
       const response = await axiosInstance.get(`/events/${param?.id}`);
       if (response.data) {
-        setEvent(response.data);
+        // Format the event data properly
+        const eventData = response.data;
+        
+        console.log('event data:', eventData);
+        setEvent(eventData);
+        
+        // Initialize the ticket price and selected ticket type if available
+        if (eventData.tickets && eventData.tickets.length > 0) {
+          setSelectedTicketType(eventData.tickets[0]);
+          setTicketPrice(eventData.tickets[0].price);
+        }
       } else throw new Error("Fetching Event failed");
     } catch (error) {
       console.error("Error fetching event:", error);
       toast.error("Failed to fetch event");
+    } finally {
+      setLoading(false);
     }
   };
   useEffect(() => {
     getEvent();
-  }, []);
+  }, [param?.id]);
+
+  // Set initial ticket type and price when event data is loaded
+  useEffect(() => {
+    if (event?.tickets && event.tickets.length > 0) {
+      const firstTicket = event.tickets[0];
+      setSelectedTicketType(firstTicket);
+      setTicketPrice(firstTicket.price);
+      // Initialize price details with the first ticket
+      setPriceDetails(calculatePriceDetails(firstTicket.price, ticketCount));
+    }
+  }, [event]);
 
   const getProductDetails = async (productId) => {
     setLoading(true);
@@ -202,17 +272,37 @@ const EventPage = ({}) => {
     // setWishlistedProducts(wishlist);
   }, []);
   useEffect(() => {
-    window.scrollTo(0, 0);
-    const user = JSON.parse(localStorage.getItem("user"));
-    const productPageId2 = JSON.parse(sessionStorage.getItem("eventPageId"));
-    // console.log(productPageId2);
-    setUserDetails(user);
-    getProductDetails(productPageId2);
-    getReview(productPageId2);
-    // if (userDetails) {
-    //   getWishlist();
-    // }
-    // setWishlistedProducts(wishlist);
+    const fetchEventData = async () => {
+      // Check for param.id (from URL) or eventPageId from session storage
+      const eventId = param?.id || JSON.parse(sessionStorage.getItem("eventPageId"));
+      
+      if (eventId) {
+        try {
+          setLoading(true);
+          const response = await axiosInstance.get(`/events/${eventId}`);
+          
+          if (response.data) {
+            const eventData = response.data;
+            setEvent(eventData);
+            
+            // Initialize the ticket price and selected ticket type if available
+            if (eventData.tickets && eventData.tickets.length > 0) {
+              setSelectedTicketType(eventData.tickets[0]);
+              setTicketPrice(eventData.tickets[0].price);
+            }
+            
+            console.log('Loaded event data:', eventData);
+          }
+        } catch (error) {
+          console.error("Error fetching event:", error);
+          toast.error("Failed to fetch event details");
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+    
+    fetchEventData();
   }, [param?.id]);
   useEffect(() => {
     if (typeof window.Sirv === "undefined") {
@@ -315,6 +405,7 @@ const EventPage = ({}) => {
   };
 
   const formatEventDate = (dateString) => {
+    if (!dateString) return "TBD";
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
       weekday: 'long',
@@ -323,6 +414,179 @@ const EventPage = ({}) => {
       year: 'numeric'
     });
   };
+  
+  // Function to convert relative URLs to full URLs
+  const getFullImageUrl = (relativeUrl) => {
+    if (!relativeUrl) return "/images/event-placeholder.jpg";
+    
+    // If it's already a full URL, return it
+    if (relativeUrl.startsWith('http')) return relativeUrl;
+    
+    // If it's a relative path starting with /
+    if (relativeUrl.startsWith('/')) {
+      return `${import.meta.env.VITE_SERVER_URL}${relativeUrl}`;
+    }
+    
+    // Handle the case where there are backslashes (Windows paths)
+    if (relativeUrl.includes('\\')) {
+      const normalizedPath = relativeUrl.replace(/\\/g, '/');
+      return `${import.meta.env.VITE_SERVER_URL}/${normalizedPath}`;
+    }
+    
+    // If it's a relative path without /
+    return `${import.meta.env.VITE_SERVER_URL}/${relativeUrl}`;
+  };
+
+  // Function to format event times (convert 24hr to 12hr format)
+  const formatEventTime = (timeString) => {
+    if (!timeString) return "";
+    
+    const [hours, minutes] = timeString.split(':');
+    const hour = parseInt(hours, 10);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const formattedHour = hour % 12 || 12;
+    
+    return `${formattedHour}:${minutes} ${ampm}`;
+  };
+
+  // Add payment states
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [paymentProcessing, setPaymentProcessing] = useState(false);
+  const [paymentError, setPaymentError] = useState(null);
+  const [userEmail, setUserEmail] = useState("");
+  
+  // Function to handle ticket purchase
+  const handleBuyTickets = async () => {
+    try {
+      // Check both userLoggedIn state and localStorage for user data
+      const userData = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : null;
+      
+      if (!userLoggedIn && !userData) {
+        toast.error("Please login to purchase tickets");
+        navigate("/login");
+        return;
+      }
+      
+      // Set initial email value if available from user data
+      if (userData && userData.email && !userEmail) {
+        setUserEmail(userData.email);
+      }
+      
+      setIsPaymentModalOpen(true);
+    } catch (error) {
+      console.error("Error opening payment modal:", error);
+      toast.error("Something went wrong. Please try again.");
+    }
+  };
+  
+  // Function to process payment
+  const processPayment = async () => {
+    if (!userEmail) {
+      setPaymentError("Email is required for payment confirmation");
+      return;
+    }
+    
+    try {
+      setPaymentProcessing(true);
+      setPaymentError(null);
+      
+      // Get user data from localStorage
+      let userData;
+      try {
+        userData = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : null;
+      } catch (err) {
+        console.error("Error parsing user data:", err);
+        userData = null;
+      }
+      
+      if (!userData) {
+        throw new Error("User session expired. Please login again.");
+      }
+      
+      // Get token from userData or accessToken in localStorage
+      const token = userData.token || localStorage.getItem('accessToken');
+      
+      if (!token) {
+        throw new Error("Authentication token not found. Please login again.");
+      }
+      
+      // Make sure event has an _id
+      if (!event || !event._id) {
+        throw new Error("Event information is missing. Please refresh the page.");
+      }
+      
+      // Make sure we have a selected ticket
+      if (!selectedTicketType || !selectedTicketType._id) {
+        throw new Error("Please select a ticket type");
+      }
+      
+      // Prepare ticket booking data according to TicketBookingController format
+      const bookingData = {
+        ticketQuantities: [
+          {
+            ticketId: selectedTicketType._id,
+            quantity: ticketCount
+          }
+        ],
+        email: userEmail
+      };
+      
+      console.log("Booking data:", bookingData);
+      
+      // Make the API call to book tickets using the correct endpoint
+      const response = await axiosInstance.post(`/tickets/event/${event._id}/book`, bookingData, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      
+      // Handle successful response
+      if (response.data && response.data.paymentUrl) {
+        // Redirect to payment gateway
+        window.location.href = response.data.paymentUrl;
+      } else {
+        throw new Error("Invalid booking response");
+      }
+    } catch (error) {
+      console.error("Booking error:", error);
+      const errorMessage = error.response?.data?.message 
+        ? error.response.data.message 
+        : error.message 
+          ? error.message 
+          : "Failed to process booking. Please try again.";
+          
+      setPaymentError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setPaymentProcessing(false);
+    }
+  };
+
+  // Check for payment status on page load
+  useEffect(() => {
+    const queryParams = new URLSearchParams(window.location.search);
+    const reference = queryParams.get('reference');
+    const status = queryParams.get('status');
+    
+    // Handle payment success
+    if (status === 'success' && reference) {
+      toast.success('Payment successful! Your tickets have been booked.');
+      
+      // No need to manually verify - the Paystack webhook in TicketBookingController 
+      // will automatically handle verification and updating ticket status
+      
+      // Clear query parameters by redirecting to clean URL
+      const cleanUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, cleanUrl);
+      
+    } else if (status === 'failed' && reference) {
+      toast.error('Payment failed. Please try again.');
+      
+      // Clear query parameters
+      const cleanUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, cleanUrl);
+    }
+  }, []);
 
   return (
     <div className="relative bg-[#0E0F13] min-h-screen text-white overflow-hidden font-sen">
@@ -338,8 +602,8 @@ const EventPage = ({}) => {
         {/* Hero Image Section */}
         <div className="relative w-full h-[250px] md:h-[400px] rounded-xl overflow-hidden">
           <img
-            src="/events/event1.jpeg"
-            alt="Event Cover"
+            src={event?.banner?.url ? getFullImageUrl(event.banner.url) : "/events/event1.jpeg"}
+            alt={event?.banner?.alt || "Event Cover"}
             className="w-full h-full object-cover"
           />
           <div className="absolute bottom-4 right-4 flex gap-2">
@@ -363,7 +627,7 @@ const EventPage = ({}) => {
         {/* Title and Info Container */}
         <div className="mt-6 md:mt-8">
           <h1 className="text-4xl md:text-[44px] font-bold mb-6 md:mb-8">
-            {event?.title}
+            {event?.title || "Event Title"}
           </h1>
 
           {/* Date/Time and Ticket Container */}
@@ -380,7 +644,7 @@ const EventPage = ({}) => {
                     alt="Calendar"
                     className="w-5 h-5"
                   />
-                  <span>{formatEventDate(event?.createdAt)}</span>
+                  <span>{formatEventDate(event?.startDate)} {event?.endDate && event?.startDate !== event?.endDate ? `- ${formatEventDate(event?.endDate)}` : ""}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <img
@@ -388,18 +652,21 @@ const EventPage = ({}) => {
                     alt="Time"
                     className="w-5 h-5"
                   />
-                  <span>6:30 PM - 9:30 PM</span>
+                  <span>{formatEventTime(event?.startTime)} - {formatEventTime(event?.endTime)}</span>
                 </div>
-                <button className="text-[#00FFB3] text-sm hover:text-[#00cc8f] transition-colors w-fit">
+                {/* <button className="text-[#00FFB3] text-sm hover:text-[#00cc8f] transition-colors w-fit">
                   + Add to Calendar
-                </button>
+                </button> */}
               </div>
             </div>
 
             {/* Right Side - Ticket Info */}
             <div className="flex-1">
               <div className="flex flex-col items-end">
-                <button className="bg-[#00FFB3] text-black px-6 md:px-8 py-2 md:py-3 rounded-lg font-medium mb-4 w-full md:w-auto flex items-center justify-center gap-2">
+                <button 
+                  onClick={handleBuyTickets}
+                  className="bg-[#00FFB3] text-black px-6 md:px-8 py-2 md:py-3 rounded-lg font-medium mb-4 w-full md:w-auto flex items-center justify-center gap-2 hover:bg-[#00cc8f] transition-colors"
+                >
                   <IoTicketOutline className="w-5 h-5" />
                   Buy Tickets
                 </button>
@@ -408,16 +675,86 @@ const EventPage = ({}) => {
                     Ticket Information
                   </h2>
                   <div className="bg-[#1C1D24] rounded-xl p-4">
-                    <div className="flex items-center gap-2">
-                      <img
-                        src="/icons/ticket-icon.svg"
-                        alt="Ticket"
-                        className="w-5 h-5"
-                      />
+                    {event?.tickets && event.tickets.length > 0 ? (
+                      <>
+                        {/* Ticket selection if multiple tickets available */}
+                        {event.tickets.length > 1 && (
+                          <div className="mb-4">
+                            <label className="text-[#94A3B8] block mb-2">Select Ticket Type:</label>
+                            <select 
+                              className="w-full bg-[#2A2C37] text-white p-2 rounded-lg focus:outline-none"
+                              value={selectedTicketType?._id || ""}
+                              onChange={(e) => {
+                                const selected = event.tickets.find(t => t._id === e.target.value);
+                                if (selected) handleSelectTicketType(selected);
+                              }}
+                            >
+                              <option value="">Select a ticket type</option>
+                              {event.tickets.map(ticket => (
+                                <option key={ticket._id} value={ticket._id}>
+                                  {ticket.name} - ₹{ticket.price}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        )}
+                        
+                        {/* Display selected ticket or first ticket */}
+                        <div className="flex items-center gap-2">
+                          <img
+                            src="/icons/ticket-icon.svg"
+                            alt="Ticket"
+                            className="w-5 h-5"
+                          />
+                          <span className="text-[#94A3B8]">
+                            {selectedTicketType?.name || event.tickets[0].name}: ₹ {ticketPrice || event.tickets[0].price} each
+                          </span>
+                        </div>
+                        
+                        {/* Ticket benefits if available */}
+                        {(selectedTicketType?.benefits || event.tickets[0].benefits) && (
+                          <div className="mt-2 ml-7 text-xs text-[#94A3B8]">
+                            <p className="font-medium text-[#C5FF32] mb-1">Includes:</p>
+                            <ul className="list-disc pl-4">
+                              {(selectedTicketType?.benefits || event.tickets[0].benefits).map((benefit, idx) => (
+                                <li key={idx}>{benefit}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </>
+                    ) : (
                       <span className="text-[#94A3B8]">
-                        Standard Ticket: ₹ 200 each
+                        Ticket information not available
                       </span>
-                    </div>
+                    )}
+                    
+                    {/* Add ticket quantity selector */}
+                    {event?.tickets && event.tickets.length > 0 && (
+                      <div className="mt-4 flex items-center gap-2">
+                        <span className="text-[#94A3B8]">Quantity:</span>
+                        <div className="flex items-center bg-[#2A2C37] rounded-lg">
+                          <button 
+                            onClick={handleDecrease}
+                            className="w-8 h-8 flex items-center justify-center text-[#94A3B8] hover:text-white"
+                          >
+                            -
+                          </button>
+                          <span className="w-8 h-8 flex items-center justify-center text-white">
+                            {ticketCount}
+                          </span>
+                          <button 
+                            onClick={handleIncrease}
+                            className="w-8 h-8 flex items-center justify-center text-[#94A3B8] hover:text-white"
+                          >
+                            +
+                          </button>
+                        </div>
+                        <span className="text-[#94A3B8] ml-4">
+                          Total: ₹ {(ticketPrice || (event.tickets[0]?.price || 0)) * ticketCount}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -439,23 +776,37 @@ const EventPage = ({}) => {
                       className="w-5 h-5 mt-1"
                     />
                     <p className="text-[#94A3B8]">
-                      12 Lake Avenue, Mumbai, Near Junction
-                      <br />
-                      Of 24th & 32nd Road & Patwardhan
-                      <br />
-                      Park,Off Linking Road, Bandra West,
-                      <br />
-                      Mumbai, India
+                      {event?.location?.address ? (
+                        <>
+                          {event.location.address}
+                          {event.location.landmark && <><br />{event.location.landmark}</>}
+                          <br />
+                          {event.location.city}, {event.location.state} {event.location.postalCode}
+                          <br />
+                          {event.location.country}
+                        </>
+                      ) : (
+                        "Location details not available"
+                      )}
                     </p>
                   </div>
                 </div>
                 <div className="flex-1 h-[200px] md:h-[250px]">
-                  <iframe
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3771.803960726307!2d72.82824147499422!3d19.0507943570711!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3be7c9c000000001%3A0x3c1c64a0f6c13656!2sBandra%20West%2C%20Mumbai%2C%20Maharashtra!5e0!3m2!1sen!2sin!4v1709825037044!5m2!1sen!2sin"
-                    className="w-full h-full rounded-xl"
-                    allowFullScreen=""
-                    loading="lazy"
-                  ></iframe>
+                  {event?.location?.embedUrl ? (
+                    <iframe
+                      src={event.location.embedUrl}
+                      className="w-full h-full rounded-xl"
+                      allowFullScreen=""
+                      loading="lazy"
+                    ></iframe>
+                  ) : (
+                    <iframe
+                      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3771.803960726307!2d72.82824147499422!3d19.0507943570711!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3be7c9c000000001%3A0x3c1c64a0f6c13656!2sBandra%20West%2C%20Mumbai%2C%20Maharashtra!5e0!3m2!1sen!2sin!4v1709825037044!5m2!1sen!2sin"
+                      className="w-full h-full rounded-xl"
+                      allowFullScreen=""
+                      loading="lazy"
+                    ></iframe>
+                  )}
                 </div>
               </div>
             </div>
@@ -467,24 +818,61 @@ const EventPage = ({}) => {
               Hosted by
             </h2>
             <div className="flex items-center gap-4">
-              <img
-                src="/Images/host-image.png"
-                alt="City Youth Movement"
-                className="w-16 h-16 md:w-20 md:h-20 rounded-lg object-cover"
-              />
-              <div>
-                <h3 className="text-white font-medium text-lg mb-2">
-                  City Youth Movement
-                </h3>
-                <div className="flex gap-2">
-                  <button className="bg-white text-black px-6 py-2 rounded-lg text-sm font-medium hover:bg-gray-100 transition-colors">
-                    Contact
-                  </button>
-                  <button className="bg-transparent text-white px-6 py-2 rounded-lg text-sm font-medium border border-white hover:bg-white/10 transition-colors">
-                    + Follow
-                  </button>
-                </div>
-              </div>
+              {event?.curator || event?.creator ? (
+                <>
+                  <img
+                    src={event.curator?.profileImage || (event.creator?.profileImage ? getFullImageUrl(event.creator.profileImage) : "/Images/host-image.png")}
+                    alt={event.curator?.name || event.creator?.stageName || "Event Host"}
+                    className="w-16 h-16 md:w-20 md:h-20 rounded-lg object-cover"
+                  />
+                  <div>
+                    <h3 className="text-white font-medium text-lg mb-2">
+                      {event.curator?.stageName || event.curator?.name || 
+                      (event.creator ? (event.creator.stageName || `${event.creator.firstName || ''} ${event.creator.lastName || ''}`.trim()) : "Event Host")}
+                    </h3>
+                    {(event.curator?.bio || event.creator?.bio) && (
+                      <p className="text-[#94A3B8] text-sm mb-2 line-clamp-2">
+                        {event.curator?.bio || event.creator?.bio}
+                      </p>
+                    )}
+                    <div className="flex gap-2">
+                      <Link 
+                        to={`/curator/${event.curator?.id || event.creator?._id}`} 
+                        className="bg-white text-black px-6 py-2 rounded-lg text-sm font-medium hover:bg-gray-100 transition-colors"
+                      >
+                        Visit Profile
+                      </Link>
+                      {/* <button className="bg-transparent text-white px-6 py-2 rounded-lg text-sm font-medium border border-white hover:bg-white/10 transition-colors">
+                        + Follow
+                      </button> */}
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <img
+                    src="/Images/host-image.png"
+                    alt="Event Host"
+                    className="w-16 h-16 md:w-20 md:h-20 rounded-lg object-cover"
+                  />
+                  <div>
+                    <h3 className="text-white font-medium text-lg mb-2">
+                      Event Host
+                    </h3>
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={() => toast.info("Profile information not available")}
+                        className="bg-white text-black px-6 py-2 rounded-lg text-sm font-medium hover:bg-gray-100 transition-colors"
+                      >
+                        Visit Profile
+                      </button>
+                      <button className="bg-transparent text-white px-6 py-2 rounded-lg text-sm font-medium border border-white hover:bg-white/10 transition-colors">
+                        + Follow
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
@@ -492,26 +880,25 @@ const EventPage = ({}) => {
           <div className="mt-8">
             <h2 className="text-[#94A3B8] text-xl mb-4">Event Description</h2>
             <div className="bg-[#1C1D24] rounded-xl p-6">
-              <p className="text-[#94A3B8]">
-                Get ready to kick off the Christmas season in Mumbai with KAZI
-                OF CHRISTMAS - your favourite LIVE Christmas party/fair. Be the
-                patch that the city needs! Your favourite monthly events,
-                stalls, karaoke and more exciting surprises! Bring your family,
-                new friends and sing along your favourite Christmas songs on the
-                2nd of December, 6:30 PM onwards at the Bungalow!
-                <br />
-                <br />
-                Bonus Note: Wear your Santa hats!
-                <br />
-                <br />
-                1. Reasons to attend the event:
-                <br />
-                2. The FIRST Christmas carnival of Mumbai!
-                <br />
-                3. A special Christmas choir!
-                <br />
-                4. Special dance performances and many more surprises!
+              <p className="text-[#94A3B8] whitespace-pre-line">
+                {event?.description || "Event description not available."}
               </p>
+              
+              {/* Display event categories and type */}
+              {(event?.category || event?.eventType) && (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {event.category && (
+                    <span className="bg-[#2A2C37] text-[#C5FF32] px-3 py-1 rounded-lg text-xs uppercase">
+                      {event.category}
+                    </span>
+                  )}
+                  {event.eventType && (
+                    <span className="bg-[#2A2C37] text-[#00FFB3] px-3 py-1 rounded-lg text-xs uppercase">
+                      {event.eventType}
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
@@ -520,99 +907,124 @@ const EventPage = ({}) => {
             <h2 className="text-[#94A3B8] text-lg md:text-2xl mb-4">
               Sponsors
             </h2>
-            <div className="flex gap-6 overflow-x-auto pb-4">
-              {[
-                { name: "Elites Mark", image: "/Images/sponsor-logo.png" },
-                // Add more sponsors here as needed
-              ].map((sponsor, i) => (
-                <div key={i} className="flex flex-col items-center">
-                  <div className="w-32 h-32 rounded-full overflow-hidden mb-2">
-                    <img
-                      src={sponsor.image}
-                      alt={sponsor.name}
-                      className="w-full h-full object-cover"
-                    />
+            {event?.sponsors && event.sponsors.length > 0 ? (
+              <div className="flex gap-6 overflow-x-auto pb-4">
+                {event.sponsors.map((sponsor, i) => (
+                  <div key={i} className="flex flex-col items-center">
+                    <div className="w-32 h-32 rounded-full overflow-hidden mb-2">
+                      <img
+                        src={sponsor.businessLogo ? getFullImageUrl(sponsor.businessLogo) : "/Images/sponsor-logo.png"}
+                        alt={sponsor.businessName || sponsor.name || "Sponsor"}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <span className="text-white text-sm">{sponsor.businessName || sponsor.name}</span>
                   </div>
-                  <span className="text-white text-sm">{sponsor.name}</span>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-[#94A3B8]">No sponsors for this event</p>
+            )}
           </div>
 
           {/* Products by sponsor Section */}
-          <div className="mt-8">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-[#94A3B8] text-xl">
-                Products by sponsor: Elites Mark
-              </h2>
-              <a
-                href="#"
-                className="text-[#C5FF32] hover:text-[#a3cc28] transition-colors"
-              >
-                Visit page
-              </a>
-            </div>
+          {event?.sponsors && event.sponsors.some(sponsor => sponsor.products && sponsor.products.length > 0) && (
+            <div className="mt-8">
+              {event.sponsors.map((sponsor, sponsorIndex) => (
+                sponsor.products && sponsor.products.length > 0 && (
+                  <div key={sponsorIndex} className="mb-8">
+                    <div className="flex justify-between items-center mb-4">
+                      <h2 className="text-[#94A3B8] text-xl">
+                        Products by sponsor: {sponsor.businessName || sponsor.name}
+                      </h2>
+                      <a
+                        href={`/sponsor/${sponsor.id}`}
+                        className="text-[#C5FF32] hover:text-[#a3cc28] transition-colors"
+                      >
+                        Visit page
+                      </a>
+                    </div>
 
-            {/* Horizontal scrollable container */}
-            <div className="relative overflow-x-auto pb-4">
-              <div className="flex gap-6 min-w-min">
-                {Array(5)
-                  .fill(0)
-                  .map((_, i) => (
-                    <div
-                      key={i}
-                      className="flex-shrink-0 w-[320px] bg-[#1C1D24] rounded-xl overflow-hidden"
-                    >
-                      <div className="aspect-square relative">
-                        <img
-                          src="/Images/product-image.png"
-                          alt="Base Ball T-Shirt"
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div className="p-4">
-                        <h3 className="text-white text-xl font-medium mb-3">
-                          BASE BALL T-SHIRT
-                        </h3>
-                        <div className="flex justify-between items-center mb-4">
-                          <span className="text-[#94A3B8] text-lg">${200}</span>
-                          <span className="text-[#94A3B8]">Stock: 32</span>
-                        </div>
-                        <button className="bg-[#00FFB3] hover:bg-[#00cc8f] transition-colors text-black px-4 py-3 rounded-lg text-base w-full font-medium">
-                          Buy Now
-                        </button>
+                    {/* Horizontal scrollable container */}
+                    <div className="relative overflow-x-auto pb-4">
+                      <div className="flex gap-6 min-w-min">
+                        {sponsor.products.map((product, i) => (
+                          <div
+                            key={i}
+                            className="flex-shrink-0 w-[320px] bg-[#1C1D24] rounded-xl overflow-hidden"
+                          >
+                            <div className="aspect-square relative">
+                              <img
+                                src={product.images || product.image ? getFullImageUrl(product.images || product.image) : "/Images/product-image.png"}
+                                alt={product.name}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                            <div className="p-4">
+                              <h3 className="text-white text-xl font-medium mb-3">
+                                {product.name}
+                              </h3>
+                              <div className="flex justify-between items-center mb-4">
+                                <span className="text-[#94A3B8] text-lg">₹{product.price}</span>
+                                {product.stock && <span className="text-[#94A3B8]">Stock: {product.stock}</span>}
+                              </div>
+                              <button 
+                                onClick={() => {
+                                  toast.info("Redirecting to product page");
+                                  // You can add navigation to product page here
+                                }}
+                                className="bg-[#00FFB3] hover:bg-[#00cc8f] transition-colors text-black px-4 py-3 rounded-lg text-base w-full font-medium"
+                              >
+                                Buy Now
+                              </button>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </div>
-                  ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Curators Section */}
-          <div className="mt-8">
-            <h2 className="text-[#94A3B8] text-xl mb-6">Curators</h2>
-            <div className="flex gap-6 overflow-x-auto pb-4">
-              {[
-                { name: "DJ Larsh", image: "/Images/curator-img.png" },
-                { name: "Mr Rush", image: "/Images/curator-img.png" },
-                { name: "Mr Rush", image: "/Images/curator-img.png" },
-                { name: "Mr Rush", image: "/Images/curator-img.png" },
-                { name: "Mr Rush", image: "/Images/curator-img.png" },
-                { name: "Mr Rush", image: "/Images/curator-img.png" },
-              ].map((curator, i) => (
-                <div key={i} className="flex flex-col items-center">
-                  <div className="w-32 h-32 rounded-full overflow-hidden mb-2">
-                    <img
-                      src={curator.image}
-                      alt={curator.name}
-                      className="w-full h-full object-cover"
-                    />
                   </div>
-                  <span className="text-white text-sm">{curator.name}</span>
-                </div>
+                )
               ))}
             </div>
-          </div>
+          )}
+
+          {/* Curators Section */}
+          {event?.curators && (
+            <div className="mt-8">
+              <h2 className="text-[#94A3B8] text-xl mb-6">Curators</h2>
+              <div className="flex gap-6 overflow-x-auto pb-4">
+                {Array.isArray(event.curators) ? (
+                  event.curators.map((curator, i) => {
+                    // Handle both string IDs and object curator representations
+                    const isObject = typeof curator === 'object' && curator !== null;
+                    
+                    const curatorName = isObject ? 
+                      (curator.stageName || `${curator.firstName || ''} ${curator.lastName || ''}`.trim()) : 
+                      `Curator ${i+1}`;
+                    
+                    const curatorImage = isObject && curator.profileImage ? 
+                      getFullImageUrl(curator.profileImage) : 
+                      "/Images/curator-img.png";
+                    
+                    return (
+                      <div key={i} className="flex flex-col items-center">
+                        <div className="w-32 h-32 rounded-full overflow-hidden mb-2">
+                          <img
+                            src={curatorImage}
+                            alt={curatorName}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <span className="text-white text-sm">{curatorName}</span>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <p className="text-[#94A3B8]">Curator information not available</p>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Other events section (already implemented with PopularEvents) */}
           <div className="mt-16">
@@ -623,6 +1035,177 @@ const EventPage = ({}) => {
           </div>
         </div>
       </div>
+
+      {/* Payment Modal */}
+      <Transition appear show={isPaymentModalOpen} as={Fragment}>
+        <Dialog
+          as="div"
+          className="relative z-50"
+          onClose={() => setIsPaymentModalOpen(false)}
+        >
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-black/70" />
+          </Transition.Child>
+
+          <div className="fixed inset-0 overflow-y-auto">
+            <div className="flex min-h-full items-center justify-center p-4 text-center">
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0 scale-95"
+                enterTo="opacity-100 scale-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100 scale-100"
+                leaveTo="opacity-0 scale-95"
+              >
+                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-[#1C1D24] p-6 text-left align-middle shadow-xl transition-all">
+                  <Dialog.Title
+                    as="h3"
+                    className="text-xl font-medium leading-6 text-white mb-4"
+                  >
+                    Complete Your Purchase
+                  </Dialog.Title>
+                  
+                  <div className="mt-2">
+                    <div className="space-y-4">
+                      <div>
+                        <h4 className="text-white text-lg mb-2">Event Details</h4>
+                        <div className="bg-[#2A2C37] rounded-lg p-3">
+                          <p className="text-white font-medium">{event?.title || 'Event'}</p>
+                          <p className="text-gray-400 text-sm mt-1">
+                            {formatEventDate(event?.startDate || new Date())} • {formatEventTime(event?.startTime || '09:00')} - {formatEventTime(event?.endTime || '17:00')}
+                          </p>
+                          <p className="text-gray-400 text-sm">
+                            {event?.location?.address ? `${event.location.address}, ${event.location.city}` : 'Location not available'}
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <h4 className="text-white text-lg mb-2">Payment Information</h4>
+                        <div className="bg-[#2A2C37] rounded-lg p-3">
+                          <div className="flex flex-col gap-2">
+                            <div className="flex justify-between">
+                              <span className="text-[#94A3B8] text-sm">Ticket Type</span>
+                              <span className="text-white text-sm">
+                                {selectedTicketType?.name || "Standard Ticket"}
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-[#94A3B8] text-sm">Ticket Price</span>
+                              <span className="text-white text-sm">
+                                ₹ {ticketPrice || 0}
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-[#94A3B8] text-sm">Quantity</span>
+                              <span className="text-white text-sm">
+                                {ticketCount}
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-[#94A3B8] text-sm">Subtotal</span>
+                              <span className="text-white text-sm">
+                                ₹ {priceDetails.subtotal.toFixed(2)}
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-[#94A3B8] text-sm">Booking Fee (2%)</span>
+                              <span className="text-white text-sm">
+                                ₹ {priceDetails.bookingFee.toFixed(2)}
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-[#94A3B8] text-sm">GST (18%)</span>
+                              <span className="text-white text-sm">
+                                ₹ {priceDetails.gst.toFixed(2)}
+                              </span>
+                            </div>
+                            <div className="border-t border-gray-700 my-1"></div>
+                            <div className="flex justify-between font-medium">
+                              <span className="text-[#C5FF32] text-sm">
+                                Total Amount
+                              </span>
+                              <span className="text-white text-sm">
+                                ₹ {priceDetails.total.toFixed(2)}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <h4 className="text-white text-lg mb-2">Payment Method</h4>
+                        <div className="bg-[#2A2C37] rounded-lg p-3">
+                          <p className="text-[#94A3B8] text-sm mb-2">
+                            You will be redirected to Paystack to complete your payment.
+                          </p>
+                          <label className="block text-[#C5FF32] text-sm font-medium mb-1">
+                            Email Address *
+                          </label>
+                          <input
+                            type="email"
+                            placeholder="Enter your email for receipt"
+                            className={`w-full p-3 rounded-lg bg-[#1C1D24] text-white placeholder:text-[#94A3B8] focus:outline-none ${
+                              !userEmail && paymentError ? 'border border-red-500 focus:ring-red-500' : 'focus:ring-2 focus:ring-[#C5FF32]'
+                            }`}
+                            value={userEmail}
+                            onChange={(e) => setUserEmail(e.target.value)}
+                            required
+                          />
+                        </div>
+                      </div>
+                      
+                      {paymentError && (
+                        <div className="bg-red-900/30 border border-red-500 rounded-lg p-3 text-red-300 text-sm">
+                          {paymentError}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="mt-6 flex gap-3 justify-end">
+                    <button
+                      type="button"
+                      className="inline-flex justify-center rounded-lg border border-gray-600 px-4 py-2 text-sm font-medium text-gray-300 hover:bg-gray-800 focus:outline-none"
+                      onClick={() => setIsPaymentModalOpen(false)}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      className={`inline-flex justify-center rounded-lg px-4 py-2 text-sm font-medium text-black bg-[#00FFB3] hover:bg-[#00cc8f] focus:outline-none ${
+                        paymentProcessing || !userEmail ? "opacity-70 cursor-not-allowed" : ""
+                      }`}
+                      onClick={processPayment}
+                      disabled={paymentProcessing || !userEmail}
+                      title={!userEmail ? "Please enter your email address" : ""}
+                    >
+                      {paymentProcessing ? (
+                        <span className="flex items-center">
+                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-black" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Processing...
+                        </span>
+                      ) : "Proceed to Payment"}
+                    </button>
+                  </div>
+                </Dialog.Panel>
+              </Transition.Child>
+            </div>
+          </div>
+        </Dialog>
+      </Transition>
     </div>
   );
 };

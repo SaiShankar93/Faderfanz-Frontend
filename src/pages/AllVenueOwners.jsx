@@ -5,12 +5,33 @@ import { FiFilter } from "react-icons/fi";
 import { IoMdClose } from "react-icons/io";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination } from "swiper/modules";
-
+import toast from "react-hot-toast";
 import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/navigation";
-
+import axiosInstance from "@/configs/axiosConfig";
+import { Link, useNavigate } from "react-router-dom";
 const AllVenueOwners = () => {
+  // Helper function to handle image URLs
+  const getImageUrl = (imagePath) => {
+    if (!imagePath) return "/Images/post.png";
+    
+    // Check if it's already a full URL
+    if (imagePath.startsWith('http')) {
+      return imagePath;
+    }
+    
+    // If it's a relative path starting with /
+    if (imagePath.startsWith('/')) {
+      return `${import.meta.env.VITE_SERVER_URL || ''}${imagePath}`;
+    }
+    
+    // If it's a relative path without /
+    return `${import.meta.env.VITE_SERVER_URL || ''}/${imagePath}`;
+  };
+
+  const navigate = useNavigate();
+
   // UI States
   const [loading, setLoading] = useState(true);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
@@ -23,19 +44,30 @@ const AllVenueOwners = () => {
   // Data States
   const [filteredVenueOwners, setFilteredVenueOwners] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedLocation, setSelectedLocation] = useState("Mumbai");
+  const [selectedLocation, setSelectedLocation] = useState("");
   const [venueOwners, setVenueOwners] = useState([]);
+  
+  // Fetch venue owners from API
   const getVenueOwners = async () => {
     try {
-      const response = await axiosInstance.get(`/venue-owners`);
+      setLoading(true);
+      const response = await axiosInstance.get(`/management/venue-owners`);
       if (response.data) {
         setVenueOwners(response.data);
+        setFilteredVenueOwners(response.data);
+        console.log("Venue Owners fetched successfully:", response.data);
       } else throw new Error("Fetching Venue Owners failed");
     } catch (error) {
       console.error("Error fetching venue owners:", error);
       toast.error("Failed to fetch venue owners");
+      // Set empty array to avoid undefined errors
+      setVenueOwners([]);
+      setFilteredVenueOwners([]);
+    } finally {
+      setLoading(false);
     }
   };
+  
   useEffect(() => {
     getVenueOwners();
   }, []);
@@ -48,83 +80,34 @@ const AllVenueOwners = () => {
     amenities: [],
   });
 
-  // Mock data - Replace with API call
+  // Initialize data on component mount
   useEffect(() => {
-    const fetchVenueOwners = async () => {
-      try {
-        // Simulate API call
-        const mockVenueOwners = [
-          {
-            id: 1,
-            name: "Grand Ballroom",
-            image: "/Images/post.png",
-            events: 235,
-            capacity: 500,
-            rating: 4.6,
-            category: "Wedding Venue",
-            amenities: ["Parking", "Catering"],
-            price: "paid",
-            location: "Mumbai",
-            socialLinks: {
-              facebook: "#",
-              instagram: "#",
-              twitter: "#",
-            },
-          },
-          // ... other venue owners
-        ];
-        setVenueOwners(mockVenueOwners);
-        setFilteredVenueOwners(mockVenueOwners);
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching venue owners:", error);
-        setLoading(false);
-      }
-    };
-
-    fetchVenueOwners();
+    // Fetch venue owners data when component mounts
+    getVenueOwners();
   }, []);
 
   // Filter and Search Logic
   useEffect(() => {
+    if (!venueOwners || !Array.isArray(venueOwners) || venueOwners.length === 0) {
+      setFilteredVenueOwners([]);
+      return;
+    }
+    
     let result = [...venueOwners];
 
-    // Search filter
+    // Search filter - search by venue name, address
     if (searchQuery) {
       result = result.filter(
         (venue) =>
-          venue.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          venue.category.toLowerCase().includes(searchQuery.toLowerCase())
+          (venue.venueName && venue.venueName.toLowerCase().includes(searchQuery.toLowerCase())) ||
+          (venue.address && venue.address.toLowerCase().includes(searchQuery.toLowerCase()))
       );
     }
 
-    // Location filter
+    // Location filter - search by address
     if (selectedLocation) {
       result = result.filter(
-        (venue) => venue.location === selectedLocation
-      );
-    }
-
-    // Apply category filters
-    if (filters.category.length > 0) {
-      result = result.filter((venue) =>
-        filters.category.includes(venue.category.toLowerCase())
-      );
-    }
-
-    // Apply amenities filters
-    if (filters.amenities.length > 0) {
-      result = result.filter((venue) =>
-        filters.amenities.some(amenity => 
-          venue.amenities.includes(amenity.toLowerCase())
-        )
-      );
-    }
-
-    // Apply price filters
-    if (filters.price.length > 0) {
-      result = result.filter((venue) =>
-        filters.price.includes(venue.price.toLowerCase())
+        (venue) => venue.address && venue.address.toLowerCase().includes(selectedLocation.toLowerCase())
       );
     }
 
@@ -132,18 +115,18 @@ const AllVenueOwners = () => {
     result.sort((a, b) => {
       switch (selectedSort) {
         case "rating":
-          return b.rating - a.rating;
-        case "events":
-          return b.events - a.events;
-        case "capacity":
-          return b.capacity - a.capacity;
+          return (b.rating || 0) - (a.rating || 0);
+        case "followers":
+          return (b.totalFollowers || b.followersCount || 0) - (a.totalFollowers || a.followersCount || 0);
+        case "menuItems":
+          return ((b.menuProducts && b.menuProducts.length) || 0) - ((a.menuProducts && a.menuProducts.length) || 0);
         default:
           return 0;
       }
     });
 
     setFilteredVenueOwners(result);
-  }, [venueOwners, searchQuery, selectedLocation, filters, selectedSort]);
+  }, [venueOwners, searchQuery, selectedLocation, selectedSort]);
 
   // Handle search input
   const handleSearch = (e) => {
@@ -304,9 +287,12 @@ const AllVenueOwners = () => {
                   onChange={handleLocationChange}
                   className="w-full sm:w-32 md:w-40 px-3 py-3 bg-transparent text-white focus:outline-none appearance-none cursor-pointer"
                 >
+                  <option value="">All Locations</option>
                   <option value="Mumbai">Mumbai</option>
                   <option value="Hyderabad">Hyderabad</option>
                   <option value="Bangalore">Bangalore</option>
+                  <option value="Delhi">Delhi</option>
+                  <option value="Chennai">Chennai</option>
                 </select>
               </div>
             </div>
@@ -355,22 +341,21 @@ const AllVenueOwners = () => {
             </button>
 
             <div className="flex items-center gap-2">
-              <span className="text-gray-400 text-sm">Sort:</span>
-              <select
-                className="bg-[#1C1D24]/50 backdrop-blur-sm text-white px-2 py-2 rounded-lg border border-gray-700 text-sm"
-                value={selectedSort}
-                onChange={(e) => setSelectedSort(e.target.value)}
-              >
-                <option value="rating" className="bg-[#1C1D24]">
-                  Rating
-                </option>
-                <option value="events" className="bg-[#1C1D24]">
-                  Events
-                </option>
-                <option value="capacity" className="bg-[#1C1D24]">
-                  Capacity
-                </option>
-              </select>
+              <span className="text-gray-400 text-sm">Sort:</span>                <select
+                  className="bg-[#1C1D24]/50 backdrop-blur-sm text-white px-2 py-2 rounded-lg border border-gray-700 text-sm"
+                  value={selectedSort}
+                  onChange={(e) => setSelectedSort(e.target.value)}
+                >
+                  <option value="rating" className="bg-[#1C1D24]">
+                    Rating
+                  </option>
+                  <option value="followers" className="bg-[#1C1D24]">
+                    Followers
+                  </option>
+                  <option value="menuItems" className="bg-[#1C1D24]">
+                    Menu Items
+                  </option>
+                </select>
             </div>
           </div>
 
@@ -499,11 +484,11 @@ const AllVenueOwners = () => {
                   <option value="rating" className="bg-[#1C1D24]">
                     Rating
                   </option>
-                  <option value="events" className="bg-[#1C1D24]">
-                    Events
+                  <option value="followers" className="bg-[#1C1D24]">
+                    Followers
                   </option>
-                  <option value="capacity" className="bg-[#1C1D24]">
-                    Capacity
+                  <option value="menuItems" className="bg-[#1C1D24]">
+                    Menu Items
                   </option>
                 </select>
               </div>
@@ -531,9 +516,10 @@ const AllVenueOwners = () => {
                 ) : (
                   filteredVenueOwners.map((venue) => (
                     <VenueCard
-                      key={venue.id}
+                      key={venue._id}
                       venue={venue}
                       onSocialClick={handleSocialClick}
+                      getImageUrl={getImageUrl}
                     />
                   ))
                 )}
@@ -547,15 +533,37 @@ const AllVenueOwners = () => {
 };
 
 // VenueCard component
-const VenueCard = ({ venue, onSocialClick }) => {
+const VenueCard = ({ venue, onSocialClick, getImageUrl }) => {
+  const navigate = useNavigate();
+
+  // Default image if venueImage is empty
+  const venueImage = venue.venueImage && venue.venueImage.length > 0 
+    ? getImageUrl(venue.venueImage[0]) 
+    : "/Images/post.png";
+    
+  // Format stats for display
+  const stats = {
+    rating: venue.rating || 0,
+    totalRatings: venue.totalRatings || 0,
+    followers: venue.totalFollowers || venue.followersCount || 0
+  };
+
+  // Handle venue click - navigate with state
+  const handleViewVenue = () => {
+    // Store the venue data in sessionStorage
+    sessionStorage.setItem('selectedVenue', JSON.stringify(venue));
+    // Navigate to the venue page
+    navigate(`/event-venue/${venue._id}`);
+  };
+
   return (
     <div className="bg-[#1C1D24]/50 backdrop-blur-sm rounded-xl overflow-hidden hover:bg-[#1C1D24]/70 transition-colors">
       <div className="flex flex-col sm:flex-row items-stretch h-auto sm:h-60">
         {/* Venue Image */}
         <div className="w-full sm:w-60 h-48 sm:h-full flex-shrink-0">
           <img
-            src={venue.image}
-            alt={venue.name}
+            src={venueImage}
+            alt={venue.venueName}
             className="w-full h-full object-cover"
           />
         </div>
@@ -564,46 +572,51 @@ const VenueCard = ({ venue, onSocialClick }) => {
         <div className="flex-1 p-4 sm:p-6 flex flex-col justify-between">
           <div>
             {/* Venue Name */}
-            <h3 className="text-white text-xl sm:text-2xl font-semibold mb-4 sm:mb-6">
-              {venue.name}
+            <h3 className="text-white text-xl sm:text-2xl font-semibold mb-2">
+              {venue.venueName}
             </h3>
+            
+            {/* Venue Address */}
+            <p className="text-gray-400 text-sm mb-4">
+              {venue.address}
+            </p>
 
             {/* Stats Row */}
             <div className="flex justify-between sm:justify-start sm:space-x-12 mb-6">
               <div className="flex flex-col items-center">
                 <div className="flex items-center gap-1 sm:gap-2">
                   <span className="text-[#C5FF32] text-lg sm:text-xl font-bold">
-                    {venue.events}
+                    {stats.followers}
                   </span>
                   <img
-                    src="/icons/location-icon.svg"
-                    alt="Events"
+                    src="/icons/followers.svg"
+                    alt="Followers"
                     className="w-[14px] h-[15px] sm:w-[17px] sm:h-[18px]"
                   />
                 </div>
                 <span className="text-gray-400 text-[10px] sm:text-xs mt-1">
-                  Events
+                  Followers
                 </span>
               </div>
               <div className="flex flex-col items-center">
                 <div className="flex items-center gap-1 sm:gap-2">
                   <span className="text-[#C5FF32] text-lg sm:text-xl font-bold">
-                    {venue.capacity}
+                    {venue.menuProducts ? venue.menuProducts.length : 0}
                   </span>
                   <img
                     src="/icons/Event-icon.svg"
-                    alt="Capacity"
+                    alt="Menu Items"
                     className="w-[14px] h-[15px] sm:w-[17px] sm:h-[18px]"
                   />
                 </div>
                 <span className="text-gray-400 text-[10px] sm:text-xs mt-1">
-                  Capacity
+                  Menu Items
                 </span>
               </div>
               <div className="flex flex-col items-center">
                 <div className="flex items-center gap-1 sm:gap-2">
                   <span className="text-[#C5FF32] text-lg sm:text-xl font-bold">
-                    {venue.rating}
+                    {stats.rating}
                   </span>
                   <img
                     src="/icons/Star.svg"
@@ -612,7 +625,7 @@ const VenueCard = ({ venue, onSocialClick }) => {
                   />
                 </div>
                 <span className="text-gray-400 text-[10px] sm:text-xs mt-1">
-                  Rating
+                  Rating ({stats.totalRatings})
                 </span>
               </div>
             </div>
@@ -620,37 +633,23 @@ const VenueCard = ({ venue, onSocialClick }) => {
 
           {/* Social Links and Button Row */}
           <div className="flex items-center space-x-3">
-            <button
-              onClick={() =>
-                onSocialClick(venue.socialLinks.facebook, "Facebook")
-              }
-              className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-transparent flex items-center justify-center text-[#00FFB2] hover:text-[#00FFB2]/80 transition-colors"
-            >
-              <FaFacebook size={16} className="sm:text-lg" />
-            </button>
-            <button
-              onClick={() =>
-                onSocialClick(venue.socialLinks.instagram, "Instagram")
-              }
-              className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-transparent flex items-center justify-center text-[#00FFB2] hover:text-[#00FFB2]/80 transition-colors"
-            >
-              <FaInstagram size={16} className="sm:text-lg" />
-            </button>
-            <button
-              onClick={() =>
-                onSocialClick(venue.socialLinks.twitter, "Twitter")
-              }
-              className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-transparent flex items-center justify-center text-[#00FFB2] hover:text-[#00FFB2]/80 transition-colors"
-            >
-              <FaTwitter size={16} className="sm:text-lg" />
-            </button>
-            <div className="ml-auto">
+            {venue.website && (
               <a
-                href={`/venue/${venue.id}`}
+                href={venue.website}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-transparent flex items-center justify-center text-[#00FFB2] hover:text-[#00FFB2]/80 transition-colors"
+              >
+                <FaFacebook size={16} className="sm:text-lg" />
+              </a>
+            )}
+            <div className="ml-auto">
+              <button
+                onClick={handleViewVenue}
                 className="px-3 py-1.5 sm:px-5 sm:py-2 bg-[#C5FF32] text-black rounded-md text-center text-xs sm:text-sm font-medium hover:bg-[#b3ff00] transition-colors"
               >
                 View Venue
-              </a>
+              </button>
             </div>
           </div>
         </div>

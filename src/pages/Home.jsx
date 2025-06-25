@@ -857,12 +857,12 @@ const Home = () => {
               </div>
 
               {/* See More Button */}
-              <Link
+              {/* <Link
                 to="/blogs"
                 className="w-full py-4 text-[#00FFB2] border border-[#1A1A1A] rounded-xl hover:bg-[#1A1A1A]/50 transition-colors mt-8 block text-center"
               >
                 See More
-              </Link>
+              </Link> */}
             </div>
           </div>
 
