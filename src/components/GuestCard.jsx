@@ -45,7 +45,7 @@ const GuestCard = ({ guest }) => {
             </div>
 
             {/* Bottom Container - Social Links and Button side by side */}
-            <div className="flex items-center justify-between w-full mt-4">
+            <div className="flex items-center justify-center w-full mt-4">
                 {/* Social Links */}
                 <div className="flex gap-3">
                     {[FaFacebook, FaInstagram, FaXTwitter].map((Icon, index) => (
@@ -60,12 +60,12 @@ const GuestCard = ({ guest }) => {
                 </div>
 
                 {/* View Profile Button */}
-                <Link
+                {/* <Link
                     to={`/venue/${guest._id}`}
                     className="px-6 py-2 bg-[#C5FF32] text-black rounded-lg text-center font-medium hover:bg-[#b3ff00] transition-colors"
                 >
                     View Profile
-                </Link>
+                </Link> */}
             </div>
         </div>
     );

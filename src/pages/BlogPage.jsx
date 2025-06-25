@@ -22,6 +22,9 @@ const BlogPage = () => {
       const data = await response.data;
       if (data.success) setBlogData(data.data);
       else toast.error("Unable to fetch blogs");
+
+            console.log("Blog data fetched successfully:", data.data);
+
     } catch (error) {
       console.log("Error fetching blog data:", error);
     } finally {
@@ -32,54 +35,7 @@ const BlogPage = () => {
   useEffect(() => {
     fetchBlogData();
   }, [id]);
-
-  const allImages = [
-    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQmwJKXOAOJ_f2jlwhnlINidcfUo9qnhEAANg",
-    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQmwJKXOAOJ_f2jlwhnlINidcfUo9qnhEAANg",
-  ];
-  const curator = {
-    title: "DJ Blaze",
-    profilePhoto:
-      "http://localhost:5000/images/additionalImages-1735064142892.jpeg", // Replace with actual image URL
-    contact: "djblaze@example.com",
-    followers: 5234,
-    about:
-      "DJ Blaze is a renowned music curator known for electrifying performances and unforgettable events.",
-    socialLinks: {
-      instagram: "https://instagram.com/djblaze",
-      twitter: "https://twitter.com/djblaze",
-      facebook: "https://facebook.com/djblaze",
-    },
-    totalEvents: 48,
-    events: [
-      {
-        _id: "1",
-        title: "Summer Beats Festival",
-        date: "July 15, 2024",
-        mainImage:
-          "http://localhost:5000/images/additionalImages-1735064142892.jpeg", // Replace with actual event image URL
-        price: 50,
-      },
-      {
-        _id: "2",
-        title: "Electric Nights",
-        date: "August 23, 2024",
-        mainImage:
-          "http://localhost:5000/images/additionalImages-1735064142892.jpeg", // Replace with actual event image URL
-        price: 60,
-      },
-      {
-        _id: "3",
-        title: "Winter Groove",
-        date: "December 5, 2024",
-        mainImage:
-          "http://localhost:5000/images/additionalImages-1735064142892.jpeg", // Replace with actual event image URL
-        price: 75,
-      },
-    ],
-  };
-
-  const formatDate = (dateString) => {
+const formatDate = (dateString) => {
     const date = new Date(dateString);
     const day = String(date.getDate()).padStart(2, "0");
     const month = String(date.getMonth() + 1).padStart(2, "0");

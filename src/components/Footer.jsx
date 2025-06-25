@@ -23,61 +23,59 @@ const Footer = () => {
         },
         {
           id: "1.1",
-          name: "My Events",
-          link: "/wishlist",
+          name: "Register",
+          link: "/register",
         },
-        {
-          id: "1.1",
-          name: "Tickets",
-          link: "/profile",
-        },
-        {
-          id: "1.1",
-          name: "Contact Us",
-          link: "/contact",
-        },
-        {
-          id: "1.1",
-          name: "Privacy-policy",
-          link: "/privacy-policy",
-        },
+        // {
+        //   id: "1.1",
+        //   name: "Tickets",
+        //   link: "/profile",
+        // },
+        // {
+        //   id: "1.1",
+        //   name: "Contact Us",
+        //   link: "/contact",
+        // },
+        // {
+        //   id: "1.1",
+        //   name: "Privacy-policy",
+        //   link: "/privacy-policy",
+        // },
       ],
     },
     {
       id: 2,
-      heading: "About Us",
+      // heading: "About Us",
       list: [
+        // {
+        //   id: "2.1",
+        //   name: "About Us",
+        //   link: "/about",
+        // },
         {
           id: "2.1",
-          name: "About Us",
-          link: "/about",
-        },
-        {
-          id: "2.1",
-          name: "Register",
-          link: "/register",
         },
 
-        {
-          id: "2.2",
-          name: "Booking Guide",
-          link: "/about",
-        },
-        {
-          id: "2.3",
-          name: "Register as Curator",
-          link: "/vendor-register",
-        },
-        {
-          id: "2.4",
-          name: "FAQs",
-          link: "/faqs",
-        },
-        {
-          id: "2.5",
-          name: "Create Event",
-          link: "/create-event",
-        },
+        // {
+        //   id: "2.2",
+        //   name: "Booking Guide",
+        //   link: "/about",
+        // },
+        // {
+        //   id: "2.3",
+        //   name: "Register as Curator",
+        //   link: "/vendor-register",
+        // },
+        // {
+        //   id: "2.4",
+        //   name: "FAQs",
+        //   link: "/faqs",
+        // },
+        // {
+        //   id: "2.5",
+        //   name: "Create Event",
+        //   link: "/create-event",
+        // },
       ],
     },
   ];
@@ -192,7 +190,7 @@ const Footer = () => {
           })}
 
 
-          <div className=" col-span-3 md:col-span-2 flex flex-col text-left ">
+          {/* <div className=" col-span-3 md:col-span-2 flex flex-col text-left ">
             <h2 className="mb-3 ml-2 font-[600] plus-jakarta dark:text-gray-400  capitalize">
               Newsletter
             </h2>
@@ -213,7 +211,7 @@ const Footer = () => {
               Sign Up
             </button>
 
-          </div>
+          </div> */}
 
 
         </div>
@@ -223,12 +221,12 @@ const Footer = () => {
             <span className=" text-[#EE3333]">FaderFanz</span> All
             rights reserved.
           </p>
-          <div className="flex items-center gap-6">
+          {/* <div className="flex items-center gap-6">
             <Link to="/privacy-policy">Policy</Link>
             <Link to="/faqs">Questions</Link>
             <Link to="/contact">Affiliate</Link>
             <Link to="/contact">Help</Link>
-          </div>
+          </div> */}
         </div>
       </footer>
     </>

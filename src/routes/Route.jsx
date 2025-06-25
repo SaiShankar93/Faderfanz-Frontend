@@ -216,12 +216,6 @@ export const userRoutes = [
     path: "/events/:category/:subcategory",
   },
   {
-    name: "blogs",
-    title: "Blogs",
-    component: <Blogs />,
-    path: "/blog/:id",
-  },
-  {
     name: "register",
     title: "Register",
     component: <RegistrationForm />,

@@ -65,7 +65,7 @@ export function VenueOwnerCard({ event }) {
 
                 {/* View Profile Button */}
                 <Link
-                    to={`/venue/${event?._id}`}
+                    to={`/event-venue/${event?._id}`}
                     className="px-4 py-1.5 bg-[#C5FF32] text-black rounded-lg text-sm font-medium hover:bg-[#b3ff00] transition-colors"
                 >
                     View Profile
