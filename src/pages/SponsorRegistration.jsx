@@ -55,7 +55,7 @@ const SponsorRegistration = () => {
     // Handle text input changes
     const handleInputChange = (e, nestedField = null) => {
         const { name, value } = e.target;
-        
+
         if (nestedField) {
             setFormData(prev => ({
                 ...prev,
@@ -70,7 +70,7 @@ const SponsorRegistration = () => {
                 [name]: value
             }));
         }
-        
+
         // Clear error when user starts typing
         if (formErrors[name]) {
             setFormErrors(prev => ({ ...prev, [name]: "" }));
@@ -82,7 +82,7 @@ const SponsorRegistration = () => {
         const { name, checked } = e.target;
         setFormData(prev => ({
             ...prev,
-            sponsorshipExpectations: checked 
+            sponsorshipExpectations: checked
                 ? [...prev.sponsorshipExpectations, name]
                 : prev.sponsorshipExpectations.filter(exp => exp !== name)
         }));
@@ -245,7 +245,18 @@ const SponsorRegistration = () => {
             formDataToSend.append('facebook', formData.facebook);
             formDataToSend.append('instagram', formData.instagram);
             formDataToSend.append('twitter', formData.twitter);
-            formDataToSend.append('location', JSON.stringify(formData.location));
+
+            // Flatten location fields for FormData
+            const loc = formData.location;
+            formDataToSend.append('location[address]', loc.address);
+            formDataToSend.append('location[city]', loc.city);
+            formDataToSend.append('location[state]', loc.state);
+            formDataToSend.append('location[country]', loc.country);
+            formDataToSend.append('location[postalCode]', loc.postalCode);
+            formDataToSend.append('location[landmark]', loc.landmark);
+            // Ensure latitude/longitude are numbers
+            formDataToSend.append('location[coordinates][latitude]', parseFloat(loc.coordinates.latitude));
+            formDataToSend.append('location[coordinates][longitude]', parseFloat(loc.coordinates.longitude));
 
             // Append products
             formDataToSend.append('products', JSON.stringify(formData.products));
@@ -258,7 +269,7 @@ const SponsorRegistration = () => {
             });
 
             console.log(Object.fromEntries(formDataToSend));
-            const {data} = await axios.post(`${import.meta.env.VITE_SERVER_URL}/auth/register/sponsor`, formDataToSend);
+            const { data } = await axios.post(`${import.meta.env.VITE_SERVER_URL}/auth/register/sponsor`, formDataToSend);
 
             if (data.sponsor) {
                 toast.success("Registration successful!");

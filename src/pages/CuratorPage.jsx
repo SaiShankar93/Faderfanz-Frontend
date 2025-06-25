@@ -8,6 +8,7 @@ import { BsCalendarEvent } from 'react-icons/bs';
 import followIcon from '/icons/follow.svg';
 import { useParams } from "react-router-dom";
 import axiosInstance from "@/configs/axiosConfig";
+import { toast } from 'react-toastify';
 
 const CuratorPage = () => {
     const [loading, setLoading] = useState(true);
@@ -64,6 +65,8 @@ const CuratorPage = () => {
             isLiked: false
         }
     ]);
+    const [isFollowing, setIsFollowing] = useState(false);
+    const [isFollowingLoading, setIsFollowingLoading] = useState(false);
 
     useEffect(() => {
         const fetchCurator = async () => {
@@ -75,6 +78,19 @@ const CuratorPage = () => {
                     // TODO: Uncomment when API is ready
                     // setReviews(data.ratings || []);
                     // setPosts(data.posts || []);
+                    // Check if current user is following this curator
+                    const token = localStorage.getItem('accessToken');
+                    if (token && data.followers) {
+                        try {
+                            const currentUserId = JSON.parse(atob(token.split('.')[1])).id;
+                            const isCurrentlyFollowing = data.followers.some(
+                                follower => follower._id === currentUserId || follower.user === currentUserId
+                            );
+                            setIsFollowing(isCurrentlyFollowing || false);
+                        } catch (error) {
+                            setIsFollowing(false);
+                        }
+                    }
                 }
             } catch (error) {
                 console.error('Error fetching curator:', error);
@@ -234,6 +250,33 @@ const CuratorPage = () => {
         setSelectedImageIndex(newIndex);
         setSelectedImage(posts[0].images[newIndex]);
     };
+
+    const handleFollowToggle = useCallback(async () => {
+        const token = localStorage.getItem('accessToken');
+        if (!token) {
+            toast.error('Please login to follow');
+            return;
+        }
+        setIsFollowingLoading(true);
+        try {
+            const endpoint = isFollowing ? 'unfollow' : 'follow';
+            await axiosInstance.post(`/profiles/curator/${id}/${endpoint}`, {}, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setIsFollowing(!isFollowing);
+            setCurator(prev => ({
+                ...prev,
+                followers: isFollowing
+                    ? (prev.followers || []).filter(f => f._id !== id && f.user !== id)
+                    : [...(prev.followers || []), { _id: id }]
+            }));
+            toast.success(isFollowing ? 'Unfollowed successfully' : 'Followed successfully');
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Failed to update follow status');
+        } finally {
+            setIsFollowingLoading(false);
+        }
+    }, [isFollowing, id]);
 
     const renderReviewsContent = () => (
         <div className="space-y-6">
@@ -491,13 +534,14 @@ const CuratorPage = () => {
                                         </div>
 
                                         <div className="flex gap-2 mt-3">
-                                            <button className="w-fit bg-[#3FE1B6] text-black px-6 py-1.5 rounded-md text-sm flex items-center gap-2">
+                                            <button
+                                                onClick={handleFollowToggle}
+                                                disabled={isFollowingLoading}
+                                                className={`w-fit bg-[#3FE1B6] text-black px-6 py-1.5 rounded-md text-sm flex items-center gap-2 ${isFollowingLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                            >
                                                 <img src={followIcon} alt="follow" className="w-5 h-5" />
-                                                Follow
+                                                {isFollowingLoading ? 'Loading...' : isFollowing ? 'Following' : 'Follow'}
                                             </button>
-                                            {/* <button className="w-fit bg-[#3FE1B6] text-black px-6 py-1.5 rounded-md text-sm">
-                                                More
-                                            </button> */}
                                         </div>
                                     </div>
 

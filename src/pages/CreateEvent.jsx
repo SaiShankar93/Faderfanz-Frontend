@@ -55,9 +55,13 @@ export default function CreateEvent() {
   const [curators, setCurators] = useState([]);
   const [curatorIds, setCuratorIds] = useState([]);
 
+  // Venue Owners
+  const [venues, setVenues] = useState([]);
+  const [selectedVenueId, setSelectedVenueId] = useState("");
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    
+
     if (name.startsWith('location.')) {
       const locationField = name.split('.')[1];
       setFormData(prev => ({
@@ -135,7 +139,7 @@ export default function CreateEvent() {
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
-    
+
     // Check if a file was selected
     if (file) {
       // Check file type (only allow images)
@@ -168,8 +172,17 @@ export default function CreateEvent() {
       const { data } = await axiosInstance.get("/management/curators");
       setCurators(data);
     };
+    const fetchVenues = async () => {
+      try {
+        const { data } = await axiosInstance.get("/venues");
+        setVenues(data);
+      } catch (err) {
+        setVenues([]);
+      }
+    };
     fetchSponsors();
     fetchCurators();
+    fetchVenues();
   }, []);
 
   // Add sponsor
@@ -195,6 +208,15 @@ export default function CreateEvent() {
     setCuratorIds(curatorIds.filter((cid) => cid !== id));
   };
 
+  // Venue selection
+  const handleSelectVenue = (e) => {
+    const id = e.target.value;
+    if (id) setSelectedVenueId(id);
+  };
+  const handleRemoveVenue = () => {
+    setSelectedVenueId("");
+  };
+
   const handleSubmit = async () => {
     const fData = new FormData();
     fData.append("title", formData.eventTitle);
@@ -210,11 +232,14 @@ export default function CreateEvent() {
     fData.append("sponsors", JSON.stringify(sponsorIds));
     fData.append("curators", JSON.stringify(curatorIds));
     fData.append("eventImages", selectedFile);
+    if (selectedVenueId) {
+      fData.append("venue", selectedVenueId);
+    }
 
     for (let pair of fData.entries()) {
       console.log(`${pair[0]}:`, pair[1]);
     }
-    
+
 
     // return;
     const token = localStorage.getItem("token");
@@ -230,10 +255,10 @@ export default function CreateEvent() {
           },
         }
       );
-      if(data.event){
+      if (data.event) {
         toast.success("Event created successfully");
         navigate("/");
-      }else{
+      } else {
         toast.error(data.message);
       }
     } catch (error) {
@@ -259,22 +284,20 @@ export default function CreateEvent() {
                   <div className="flex items-center">
                     {/* Step Circle */}
                     <div
-                      className={`w-6 h-6 rounded-full border-4 ${
-                        currentStep >= index + 1
-                          ? "bg-[#020C12] border-[#2FE2AF]"
-                          : "bg-[#F6F6F6] border-[#6E757E]"
-                      }`}
+                      className={`w-6 h-6 rounded-full border-4 ${currentStep >= index + 1
+                        ? "bg-[#020C12] border-[#2FE2AF]"
+                        : "bg-[#F6F6F6] border-[#6E757E]"
+                        }`}
                     ></div>
 
                     {/* Progress Line - Only Between Steps */}
                     {index < 3 && (
                       <div className="w-16 h-1 bg-[#96A1AE] mx-2">
                         <div
-                          className={`h-1 ${
-                            currentStep > index + 1
-                              ? "bg-[#2FE2AF]"
-                              : "bg-[#6E757E]"
-                          } md:w-[300%] w-[180%]`}
+                          className={`h-1 ${currentStep > index + 1
+                            ? "bg-[#2FE2AF]"
+                            : "bg-[#6E757E]"
+                            } md:w-[300%] w-[180%]`}
                         ></div>
                       </div>
                     )}
@@ -554,6 +577,31 @@ export default function CreateEvent() {
                     </select>
                   </div>
                 </div>
+                {/* Venues Section */}
+                <div className="mb-6">
+                  <h3 className="text-white text-lg font-semibold mb-3">Venues</h3>
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="text-sm text-white">
+                      Choose a venue<span className="text-red-500">*</span>
+                    </label>
+                  </div>
+                  <div className="flex gap-2 mb-2 flex-wrap">
+                    {selectedVenueId && (
+                      <span className="bg-[#2FE2AF] text-black px-3 py-1 rounded-full flex items-center mr-2 mb-2">
+                        {venues.find((v) => v._id === selectedVenueId)?.name || selectedVenueId}
+                        <button type="button" className="ml-2 text-black" onClick={handleRemoveVenue}>&times;</button>
+                      </span>
+                    )}
+                  </div>
+                  <div className="relative flex items-center gap-2">
+                    <select className="w-full bg-[#1F1F1F] text-white rounded-lg p-3 border border-[#2D2F36] focus:outline-none focus:border-[#2FE2AF]" onChange={handleSelectVenue} value="">
+                      <option value="">Select a venue</option>
+                      {venues.length > 0 && venues.filter(v => v._id !== selectedVenueId).map((venue) => (
+                        <option value={venue._id} key={venue._id}>{venue.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
                 {/* Curators Section */}
                 <div className="mb-6">
                   <h3 className="text-white text-lg font-semibold mb-3">Curators</h3>
@@ -612,11 +660,10 @@ export default function CreateEvent() {
                 <div className="flex gap-4 mb-6">
                   <button
                     className={`flex-1 p-4 border rounded-lg text-white flex flex-col items-center 
-            ${
-              eventTypeTicketing === "ticketed"
-                ? "border-[#2FE2AF]"
-                : "border-[#666] hover:border-white"
-            }`}
+            ${eventTypeTicketing === "ticketed"
+                        ? "border-[#2FE2AF]"
+                        : "border-[#666] hover:border-white"
+                      }`}
                     onClick={() => handleEventTypeChange("ticketed")}
                   >
                     <span className="text-2xl">
@@ -645,11 +692,10 @@ export default function CreateEvent() {
                   </button>
                   <button
                     className={`flex-1 p-4 border rounded-lg text-white flex flex-col items-center 
-            ${
-              eventTypeTicketing === "free"
-                ? "border-[#2FE2AF]"
-                : "border-[#666] hover:border-white"
-            }`}
+            ${eventTypeTicketing === "free"
+                        ? "border-[#2FE2AF]"
+                        : "border-[#666] hover:border-white"
+                      }`}
                     onClick={() => handleEventTypeChange("free")}
                   >
                     <span className="text-2xl">
