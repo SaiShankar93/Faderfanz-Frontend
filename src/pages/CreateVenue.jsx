@@ -11,25 +11,25 @@ const CreateVenue = () => {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [previewUrls, setPreviewUrls] = useState([]);
   const [formData, setFormData] = useState({
-    name: 'Demo Venue',
+    name: '',
     location: {
-      address: '123 Main St',
-      city: 'San Francisco',
-      state: 'CA',
-      country: 'USA',
-      postalCode: 'demo',
+      address: '',
+      city: '',
+      state: '',
+      country: '',
+      postalCode: '',
       gpsCoordinates: {
-        latitude: '37.774929',
-        longitude: '-122.419416'
+        latitude: '',
+        longitude: ''
       }
     },
-    capacity: '50',
+    capacity: '',
     amenities: [],
-    description: 'This is a demo venue description',
+    description: '',
     contactInformation: {
-      email: 'demo@gmail.com',
-      phone: '0123456789',
-      website: 'https://demo.com'
+      email: '',
+      phone: '',
+      website: ''
     }
   });
 

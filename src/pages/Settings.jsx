@@ -146,10 +146,10 @@ const Settings = () => {
                 }
             });
 
-            await axiosInstance.put('/profiles/me/details', formData, {
+            const res = await axiosInstance.put('/profiles/me/details', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
-
+            print(res.data)
             toast.success('Profile updated successfully');
         } catch (error) {
             toast.error(error.response?.data?.message || 'Failed to update profile');

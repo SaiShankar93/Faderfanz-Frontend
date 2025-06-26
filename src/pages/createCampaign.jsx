@@ -1,31 +1,67 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '@/configs/axiosConfig';
 import { toast } from 'react-toastify';
 import FileUpload from '@/assets/svgs/FileUpload';
-import axios from 'axios';
 
 const CreateCampaign = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [eventsLoading, setEventsLoading] = useState(false);
+  const [events, setEvents] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState('');
   const [formData, setFormData] = useState({
-    title: 'dfds',
-    description: 'dfds',
-    event: '684db4fed3b3e1f84eb524f8',
-    goal: '3000-',
+    title: '',
+    description: '',
+    event: '',
+    goal: '',
     startDate: '',
     endDate: '',
-    category: 'other',
+    category: '',
     rewards: [
       {
-        name: 'dsfsd',
-        description: 'sdsd',
-        minimumDonation: '3000'
+        name: '',
+        description: '',
+        minimumDonation: ''
       }
     ]
   });
+
+  // Fetch events on component mount
+  useEffect(() => {
+    fetchEvents();
+  }, []);
+
+  const fetchEvents = async () => {
+    setEventsLoading(true);
+    try {
+      const { data } = await axiosInstance.get('/events');
+      if (data.success) {
+        setEvents(data.data);
+      } else {
+        toast.error('Failed to fetch events');
+      }
+    } catch (error) {
+      console.error('Error fetching events:', error);
+      toast.error('Failed to fetch events');
+    } finally {
+      setEventsLoading(false);
+    }
+  };
+
+  // Helper function to format location object
+  const formatLocation = (location) => {
+    if (!location) return '';
+    if (typeof location === 'string') return location;
+    
+    const parts = [];
+    if (location.address) parts.push(location.address);
+    if (location.city) parts.push(location.city);
+    if (location.state) parts.push(location.state);
+    
+    return parts.length > 0 ? parts.join(', ') : 'Location details available';
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -137,7 +173,7 @@ const CreateCampaign = () => {
 
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Image Upload Section */}
-          <div className="border-2 border-dashed border-[#96A1AE] rounded-lg h-60 flex flex-col items-center justify-center cursor-pointer hover:bg-[#20222A] transition-colors">
+          <div className="border-2 border-dashed border-[#96A1AE] rounded-lg h-60 flex flex-col items-center justify-center cursor-pointer hover:bg-[#20222A] transition-colors relative overflow-hidden">
             <input
               type="file"
               onChange={handleFileChange}
@@ -145,7 +181,7 @@ const CreateCampaign = () => {
               id="fileInput"
               accept="image/*"
             />
-            <label htmlFor="fileInput" className="cursor-pointer text-center">
+            <label htmlFor="fileInput" className="cursor-pointer text-center w-full h-full flex flex-col items-center justify-center">
               {previewUrl ? (
                 <div className="relative w-full h-full">
                   <img
@@ -153,6 +189,9 @@ const CreateCampaign = () => {
                     alt="Campaign banner"
                     className="w-full h-full object-cover rounded-lg"
                   />
+                  <div className="absolute inset-0 bg-black bg-opacity-40 opacity-0 hover:opacity-100 transition-opacity duration-300 flex items-center justify-center rounded-lg">
+                    <p className="text-white text-sm">Click to change image</p>
+                  </div>
                 </div>
               ) : (
                 <>
@@ -198,16 +237,51 @@ const CreateCampaign = () => {
             </div>
 
             <div>
-              <label className="block text-sm text-white mb-2">Event ID *</label>
-              <input
-                type="text"
+              <label className="block text-sm text-white mb-2">Select Event *</label>
+              <select
                 name="event"
                 value={formData.event}
                 onChange={handleChange}
-                placeholder="Enter event ID"
                 className="w-full bg-[#1F1F1F] rounded-lg p-3 border border-[#2D2F36] focus:outline-none focus:border-[#2FE2AF]"
                 required
-              />
+                disabled={eventsLoading}
+              >
+                <option value="">
+                  {eventsLoading ? 'Loading events...' : 'Select an event'}
+                </option>
+                {events.map((event) => (
+                  <option key={event.id} value={event.id}>
+                    {event.title} - {new Date(event.startDate).toLocaleDateString()}
+                  </option>
+                ))}
+              </select>
+              {formData.event && (
+                <div className="mt-2 p-3 bg-[#2A2D35] rounded-lg border border-[#3A3D45]">
+                  {(() => {
+                    const selectedEvent = events.find(event => event.id === formData.event);
+                    if (!selectedEvent) return null;
+                    
+                    return (
+                      <div className="text-sm text-[#96A1AE]">
+                        <p className="font-semibold text-white">{selectedEvent.title || 'Event Title'}</p>
+                        <p className="truncate">{selectedEvent.description || 'No description available'}</p>
+                        <p className="mt-1">
+                          <span className="text-[#2FE2AF]">Date:</span> {
+                            selectedEvent.startDate && selectedEvent.endDate 
+                              ? `${new Date(selectedEvent.startDate).toLocaleDateString()} - ${new Date(selectedEvent.endDate).toLocaleDateString()}`
+                              : 'Date not available'
+                          }
+                        </p>
+                        {selectedEvent.location && (
+                          <p>
+                            <span className="text-[#2FE2AF]">Location:</span> {formatLocation(selectedEvent.location)}
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
             </div>
 
             <div>
@@ -219,6 +293,7 @@ const CreateCampaign = () => {
                 className="w-full bg-[#1F1F1F] rounded-lg p-3 border border-[#2D2F36] focus:outline-none focus:border-[#2FE2AF]"
                 required
               >
+                <option value="">Select a category</option>
                 <option value="charity">Charity</option>
                 <option value="creative">Creative</option>
                 <option value="emergency">Emergency</option>

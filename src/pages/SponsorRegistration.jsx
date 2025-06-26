@@ -12,11 +12,11 @@ const SponsorRegistration = () => {
     const [formData, setFormData] = useState({
         businessLogo: null,
         businessBanner: null,
-        businessName: "fbd",
-        taxIdentificationNumber: "fd",
-        description: "fd",
-        contactName: "fd",
-        preferredEvents: "fd",
+        businessName: "",
+        taxIdentificationNumber: "",
+        description: "",
+        contactName: "",
+        preferredEvents: "",
         sponsorshipExpectations: [],
         products: [
             {
@@ -25,23 +25,23 @@ const SponsorRegistration = () => {
                 price: ""
             }
         ],
-        email: "fd@gmail.com",
-        password: "123456789",
-        role: "fd",
-        facebook: "https://www.facebook.com/fd",
-        instagram: "https://www.instagram.com/fd",
-        twitter: "https://www.twitter.com/fd",
+        email: "",
+        password: "",
+        role: "",
+        facebook: "",
+        instagram: "",
+        twitter: "",
         location: {
-            address: "fd",
-            city: "fd",
-            state: "fd",
-            country: "fd",
-            postalCode: "23232",
-            landmark: "swef",
-            coordinates: {
-                latitude: "37.774929",
-                longitude: "-122.419416"
-            }
+            address: "",
+            city: "",
+            state: "",
+            country: "",
+            postalCode: "",
+            landmark: "",
+            // coordinates: {
+            //     latitude: "",
+            //     longitude: ""
+            // }
         }
     });
 
@@ -255,8 +255,8 @@ const SponsorRegistration = () => {
             formDataToSend.append('location[postalCode]', loc.postalCode);
             formDataToSend.append('location[landmark]', loc.landmark);
             // Ensure latitude/longitude are numbers
-            formDataToSend.append('location[coordinates][latitude]', parseFloat(loc.coordinates.latitude));
-            formDataToSend.append('location[coordinates][longitude]', parseFloat(loc.coordinates.longitude));
+            // formDataToSend.append('location[coordinates][latitude]', parseFloat(loc.coordinates.latitude));
+            // formDataToSend.append('location[coordinates][longitude]', parseFloat(loc.coordinates.longitude));
 
             // Append products
             formDataToSend.append('products', JSON.stringify(formData.products));
@@ -659,7 +659,7 @@ const SponsorRegistration = () => {
                                     />
                                 </div>
 
-                                <div>
+                                {/* <div>
                                     <label className="block text-sm font-medium text-gray-400 mb-2">
                                         Latitude
                                     </label>
@@ -687,7 +687,7 @@ const SponsorRegistration = () => {
                                         value={formData.location.coordinates.longitude}
                                         onChange={(e) => handleInputChange(e, 'location')}
                                     />
-                                </div>
+                                </div> */}
                             </div>
                         </div>
 

@@ -11,23 +11,23 @@ const VenueOwnerRegistration = () => {
 
   const [formData, setFormData] = useState({
     venueDetails: {
-      venueName: "d",
-      address: "d",
-      gstInfo: "d",
+      venueName: "",
+      address: "",
+      gstInfo: "",
       about: ""
     },
     images: [],
     contactInfo: {
-      phone: "1234567890",
-      email: "d@gmail.com",
-      website: "https://d.com",
-      password: "123456789", // New password field
+      phone: "",
+      email: "",
+      website: "",
+      password: "", // New password field
     },
     menuProducts: [
       {
         id: Date.now(),
-        name: "d",
-        price: "100",
+        name: "",
+        price: "",
         image: null,
       },
     ],

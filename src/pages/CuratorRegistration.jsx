@@ -10,12 +10,12 @@ const CuratorRegistration = () => {
 
     const [formData, setFormData] = useState({
         personalDetails: {
-            firstName: "f",
-            lastName: "f",
-            stageName: "f",
-            bio: "f",
-            email: "fs@gmail.com", // New field
-            password: "123456789", // New field
+            firstName: "",
+            lastName: "",
+            stageName: "",
+            bio: "",
+            email: "", // New field
+            password: "", // New field
         },
         images: []
     });

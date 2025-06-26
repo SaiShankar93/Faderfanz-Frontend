@@ -19,21 +19,21 @@ export default function CreateEvent() {
   const [eventType, setEventType] = useState("single");
   const [currentStep, setcurrentStep] = useState(1); // Track which step the user is on
   const [formData, setFormData] = useState({
-    eventTitle: "jhbhjd",
+    eventTitle: "",
     eventCategory: "",
     eventType: "",
     date: "",
     startTime: "",
     endTime: "",
     location: {
-      address: "dsfsdf",
-      city: "Mumbai",
-      state: "Maharashtra",
-      country: "India",
-      postalCode: "400001",
-      landmark: "Near Gateway of India"
+      address: "",
+      city: "",
+      state: "",
+      country: "",
+      postalCode: "",
+      landmark: ""
     },
-    eventDescription: "dvsvdsf",
+    eventDescription: "",
   });
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState("");

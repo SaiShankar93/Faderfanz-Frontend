@@ -608,7 +608,7 @@ const UserProfile = () => {
                                 <p className="text-gray-400 text-sm md:text-base">{userData.name}</p>
                             </div>
                             <div className="relative w-full sm:w-auto">
-                                <button
+                                {/* <button
                                     onClick={() => setIsCreateMenuOpen(!isCreateMenuOpen)}
                                     className="w-full sm:w-auto bg-[#00FFB2] text-black px-4 py-2 rounded-lg flex items-center justify-center sm:justify-start gap-2 text-sm md:text-base"
                                 >
@@ -616,7 +616,7 @@ const UserProfile = () => {
                                     <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
                                         <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                     </svg>
-                                </button>
+                                </button> */}
 
                                 {isCreateMenuOpen && (
                                     <div className="absolute right-0 mt-2 w-full sm:w-48 bg-[#231D30] rounded-lg shadow-lg py-2 z-10">
@@ -738,7 +738,7 @@ const UserProfile = () => {
                                             className="hidden"
                                             multiple
                                         />
-                                        <button
+                                        {/* <button
                                             onClick={() => fileInputRef.current?.click()}
                                             className={`text-sm md:text-base text-white/60 hover:text-white ${newPost.files.length > 0 ? 'text-[#00FFB2]' : ''}`}
                                         >
@@ -763,8 +763,8 @@ const UserProfile = () => {
                                             className={`text-sm md:text-base text-white/60 hover:text-white ${newPost.location ? 'text-[#00FFB2]' : ''}`}
                                         >
                                             Map
-                                        </button>
-                                        <div className="relative">
+                                        </button> */}
+                                        {/* <div className="relative">
                                             <button
                                                 onClick={() => setPostVisibility(postVisibility === 'public' ? 'private' : 'public')}
                                                 className="text-sm md:text-base text-white/60 hover:text-white flex items-center gap-1"
@@ -774,7 +774,7 @@ const UserProfile = () => {
                                                     <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                                 </svg>
                                             </button>
-                                        </div>
+                                        </div> */}
                                     </div>
                                     <button
                                         onClick={handleSharePost}
@@ -830,10 +830,10 @@ const UserProfile = () => {
                                         )}
 
                                         <div className="flex items-center gap-4 md:gap-6 text-white/60 text-sm md:text-base">
-                                            <div className="flex items-center gap-1 md:gap-2">
+                                            {/* <div className="flex items-center gap-1 md:gap-2">
                                                 <IoEyeOutline className="w-4 h-4 md:w-5 md:h-5" />
                                                 <span>{post.views}</span>
-                                            </div>
+                                            </div> */}
                                             <button
                                                 onClick={() => handleLikePost(post.id)}
                                                 className="flex items-center gap-1 md:gap-2 hover:text-[#00FFB2]"
