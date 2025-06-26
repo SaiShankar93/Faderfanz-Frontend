@@ -75,7 +75,8 @@ const UserProfile = () => {
         price: 0,
         stock: 0,
         image: '',
-        description: ''
+        description: '',
+        category: ''
     });
     const [selectedUserType, setSelectedUserType] = useState('all_users');
     const [searchQuery, setSearchQuery] = useState('');
@@ -121,7 +122,7 @@ const UserProfile = () => {
                 const { profile, venues: venuesData, events: eventsData, products: productsData,
                     blogPosts: blogPostsData, reviews: reviewsData, stats: statsData,
                     followers: followersData, following: followingData, favorites: favoritesData,
-                    feed: feedData } = response.data.data;
+                    feed: feedData, sponsoredEvents: sponsoredEventsData } = response.data.data;
 
                 setUserData(profile);
                 // console.log("Profile Data Received:", profile);
@@ -144,7 +145,12 @@ const UserProfile = () => {
 
                 if (venuesData) setVenues(venuesData);
                 if (productsData) setProducts(productsData);
-                if (eventsData) setEvents(eventsData);
+                // For sponsors, use sponsoredEvents if present
+                if (profile?.role === 'sponsor' && sponsoredEventsData) {
+                    setEvents(sponsoredEventsData);
+                } else if (eventsData) {
+                    setEvents(eventsData);
+                }
                 if (blogPostsData) setBlogPosts(blogPostsData);
 
                 // Set default suggestions (can be replaced with API call later)
@@ -454,26 +460,62 @@ const UserProfile = () => {
             title: product.title || product.name,
             price: product.price,
             stock: product.stock,
-            image: product.image || product.images?.[0],
-            description: product.description
+            image: '', // Only set if a new file is selected
+            description: product.description,
+            category: product.category || ''
         });
         setIsProductEditModalOpen(true);
     };
 
     const handleUpdateProduct = async () => {
         try {
-            // API call to update product would go here
-            setProducts(prev =>
-                prev.map(product =>
-                    product.id === productToEdit.id || product._id === productToEdit._id
-                        ? { ...product, ...productEditFormData }
-                        : product
-                )
-            );
+            const token = localStorage.getItem('accessToken');
+            if (!token) {
+                toast.error('Please login to update product');
+                return;
+            }
+
+            let formData;
+            let isMultipart = false;
+            // If the image is a File (new upload), use FormData
+            if (productEditFormData.image && productEditFormData.image instanceof File) {
+                formData = new FormData();
+                formData.append('name', productEditFormData.title);
+                formData.append('price', productEditFormData.price);
+                formData.append('stock', productEditFormData.stock);
+                formData.append('description', productEditFormData.description);
+                formData.append('category', productEditFormData.category);
+                formData.append('productImage', productEditFormData.image);
+                isMultipart = true;
+            } else {
+                // Otherwise, send as JSON, but do NOT send images/image field
+                formData = {
+                    name: productEditFormData.title,
+                    price: productEditFormData.price,
+                    stock: productEditFormData.stock,
+                    description: productEditFormData.description,
+                    category: productEditFormData.category
+                };
+            }
+
+            const config = {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                }
+            };
+            if (isMultipart) {
+                config.headers['Content-Type'] = 'multipart/form-data';
+            }
+
+            const productId = productToEdit._id || productToEdit.id;
+            await axiosInstance.put(`/products/${productId}`, formData, config);
+
             setIsProductEditModalOpen(false);
             toast.success('Product updated successfully!');
+            // Refresh products from backend
+            fetchUserProfile();
         } catch (error) {
-            toast.error('Failed to update product');
+            toast.error(error.response?.data?.message || 'Failed to update product');
         }
     };
 
@@ -950,7 +992,17 @@ const UserProfile = () => {
                                             <div className="flex gap-4">
                                                 <div className="relative w-[200px] h-[200px] flex-shrink-0">
                                                     <img
-                                                        src={event.images?.[0] || event.image || "/Images/post.png"}
+                                                        src={
+                                                            event.images?.[0]
+                                                                ? (event.images[0].startsWith('http')
+                                                                    ? event.images[0]
+                                                                    : `${import.meta.env.VITE_SERVER_URL}/${event.images[0].replace(/^\\|^\//, '').replace(/\\/g, '/')}`)
+                                                                : (event.image
+                                                                    ? (event.image.startsWith('http')
+                                                                        ? event.image
+                                                                        : `${import.meta.env.VITE_SERVER_URL}/${event.image.replace(/^\\|^\//, '').replace(/\\/g, '/')}`)
+                                                                    : "/Images/post.png")
+                                                        }
                                                         alt={event.title || event.name}
                                                         className="w-full h-full object-cover rounded-lg"
                                                     />
@@ -1065,7 +1117,17 @@ const UserProfile = () => {
                                             <div className="flex gap-4">
                                                 <div className="relative w-[200px] h-[200px] flex-shrink-0">
                                                     <img
-                                                        src={venue.gallery?.photos?.[0]?.url || "/Images/post.png"}
+                                                        src={
+                                                            venue.gallery?.photos?.[0]?.url
+                                                                ? (venue.gallery.photos[0].url.startsWith('http')
+                                                                    ? venue.gallery.photos[0].url
+                                                                    : `${import.meta.env.VITE_SERVER_URL}/${venue.gallery.photos[0].url.replace(/\\/g, '/')}`)
+                                                                : (venue.venueImage?.[0]
+                                                                    ? (venue.venueImage[0].startsWith('http')
+                                                                        ? venue.venueImage[0]
+                                                                        : `${import.meta.env.VITE_SERVER_URL}/${venue.venueImage[0].replace(/\\/g, '/')}`)
+                                                                    : "/Images/post.png")
+                                                        }
                                                         alt={venue.name}
                                                         className="w-full h-full object-cover rounded-lg"
                                                     />
@@ -1139,7 +1201,15 @@ const UserProfile = () => {
                                         <div className="flex gap-4">
                                             <div className="relative w-[200px] h-[200px] flex-shrink-0">
                                                 <img
-                                                    src={product.images?.[0] || product.image || "/Images/post.png"}
+                                                    src={product.images?.[0]
+                                                        ? (product.images[0].startsWith('http')
+                                                            ? product.images[0]
+                                                            : `${import.meta.env.VITE_SERVER_URL}/${product.images[0].replace(/\\/g, '/')}`)
+                                                        : (product.image
+                                                            ? (product.image.startsWith('http')
+                                                                ? product.image
+                                                                : `${import.meta.env.VITE_SERVER_URL}/${product.image.replace(/\\/g, '/')}`)
+                                                            : "/Images/post.png")}
                                                     alt={product.name || product.title}
                                                     className="w-full h-full object-cover rounded-lg"
                                                 />
@@ -1814,11 +1884,7 @@ const UserProfile = () => {
                                     onChange={(e) => {
                                         const file = e.target.files[0];
                                         if (file) {
-                                            const reader = new FileReader();
-                                            reader.onloadend = () => {
-                                                setProductEditFormData({ ...productEditFormData, image: reader.result });
-                                            };
-                                            reader.readAsDataURL(file);
+                                            setProductEditFormData({ ...productEditFormData, image: file });
                                         }
                                     }}
                                     className="w-full bg-[#1A1625] text-white p-3 rounded-lg border border-white/10 focus:border-[#00FFB2] outline-none"
@@ -1830,6 +1896,15 @@ const UserProfile = () => {
                                     value={productEditFormData.description}
                                     onChange={(e) => setProductEditFormData({ ...productEditFormData, description: e.target.value })}
                                     rows="3"
+                                    className="w-full bg-[#1A1625] text-white p-3 rounded-lg border border-white/10 focus:border-[#00FFB2] outline-none"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-gray-400 text-sm mb-2">Category</label>
+                                <input
+                                    type="text"
+                                    value={productEditFormData.category}
+                                    onChange={e => setProductEditFormData({ ...productEditFormData, category: e.target.value })}
                                     className="w-full bg-[#1A1625] text-white p-3 rounded-lg border border-white/10 focus:border-[#00FFB2] outline-none"
                                 />
                             </div>

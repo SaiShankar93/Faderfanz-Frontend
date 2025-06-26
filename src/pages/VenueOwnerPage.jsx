@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { EventCard } from "../components/EventCard";
 import { FaInstagram, FaTwitter, FaFacebook } from "react-icons/fa";
 import { IoLocationOutline, IoTimeOutline, IoCalendarOutline, IoEyeOutline } from 'react-icons/io5';
@@ -7,6 +7,8 @@ import { Link } from 'react-router-dom';
 import { Dialog } from '@headlessui/react';
 import { BsCalendarEvent } from 'react-icons/bs';
 import followIcon from '/icons/follow.svg';
+import { toast } from 'react-toastify';
+import axiosInstance from '@/configs/axiosConfig';
 
 const VenueOwnerPage = () => {
     const [loading, setLoading] = useState(true);
@@ -556,6 +558,49 @@ const VenueOwnerPage = () => {
         }
     };
 
+    const [isFollowing, setIsFollowing] = useState(false);
+    const [isFollowingLoading, setIsFollowingLoading] = useState(false);
+
+    useEffect(() => {
+        // TODO: Replace with actual fetch logic for venue owner
+        // For now, check if current user is following (mock logic)
+        const token = localStorage.getItem('accessToken');
+        if (token && venueOwner.followers) {
+            try {
+                const currentUserId = JSON.parse(atob(token.split('.')[1])).id;
+                const isCurrentlyFollowing = venueOwner.followers.some(
+                    follower => follower._id === currentUserId || follower.user === currentUserId
+                );
+                setIsFollowing(isCurrentlyFollowing || false);
+            } catch (error) {
+                setIsFollowing(false);
+            }
+        }
+    }, [venueOwner]);
+
+    const handleFollowToggle = useCallback(async () => {
+        const token = localStorage.getItem('accessToken');
+        if (!token) {
+            toast.error('Please login to follow');
+            return;
+        }
+        setIsFollowingLoading(true);
+        try {
+            const endpoint = isFollowing ? 'unfollow' : 'follow';
+            await axiosInstance.post(`/profiles/venue-owner/${venueOwner._id || 1}/${endpoint}`, {}, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setIsFollowing(!isFollowing);
+            // Update followers count locally (mock)
+            // In real logic, refetch venue owner data
+            toast.success(isFollowing ? 'Unfollowed successfully' : 'Followed successfully');
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Failed to update follow status');
+        } finally {
+            setIsFollowingLoading(false);
+        }
+    }, [isFollowing, venueOwner]);
+
     return (
         <div className="bg-[#0E0F13] min-h-screen text-white font-sen pb-32">
             {/* Back Button */}
@@ -612,9 +657,13 @@ const VenueOwnerPage = () => {
                                             </div>
                                         </div>
 
-                                        <button className="w-fit mt-3 bg-[#3FE1B6] text-black px-6 py-1.5 rounded-md text-sm flex items-center gap-2">
+                                        <button
+                                            onClick={handleFollowToggle}
+                                            disabled={isFollowingLoading}
+                                            className={`w-fit mt-3 bg-[#3FE1B6] text-black px-6 py-1.5 rounded-md text-sm flex items-center gap-2 ${isFollowingLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                        >
                                             <img src={followIcon} alt="follow" className="w-5 h-5" />
-                                            Follow
+                                            {isFollowingLoading ? 'Loading...' : isFollowing ? 'Following' : 'Follow'}
                                         </button>
                                     </div>
 

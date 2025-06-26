@@ -14,6 +14,7 @@ const VenueOwnerRegistration = () => {
       venueName: "d",
       address: "d",
       gstInfo: "d",
+      about: ""
     },
     images: [],
     contactInfo: {
@@ -176,6 +177,8 @@ const VenueOwnerRegistration = () => {
       errors["venueDetails.address"] = "Address is required";
     if (!formData.venueDetails.gstInfo.trim())
       errors["venueDetails.gstInfo"] = "GST information is required";
+    if (!formData.venueDetails.about.trim())
+      errors["venueDetails.about"] = "About is required";
     if (formData.images.length === 0)
       errors.images = "At least one venue image is required";
     if (!formData.contactInfo.phone.trim())
@@ -222,6 +225,7 @@ const VenueOwnerRegistration = () => {
       formDataToSend.append('venueName', formData.venueDetails.venueName);
       formDataToSend.append('address', formData.venueDetails.address);
       formDataToSend.append('gstInformation', formData.venueDetails.gstInfo);
+      formDataToSend.append('about', formData.venueDetails.about);
 
       // Contact info
       formDataToSend.append('contactPhone', formData.contactInfo.phone);
@@ -237,7 +241,7 @@ const VenueOwnerRegistration = () => {
           price: Number(product.price)
         }));
         formDataToSend.append('menuProducts', JSON.stringify(menuProductsData));
-        
+
         // Menu images
         formData.menuProducts.forEach((product) => {
           if (product.image) {
@@ -320,11 +324,10 @@ const VenueOwnerRegistration = () => {
                     type="text"
                     name="venueName"
                     placeholder="Enter your business name"
-                    className={`w-full p-3 bg-[#1A1B23]/80 rounded-lg border ${
-                      formErrors["venueDetails.venueName"]
-                        ? "border-red-500"
-                        : "border-gray-600"
-                    } focus:border-purple-500 focus:outline-none`}
+                    className={`w-full p-3 bg-[#1A1B23]/80 rounded-lg border ${formErrors["venueDetails.venueName"]
+                      ? "border-red-500"
+                      : "border-gray-600"
+                      } focus:border-purple-500 focus:outline-none`}
                     value={formData.venueDetails.venueName}
                     onChange={handleVenueDetailsChange}
                   />
@@ -343,11 +346,10 @@ const VenueOwnerRegistration = () => {
                     type="text"
                     name="address"
                     placeholder="Enter address here"
-                    className={`w-full p-3 bg-[#1A1B23]/80 rounded-lg border ${
-                      formErrors["venueDetails.address"]
-                        ? "border-red-500"
-                        : "border-gray-600"
-                    } focus:border-purple-500 focus:outline-none`}
+                    className={`w-full p-3 bg-[#1A1B23]/80 rounded-lg border ${formErrors["venueDetails.address"]
+                      ? "border-red-500"
+                      : "border-gray-600"
+                      } focus:border-purple-500 focus:outline-none`}
                     value={formData.venueDetails.address}
                     onChange={handleVenueDetailsChange}
                   />
@@ -366,11 +368,10 @@ const VenueOwnerRegistration = () => {
                     type="text"
                     name="gstInfo"
                     placeholder="Tax information here"
-                    className={`w-full p-3 bg-[#1A1B23]/80 rounded-lg border ${
-                      formErrors["venueDetails.gstInfo"]
-                        ? "border-red-500"
-                        : "border-gray-600"
-                    } focus:border-purple-500 focus:outline-none`}
+                    className={`w-full p-3 bg-[#1A1B23]/80 rounded-lg border ${formErrors["venueDetails.gstInfo"]
+                      ? "border-red-500"
+                      : "border-gray-600"
+                      } focus:border-purple-500 focus:outline-none`}
                     value={formData.venueDetails.gstInfo}
                     onChange={handleVenueDetailsChange}
                   />
@@ -380,6 +381,28 @@ const VenueOwnerRegistration = () => {
                     </p>
                   )}
                 </div>
+              </div>
+              {/* About Field */}
+              <div className="mt-6">
+                <label className="block text-sm font-medium text-gray-400 mb-2">
+                  About <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  name="about"
+                  placeholder="Tell us about your venue, services, or yourself"
+                  className={`w-full p-3 bg-[#1A1B23]/80 rounded-lg border ${formErrors["venueDetails.about"]
+                    ? "border-red-500"
+                    : "border-gray-600"
+                    } focus:border-purple-500 focus:outline-none`}
+                  value={formData.venueDetails.about}
+                  onChange={handleVenueDetailsChange}
+                  rows={4}
+                />
+                {formErrors["venueDetails.about"] && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {formErrors["venueDetails.about"]}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -401,9 +424,8 @@ const VenueOwnerRegistration = () => {
                   </div>
                 ))}
 
-                <label className={`aspect-square flex flex-col items-center justify-center border-2 border-dashed border-gray-600 rounded-lg cursor-pointer hover:border-purple-500 ${
-                  previews.venueImages.length >= 1 ? "hidden" : ""
-                }`}>
+                <label className={`aspect-square flex flex-col items-center justify-center border-2 border-dashed border-gray-600 rounded-lg cursor-pointer hover:border-purple-500 ${previews.venueImages.length >= 1 ? "hidden" : ""
+                  }`}>
                   <input
                     type="file"
                     multiple
@@ -435,11 +457,10 @@ const VenueOwnerRegistration = () => {
                     type="tel"
                     name="phone"
                     placeholder="Enter phone number here"
-                    className={`w-full p-3 bg-[#1A1B23]/80 rounded-lg border ${
-                      formErrors["contactInfo.phone"]
-                        ? "border-red-500"
-                        : "border-gray-600"
-                    } focus:border-purple-500 focus:outline-none`}
+                    className={`w-full p-3 bg-[#1A1B23]/80 rounded-lg border ${formErrors["contactInfo.phone"]
+                      ? "border-red-500"
+                      : "border-gray-600"
+                      } focus:border-purple-500 focus:outline-none`}
                     value={formData.contactInfo.phone}
                     onChange={handleContactChange}
                   />
@@ -458,11 +479,10 @@ const VenueOwnerRegistration = () => {
                     type="email"
                     name="email"
                     placeholder="Enter email here"
-                    className={`w-full p-3 bg-[#1A1B23]/80 rounded-lg border ${
-                      formErrors["contactInfo.email"]
-                        ? "border-red-500"
-                        : "border-gray-600"
-                    } focus:border-purple-500 focus:outline-none`}
+                    className={`w-full p-3 bg-[#1A1B23]/80 rounded-lg border ${formErrors["contactInfo.email"]
+                      ? "border-red-500"
+                      : "border-gray-600"
+                      } focus:border-purple-500 focus:outline-none`}
                     value={formData.contactInfo.email}
                     onChange={handleContactChange}
                   />
@@ -495,11 +515,10 @@ const VenueOwnerRegistration = () => {
                     type="password"
                     name="password"
                     placeholder="Enter password"
-                    className={`w-full p-3 bg-[#1A1B23]/80 rounded-lg border ${
-                      formErrors["contactInfo.password"]
-                        ? "border-red-500"
-                        : "border-gray-600"
-                    } focus:border-purple-500 focus:outline-none`}
+                    className={`w-full p-3 bg-[#1A1B23]/80 rounded-lg border ${formErrors["contactInfo.password"]
+                      ? "border-red-500"
+                      : "border-gray-600"
+                      } focus:border-purple-500 focus:outline-none`}
                     value={formData.contactInfo.password}
                     onChange={handleContactChange}
                   />
@@ -567,11 +586,10 @@ const VenueOwnerRegistration = () => {
                           <input
                             type="text"
                             placeholder="Choose event"
-                            className={`w-full p-3 bg-[#1A1B23]/80 rounded-lg border ${
-                              formErrors[`product${index}Name`]
-                                ? "border-red-500"
-                                : "border-gray-600"
-                            } focus:border-purple-500 focus:outline-none`}
+                            className={`w-full p-3 bg-[#1A1B23]/80 rounded-lg border ${formErrors[`product${index}Name`]
+                              ? "border-red-500"
+                              : "border-gray-600"
+                              } focus:border-purple-500 focus:outline-none`}
                             value={product.name}
                             onChange={(e) =>
                               handleProductChange(
@@ -595,11 +613,10 @@ const VenueOwnerRegistration = () => {
                           <input
                             type="text"
                             placeholder="Choose event"
-                            className={`w-full p-3 bg-[#1A1B23]/80 rounded-lg border ${
-                              formErrors[`product${index}Price`]
-                                ? "border-red-500"
-                                : "border-gray-600"
-                            } focus:border-purple-500 focus:outline-none`}
+                            className={`w-full p-3 bg-[#1A1B23]/80 rounded-lg border ${formErrors[`product${index}Price`]
+                              ? "border-red-500"
+                              : "border-gray-600"
+                              } focus:border-purple-500 focus:outline-none`}
                             value={product.price}
                             onChange={(e) =>
                               handleProductChange(
@@ -622,11 +639,10 @@ const VenueOwnerRegistration = () => {
                             <span className="text-red-500">*</span>
                           </label>
                           <div
-                            className={`relative h-32 border-2 border-dashed ${
-                              formErrors[`product${index}Image`]
-                                ? "border-red-500"
-                                : "border-gray-600"
-                            } rounded-lg bg-[#1A1B23]/80 cursor-pointer hover:border-purple-500`}
+                            className={`relative h-32 border-2 border-dashed ${formErrors[`product${index}Image`]
+                              ? "border-red-500"
+                              : "border-gray-600"
+                              } rounded-lg bg-[#1A1B23]/80 cursor-pointer hover:border-purple-500`}
                           >
                             <input
                               type="file"
@@ -700,11 +716,10 @@ const VenueOwnerRegistration = () => {
               type="submit"
               disabled={isSubmitting}
               className={`w-32 px-6 py-3 bg-[#00FFB3] text-black font-medium rounded-lg 
-              ${
-                isSubmitting
+              ${isSubmitting
                   ? "opacity-50 cursor-not-allowed"
                   : "hover:bg-[#00FFB3]/90"
-              } 
+                } 
               transition-colors`}
             >
               {isSubmitting ? "Submitting..." : "Submit"}
