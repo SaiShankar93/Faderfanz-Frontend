@@ -1530,6 +1530,17 @@ const UserProfile = () => {
                                 )
                             );
                         })}
+                        
+                        {/* Create Event Option for Curators and Venue Owners */}
+                        {(userData.role === 'curator' || userData.role === 'venueOwner') && (
+                            <Link
+                                to="/create-event"
+                                className="w-full flex items-center gap-3 p-2 md:p-3 rounded-lg text-sm md:text-base text-white/80 hover:bg-[#231D30]"
+                            >
+                                <MdEvent className="w-4 h-4 md:w-5 md:h-5" />
+                                <span className="flex-1 text-left">Create Event</span>
+                            </Link>
+                        )}
                     </div>
                 </div>
 

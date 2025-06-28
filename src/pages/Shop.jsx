@@ -119,7 +119,8 @@ const Shop = () => {
   const [userDetails, setUserDetails] = useState({});
   const [events, setEvents] = useState([]);
 
-
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedLocation, setSelectedLocation] = useState('');
   const [itemsPerPage, setItemsPerPage] = useState(12);
   const { category, subcategory } = useParams();
 
@@ -357,7 +358,7 @@ const Shop = () => {
   return (
     <div className="bg-[#0E0F13] font-sen">
       <div className="relative w-full">
-        <HeroSlider />
+        <HeroSlider events={{data:events}} searchQuery={searchQuery} setSearchQuery={setSearchQuery} selectedLocation={selectedLocation} setSelectedLocation={setSelectedLocation} />
       </div>
 
       <div className="w-full max-w-7xl mx-auto px-4 py-8">

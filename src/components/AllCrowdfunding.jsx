@@ -5,7 +5,7 @@ import MultiRangeSlider from "multi-range-slider-react";
 import { AiOutlineBars } from "react-icons/ai";
 import { HiMiniSquares2X2 } from "react-icons/hi2";
 import { AppContext } from "../context/AppContext";
-import { IoHeartCircle, IoStarOutline } from "react-icons/io5";
+import { IoHeartCircle, IoStarOutline, IoSearchOutline } from "react-icons/io5";
 import { array, number } from "prop-types";
 import { toast } from "react-toastify";
 import axios from "axios";
@@ -130,7 +130,9 @@ const AllCrowdfunding = () => {
   // const [Products, setProducts] = useState([]);
   const [userDetails, setUserDetails] = useState({});
   const [events, setEvents] = useState([]);
-
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedLocation, setSelectedLocation] = useState("No Location");
+  const [filteredEvents, setFilteredEvents] = useState([]);
 
   const [itemsPerPage, setItemsPerPage] = useState(12);
   const { category, subcategory } = useParams();
@@ -246,23 +248,47 @@ const AllCrowdfunding = () => {
     getCrowdfunding();
   }, []);
 
-  // Filter crowdfunding campaigns based on selected filters
-  const filteredEvents = useMemo(() => {
-    return sampleCrowdfunding.filter((campaign) => {
-      // Category filter
-      if (filters.category.length > 0) {
-        if (!filters.category.includes(campaign.category?.toLowerCase())) return false;
-      }
+  // Filter and search logic
+  useEffect(() => {
+    let result = [...events];
 
-      // Amount filter
-      if (filters.price.length > 0) {
-        const campaignAmount = campaign.raised === 0 ? "free" : "paid";
-        if (!filters.price.includes(campaignAmount)) return false;
-      }
+    // Search filter with pattern matching
+    if (searchQuery.trim()) {
+      result = result.filter(
+        (campaign) =>
+          campaign.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          campaign.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          campaign.category?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (campaign.event && campaign.event.title?.toLowerCase().includes(searchQuery.toLowerCase()))
+      );
+    }
 
-      // Date filter
-      if (filters.date.length > 0) {
-        const deadline = new Date(campaign.deadline);
+    // Apply category filters
+    if (filters.category.length > 0) {
+      result = result.filter((campaign) =>
+        filters.category.includes(campaign.category?.toLowerCase())
+      );
+    }
+
+    // Apply format filters
+    if (filters.format.length > 0) {
+      result = result.filter((campaign) =>
+        filters.format.includes(campaign.format?.toLowerCase())
+      );
+    }
+
+    // Apply price filters
+    if (filters.price.length > 0) {
+      result = result.filter((campaign) => {
+        const campaignAmount = campaign.amountRaised === 0 ? "free" : "paid";
+        return filters.price.includes(campaignAmount);
+      });
+    }
+
+    // Apply date filters
+    if (filters.date.length > 0) {
+      result = result.filter((campaign) => {
+        const deadline = new Date(campaign.endDate);
         const today = new Date();
         const isToday = deadline.toDateString() === today.toDateString();
         const isTomorrow = deadline.toDateString() === new Date(today.setDate(today.getDate() + 1)).toDateString();
@@ -283,12 +309,28 @@ const AllCrowdfunding = () => {
               return true;
           }
         });
-        if (!dateMatch) return false;
-      }
+        return dateMatch;
+      });
+    }
 
-      return true;
+    // Apply sorting
+    result.sort((a, b) => {
+      switch (sortMethod) {
+        case "2":
+          return a.amountRaised - b.amountRaised;
+        case "3":
+          return b.amountRaised - a.amountRaised;
+        case "4":
+          return a.title.localeCompare(b.title);
+        case "5":
+          return b.title.localeCompare(a.title);
+        default:
+          return (b.donors?.length || 0) - (a.donors?.length || 0);
+      }
     });
-  }, [filters, sampleCrowdfunding]);
+
+    setFilteredEvents(result);
+  }, [events, searchQuery, filters, sortMethod]);
 
   // Add these expanded arrays for the "More" functionality
   const allCategories = [
@@ -316,6 +358,7 @@ const AllCrowdfunding = () => {
     "Hybrid Events",
     "Networking Events",
   ];
+
 
   // Update the filter sections to use the expanded state
   const renderFilterSection = (title, items, type, showMore = true) => (
@@ -361,7 +404,14 @@ const AllCrowdfunding = () => {
   return (
     <div className="bg-[#0E0F13] font-sen">
       <div className="relative w-full">
-        <HeroSlider />
+        <HeroSlider 
+          searchQuery={searchQuery} 
+          setSearchQuery={setSearchQuery} 
+          selectedLocation={selectedLocation} 
+          setSelectedLocation={setSelectedLocation} 
+          events={{ data: events }}
+          isCrowdfunding={true}
+        />
       </div>
 
       <div className="w-full max-w-7xl mx-auto px-4 py-8">
@@ -446,8 +496,19 @@ const AllCrowdfunding = () => {
                 <div className="flex justify-center items-center min-h-[400px]">
                   <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#C5FF32]"></div>
                 </div>
+              ) : filteredEvents.length === 0 ? (
+                <div className="text-center text-gray-400 py-8">
+                  {searchQuery.trim() ? (
+                    <div>
+                      <div className="text-lg mb-2">No crowdfunding campaigns found</div>
+                      <div className="text-sm">Try different keywords or adjust your filters</div>
+                    </div>
+                  ) : (
+                    <div>No crowdfunding campaigns available</div>
+                  )}
+                </div>
               ) : (
-                events.map((campaign) => (
+                filteredEvents.map((campaign) => (
                   <Link
                     to={`/crowdfunding/${campaign._id}`}
                     key={campaign._id}

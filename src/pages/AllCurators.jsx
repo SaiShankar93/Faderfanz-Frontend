@@ -27,7 +27,6 @@ const AllCurators = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLocation, setSelectedLocation] = useState("Mumbai");
   const [curators, setCurators] = useState([]);
-
   // Fetch curators from API
   const getCurators = async () => {
     try {
@@ -59,19 +58,14 @@ const AllCurators = () => {
   useEffect(() => {
     let result = [...curators];
 
-    // Search filter
-    if (searchQuery) {
+    // Search filter with pattern matching
+    if (searchQuery.trim()) {
       result = result.filter(
         (curator) =>
-          curator.stageName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          curator.bio.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
-
-    // Location filter
-    if (selectedLocation) {
-      result = result.filter(
-        (curator) => curator.location === selectedLocation
+          curator.stageName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          curator.bio?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          curator.category?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          curator.location?.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
@@ -111,7 +105,10 @@ const AllCurators = () => {
     });
 
     setFilteredCurators(result);
-  }, [curators, searchQuery, selectedLocation, filters, selectedSort]);
+  }, [curators, searchQuery, filters, selectedSort]);
+
+  // Check if we should show search results
+  const shouldShowResults = searchQuery.trim() !== "";
 
   // Handle search input
   const handleSearch = (e) => {
@@ -253,31 +250,81 @@ const AllCurators = () => {
           </h1>
 
           {/* Search Bar */}
-          <div className="w-full max-w-4xl">
-            <div className="flex flex-col sm:flex-row bg-[#1C1D24]/80 backdrop-blur-sm rounded-lg overflow-hidden">
+          <div className="w-full max-w-4xl relative">
+            <div className="flex bg-[#1C1D24]/80 backdrop-blur-sm rounded-lg overflow-hidden">
               <div className="flex-1 flex items-center min-w-0">
                 <IoSearchOutline className="ml-4 w-5 h-5 text-gray-400 shrink-0" />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={handleSearch}
-                  placeholder="Search Curators, Categories..."
+                  placeholder="Search Curators, Categories, Location..."
                   className="w-full px-3 py-3 bg-transparent text-white focus:outline-none placeholder-gray-400 min-w-0"
                 />
               </div>
-              <div className="flex items-center border-t sm:border-t-0 sm:border-l border-gray-700/50 shrink-0">
-                <IoLocationOutline className="ml-4 w-5 h-5 text-gray-400" />
-                <select
-                  value={selectedLocation}
-                  onChange={handleLocationChange}
-                  className="w-full sm:w-32 md:w-40 px-3 py-3 bg-transparent text-white focus:outline-none appearance-none cursor-pointer"
-                >
-                  <option value="Mumbai">Mumbai</option>
-                  <option value="Hyderabad">Hyderabad</option>
-                  <option value="Bangalore">Bangalore</option>
-                </select>
-              </div>
             </div>
+
+            {/* Search Results Dropdown */}
+            {shouldShowResults && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-[#1C1D24]/95 backdrop-blur-sm rounded-lg border border-gray-700/50 max-h-80 overflow-y-auto z-30">
+                {filteredCurators.length > 0 ? (
+                  <div className="p-4">
+                    <div className="text-sm text-gray-400 mb-3">
+                      Found {filteredCurators.length} curator{filteredCurators.length !== 1 ? "s" : ""}
+                      {searchQuery.trim() && (
+                        <span> for "{searchQuery}"</span>
+                      )}
+                    </div>
+                    {filteredCurators.slice(0, 5).map((curator) => (
+                      <div
+                        key={curator._id}
+                        className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-800/50 cursor-pointer transition-colors"
+                        onClick={() => {
+                          window.location.href = `/curator/${curator._id}`;
+                        }}
+                      >
+                        <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
+                          <img
+                            src={`${import.meta.env.VITE_SERVER_URL}${curator.images?.[0]}` || "/Images/post.png"}
+                            alt={curator.stageName}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-white font-medium truncate">
+                            {curator.stageName}
+                          </div>
+                          <div className="text-sm text-gray-400 flex items-center space-x-2">
+                            <span>{curator.category}</span>
+                            <span>•</span>
+                            <span>{curator.location}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    {filteredCurators.length > 5 && (
+                      <div className="text-center pt-2 border-t border-gray-700/50">
+                        <span className="text-sm text-gray-400">
+                          And {filteredCurators.length - 5} more curators...
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="p-4 text-center">
+                    <div className="text-gray-400">
+                      No curators found
+                      {searchQuery.trim() && (
+                        <span> for "{searchQuery}"</span>
+                      )}
+                    </div>
+                    <div className="text-sm text-gray-500 mt-1">
+                      Try different keywords or categories
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
 

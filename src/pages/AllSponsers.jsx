@@ -26,7 +26,7 @@ const AllSponsors = () => {
     const [sponsors, setSponsors] = useState([]);
     const [filteredSponsors, setFilteredSponsors] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
-    const [selectedLocation, setSelectedLocation] = useState("Mumbai");
+    const [selectedLocation, setSelectedLocation] = useState("No Location");
 
     // Filter States
     const [selectedSort, setSelectedSort] = useState("rating");
@@ -47,6 +47,7 @@ const AllSponsors = () => {
                     setFilteredSponsors(data);
                     setLoading(false);
                 }
+                console.log(data);
             } catch (error) {
                 console.error("Error fetching sponsors:", error);
                 setLoading(false);
@@ -56,43 +57,58 @@ const AllSponsors = () => {
         fetchSponsors();
     }, []);
 
+    // Helper function to get location display text
+    const getLocationDisplay = (location) => {
+        if (typeof location === 'string') {
+            return location;
+        }
+        if (location && typeof location === 'object') {
+            return location.city || location.address || 'Unknown Location';
+        }
+        return 'Unknown Location';
+    };
+
     // Filter and Search Logic
     useEffect(() => {
         let result = [...sponsors];
 
-        // Search filter
-        if (searchQuery) {
+        // Search filter with pattern matching
+        if (searchQuery.trim()) {
             result = result.filter(sponsor =>
-                sponsor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                sponsor.category.toLowerCase().includes(searchQuery.toLowerCase())
+                sponsor.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                sponsor.businessName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                sponsor.category?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                sponsor.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                (getLocationDisplay(sponsor.location).toLowerCase().includes(searchQuery.toLowerCase()))
             );
         }
 
-        // Location filter
-        if (selectedLocation) {
-            result = result.filter(sponsor =>
-                sponsor.location === selectedLocation
-            );
+        // Location filter with pattern matching
+        if (selectedLocation && selectedLocation !== "No Location") {
+            result = result.filter(sponsor => {
+                const sponsorLocation = getLocationDisplay(sponsor.location).toLowerCase();
+                return sponsorLocation.includes(selectedLocation.toLowerCase());
+            });
         }
 
         // Apply category filters
         if (filters.category.length > 0) {
             result = result.filter(sponsor =>
-                filters.category.includes(sponsor.category.toLowerCase())
+                filters.category.includes(sponsor.category?.toLowerCase())
             );
         }
 
         // Apply format filters
         if (filters.format.length > 0) {
             result = result.filter(sponsor =>
-                filters.format.includes(sponsor.format.toLowerCase())
+                filters.format.includes(sponsor.format?.toLowerCase())
             );
         }
 
         // Apply price filters
         if (filters.price.length > 0) {
             result = result.filter(sponsor =>
-                filters.price.includes(sponsor.price.toLowerCase())
+                filters.price.includes(sponsor.price?.toLowerCase())
             );
         }
 
@@ -112,6 +128,9 @@ const AllSponsors = () => {
 
         setFilteredSponsors(result);
     }, [sponsors, searchQuery, selectedLocation, filters, selectedSort]);
+
+    // Check if we should show search results
+    const shouldShowResults = searchQuery.trim() || (selectedLocation && selectedLocation !== "No Location");
 
     // Handle search input
     const handleSearch = (e) => {
@@ -244,7 +263,7 @@ const AllSponsors = () => {
                     </h1>
 
                     {/* Search Bar */}
-                    <div className="w-full max-w-4xl">
+                    <div className="w-full max-w-4xl relative">
                         <div className="flex flex-col sm:flex-row bg-[#1C1D24]/80 backdrop-blur-sm rounded-lg overflow-hidden">
                             <div className="flex-1 flex items-center min-w-0">
                                 <IoSearchOutline className="ml-4 w-5 h-5 text-gray-400 shrink-0" />
@@ -252,7 +271,7 @@ const AllSponsors = () => {
                                     type="text"
                                     value={searchQuery}
                                     onChange={handleSearch}
-                                    placeholder="Search Sponsors, Categories..."
+                                    placeholder="Search Sponsors, Categories, Location..."
                                     className="w-full px-3 py-3 bg-transparent text-white focus:outline-none placeholder-gray-400 min-w-0"
                                 />
                             </div>
@@ -263,12 +282,87 @@ const AllSponsors = () => {
                                     onChange={handleLocationChange}
                                     className="w-full sm:w-32 md:w-40 px-3 py-3 bg-transparent text-white focus:outline-none appearance-none cursor-pointer"
                                 >
-                                    <option value="Mumbai">Mumbai</option>
-                                    <option value="Hyderabad">Hyderabad</option>
-                                    <option value="Bangalore">Bangalore</option>
+                                    <option value="No Location" className="text-black">No Location</option>
+                                    <option value="Mumbai" className="text-black">Mumbai</option>
+                                    <option value="Hyderabad" className="text-black">Hyderabad</option>
+                                    <option value="Bangalore" className="text-black">Bangalore</option>
                                 </select>
                             </div>
                         </div>
+
+                        {/* Search Results Dropdown */}
+                        {shouldShowResults && (
+                            <div className="absolute top-full left-0 right-0 mt-2 bg-[#1C1D24]/95 backdrop-blur-sm rounded-lg border border-gray-700/50 max-h-80 overflow-y-auto z-30">
+                                {filteredSponsors.length > 0 ? (
+                                    <div className="p-4">
+                                        <div className="text-sm text-gray-400 mb-3">
+                                            Found {filteredSponsors.length} sponsor{filteredSponsors.length !== 1 ? "s" : ""}
+                                            {searchQuery.trim() && selectedLocation && selectedLocation !== "No Location" && (
+                                                <span> for "{searchQuery}" in {selectedLocation}</span>
+                                            )}
+                                            {searchQuery.trim() && (!selectedLocation || selectedLocation === "No Location") && (
+                                                <span> for "{searchQuery}"</span>
+                                            )}
+                                            {!searchQuery.trim() && selectedLocation && selectedLocation !== "No Location" && (
+                                                <span> in {selectedLocation}</span>
+                                            )}
+                                        </div>
+                                        {filteredSponsors.slice(0, 5).map((sponsor) => (
+                                            <div
+                                                key={sponsor._id}
+                                                className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-800/50 cursor-pointer transition-colors"
+                                                onClick={() => {
+                                                    window.location.href = `/sponsor/${sponsor._id}`;
+                                                }}
+                                            >
+                                                <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
+                                                    <img
+                                                        src={sponsor.image || "/Images/sponsor-logo.png"}
+                                                        alt={sponsor.businessName}
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="text-white font-medium truncate">
+                                                        {sponsor.businessName}
+                                                    </div>
+                                                    <div className="text-sm text-gray-400 flex items-center space-x-2">
+                                                        <span>{sponsor.category}</span>
+                                                        <span>•</span>
+                                                        <span>{getLocationDisplay(sponsor.location)}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                        {filteredSponsors.length > 5 && (
+                                            <div className="text-center pt-2 border-t border-gray-700/50">
+                                                <span className="text-sm text-gray-400">
+                                                    And {filteredSponsors.length - 5} more sponsors...
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div className="p-4 text-center">
+                                        <div className="text-gray-400">
+                                            No sponsors found
+                                            {searchQuery.trim() && selectedLocation && selectedLocation !== "No Location" && (
+                                                <span> for "{searchQuery}" in {selectedLocation}</span>
+                                            )}
+                                            {searchQuery.trim() && (!selectedLocation || selectedLocation === "No Location") && (
+                                                <span> for "{searchQuery}"</span>
+                                            )}
+                                            {!searchQuery.trim() && selectedLocation && selectedLocation !== "No Location" && (
+                                                <span> in {selectedLocation}</span>
+                                            )}
+                                        </div>
+                                        <div className="text-sm text-gray-500 mt-1">
+                                            Try different keywords or categories
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
                 </div>
 

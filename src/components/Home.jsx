@@ -92,7 +92,6 @@ const Home = () => {
       const response = await axios.get(
         `${import.meta.env.VITE_SERVER_URL}/product/all`
       );
-      console.log(response.data);
       setFilteredProducts(response.data);
     } catch (error) {
       console.error("Error fetching products:", error);

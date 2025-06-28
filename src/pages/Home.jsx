@@ -265,6 +265,8 @@ const Home = () => {
 
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+    const [selectedLocation, setSelectedLocation] = useState('');
 
   const navigate = useNavigate();
 
@@ -519,7 +521,7 @@ const Home = () => {
       setUser(JSON.parse(user));
     }
   }, []);
-
+  console.log("events", filteredProducts);
   return (
     <section className="bg-[#0E0F13] min-h-screen text-white font-sen">
       {/* Header + Hero + Categories Background Wrapper */}
@@ -548,7 +550,7 @@ const Home = () => {
 
       {/* Rest of the content with relative positioning */}
       <div className="relative z-10">
-        <HeroSlider slider={slider} />
+        <HeroSlider slider={slider} searchQuery={searchQuery} setSearchQuery={setSearchQuery} selectedLocation={selectedLocation} setSelectedLocation={setSelectedLocation} events={filteredProducts} />
         <ExploreCategories categories={categories} />
         <PopularEvents events={filteredProducts} />
         {user?.role === 'curator' && <CreateEventBanner />}

@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import { MainAppContext } from "@/context/MainContext";
 
 export function BlogCard({ event }) {
-    console.log("BlogCard",event)
     const { seteventPageId } = useContext(MainAppContext);
 
     // Format the createdAt date

@@ -65,7 +65,7 @@ const Blogs = () => {
       formData.append("title", blogTitle);
       formData.append("content", blogContent);
       formData.append("tags", JSON.stringify(tags)); // Convert tags array to JSON string
-      formData.append("blogImage", blogImage);
+      formData.append("featuredImage", blogImage);
       formData.append("author", author); // Include author
       formData.append("category", category); // Include category
 
@@ -134,7 +134,7 @@ const Blogs = () => {
       formData.append("tags", JSON.stringify(tags));
       formData.append("author", author);
       formData.append("category", category);
-      if (blogImage) formData.append("blogImage", blogImage);
+      if (blogImage) formData.append("featuredImage", blogImage);
 
       const response = await axiosInstance.put(`/blogs/${editingBlogId}`, formData, {
         headers: {
@@ -313,9 +313,9 @@ const Blogs = () => {
               className="flex flex-col md:flex-row justify-between items-center p-4 bg-white dark:bg-gray-800 rounded-md mb-3"
             >
               <div className="w-full md:w-1/3">
-                {blog.imageLink && (
+                {blog.featuredImage && (
                   <img
-                    src={blog.image}
+                    src={`${import.meta.env.VITE_SERVER_URL}${blog.featuredImage}`}
                     alt={blog.title}
                     className="max-w-full h-auto rounded-md"
                   />
