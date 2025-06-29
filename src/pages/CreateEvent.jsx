@@ -61,6 +61,9 @@ export default function CreateEvent() {
   const [venueSearch, setVenueSearch] = useState("");
   const [sponsorSearch, setSponsorSearch] = useState("");
   const [curatorSearch, setCuratorSearch] = useState("");
+  const [venueFocused, setVenueFocused] = useState(false);
+  const [sponsorFocused, setSponsorFocused] = useState(false);
+  const [curatorFocused, setCuratorFocused] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -590,9 +593,11 @@ export default function CreateEvent() {
                       placeholder="Search sponsors..."
                       value={sponsorSearch}
                       onChange={(e) => setSponsorSearch(e.target.value)}
+                      onFocus={() => setSponsorFocused(true)}
+                      onBlur={() => setTimeout(() => setSponsorFocused(false), 200)}
                       className="w-full bg-[#1F1F1F] text-white rounded-lg p-3 border border-[#2D2F36] focus:outline-none focus:border-[#2FE2AF]"
                     />
-                    {sponsorSearch && (
+                    {(sponsorSearch || sponsorFocused) && (
                       <div className="absolute z-10 w-full mt-1 bg-[#1F1F1F] border border-[#2D2F36] rounded-lg max-h-48 overflow-y-auto">
                         {filteredSponsors.filter(s => !sponsorIds.includes(s._id)).length > 0 ? (
                           filteredSponsors.filter(s => !sponsorIds.includes(s._id)).map((sponsor) => (
@@ -635,9 +640,11 @@ export default function CreateEvent() {
                       placeholder="Search venues..."
                       value={venueSearch}
                       onChange={(e) => setVenueSearch(e.target.value)}
+                      onFocus={() => setVenueFocused(true)}
+                      onBlur={() => setTimeout(() => setVenueFocused(false), 200)}
                       className="w-full bg-[#1F1F1F] text-white rounded-lg p-3 border border-[#2D2F36] focus:outline-none focus:border-[#2FE2AF]"
                     />
-                    {venueSearch && (
+                    {(venueSearch || venueFocused) && (
                       <div className="absolute z-10 w-full mt-1 bg-[#1F1F1F] border border-[#2D2F36] rounded-lg max-h-48 overflow-y-auto">
                         {filteredVenues.length > 0 ? (
                           filteredVenues.map((venue) => (
@@ -683,9 +690,11 @@ export default function CreateEvent() {
                       placeholder="Search curators..."
                       value={curatorSearch}
                       onChange={(e) => setCuratorSearch(e.target.value)}
+                      onFocus={() => setCuratorFocused(true)}
+                      onBlur={() => setTimeout(() => setCuratorFocused(false), 200)}
                       className="w-full bg-[#1F1F1F] text-white rounded-lg p-3 border border-[#2D2F36] focus:outline-none focus:border-[#2FE2AF]"
                     />
-                    {curatorSearch && (
+                    {(curatorSearch || curatorFocused) && (
                       <div className="absolute z-10 w-full mt-1 bg-[#1F1F1F] border border-[#2D2F36] rounded-lg max-h-48 overflow-y-auto">
                         {filteredCurators.filter(c => !curatorIds.includes(c._id)).length > 0 ? (
                           filteredCurators.filter(c => !curatorIds.includes(c._id)).map((curator) => (

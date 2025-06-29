@@ -112,12 +112,12 @@ const formatDate = (dateString) => {
                 modules={[Autoplay, Pagination]}
                 className="w-full h-full rounded-lg overflow-hidden"
               >
-                {blogData?.contentImages?.length > 0 && blogData?.contentImages?.map((image, index) => {
+                {[1].map((_, index) => {
                   return (
                   <SwiperSlide key={index}>
                     <img
                       className="w-full h-full object-cover"
-                      src={`${import.meta.env.VITE_SERVER_URL}${image}`}
+                      src={blogData?.featuredImage ? `${import.meta.env.VITE_SERVER_URL}${blogData?.featuredImage}` : "https://images.unsplash.com/photo-1544077960-604201fe74bc"}
                       alt="Event"
                     />
                   </SwiperSlide>

@@ -32,7 +32,7 @@ export function BlogCard({ event }) {
                 {/* Image */}
                 <div className="relative w-full aspect-[4/3]">
                     <img
-                        src={event?.featuredImage || "https://images.unsplash.com/photo-1544077960-604201fe74bc"}
+                        src={event?.featuredImage ? `${import.meta.env.VITE_SERVER_URL}${event?.featuredImage}` : "https://images.unsplash.com/photo-1544077960-604201fe74bc"}
                         alt={event?.title}
                         className="w-full h-full object-cover"
                     />
