@@ -11,6 +11,8 @@ const CreateCampaign = () => {
   const [events, setEvents] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showEventDropdown, setShowEventDropdown] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -32,6 +34,20 @@ const CreateCampaign = () => {
   useEffect(() => {
     fetchEvents();
   }, []);
+
+  // Handle clicking outside dropdown to close it
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showEventDropdown && !event.target.closest('.event-search-container')) {
+        setShowEventDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showEventDropdown]);
 
   const fetchEvents = async () => {
     setEventsLoading(true);
@@ -120,6 +136,21 @@ const CreateCampaign = () => {
       const objectUrl = URL.createObjectURL(file);
       setPreviewUrl(objectUrl);
     }
+  };
+
+  // Filter events based on search term
+  const filteredEvents = events.filter(event =>
+    event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    event.description?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const handleEventSelect = (eventId) => {
+    setFormData(prev => ({
+      ...prev,
+      event: eventId
+    }));
+    setSearchTerm(events.find(e => e.id === eventId)?.title || '');
+    setShowEventDropdown(false);
   };
 
   const handleSubmit = async (e) => {
@@ -236,25 +267,65 @@ const CreateCampaign = () => {
               />
             </div>
 
-            <div>
+            <div className='relative event-search-container'>
               <label className="block text-sm text-white mb-2">Select Event *</label>
-              <select
-                name="event"
-                value={formData.event}
-                onChange={handleChange}
-                className="w-full bg-[#1F1F1F] rounded-lg p-3 border border-[#2D2F36] focus:outline-none focus:border-[#2FE2AF]"
-                required
-                disabled={eventsLoading}
-              >
-                <option value="">
-                  {eventsLoading ? 'Loading events...' : 'Select an event'}
-                </option>
-                {events.map((event) => (
-                  <option key={event.id} value={event.id}>
-                    {event.title} - {new Date(event.startDate).toLocaleDateString()}
-                  </option>
-                ))}
-              </select>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    setShowEventDropdown(true);
+                    if (!e.target.value) {
+                      setFormData(prev => ({ ...prev, event: '' }));
+                    }
+                  }}
+                  onFocus={() => setShowEventDropdown(true)}
+                  placeholder="Search for an event..."
+                  className="w-full bg-[#1F1F1F] rounded-lg p-3 border border-[#2D2F36] focus:outline-none focus:border-[#2FE2AF] pr-10"
+                  required={!formData.event}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowEventDropdown(!showEventDropdown)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#96A1AE] hover:text-white"
+                >
+                  ▼
+                </button>
+              </div>
+              
+              {/* Event Dropdown */}
+              {showEventDropdown && (
+                <div className="absolute z-10 w-full mt-1 bg-[#1F1F1F] border border-[#2D2F36] rounded-lg max-h-60 overflow-y-auto">
+                  {eventsLoading ? (
+                    <div className="p-3 text-[#96A1AE] text-center">Loading events...</div>
+                  ) : filteredEvents.length > 0 ? (
+                    filteredEvents.map((event) => (
+                      <div
+                        key={event.id}
+                        onClick={() => handleEventSelect(event.id)}
+                        className="p-3 hover:bg-[#2A2D35] cursor-pointer border-b border-[#2D2F36] last:border-b-0"
+                      >
+                        <div className="text-white font-semibold">{event.title}</div>
+                        <div className="text-[#96A1AE] text-sm truncate">
+                          {event.description || 'No description available'}
+                        </div>
+                        <div className="text-[#2FE2AF] text-xs mt-1">
+                          {event.startDate && event.endDate 
+                            ? `${new Date(event.startDate).toLocaleDateString()} - ${new Date(event.endDate).toLocaleDateString()}`
+                            : 'Date not available'
+                          }
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="p-3 text-[#96A1AE] text-center">
+                      {searchTerm ? 'No events found' : 'No events available'}
+                    </div>
+                  )}
+                </div>
+              )}
+              
               {formData.event && (
                 <div className="mt-2 p-3 bg-[#2A2D35] rounded-lg border border-[#3A3D45]">
                   {(() => {
@@ -282,6 +353,9 @@ const CreateCampaign = () => {
                   })()}
                 </div>
               )}
+              <button className='absolute -top-2 right-0 text-[#2FE2AF] px-6 rounded-lg  text-lg 0 transition disabled:opacity-50' onClick={() => navigate('/create-event')}>
+                create event
+              </button>
             </div>
 
             <div>

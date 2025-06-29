@@ -115,8 +115,7 @@ const UserProfile = () => {
 
             // The interceptor now handles the Authorization header automatically
             const response = await axiosInstance.get('/profiles/me');
-
-            console.log('Profile response:', response.data);
+            console.log("response",response.data)
 
             if (response.data && response.data.success) {
                 const { profile, venues: venuesData, events: eventsData, products: productsData,
@@ -134,7 +133,7 @@ const UserProfile = () => {
                     ...post,
                     content: post.text, // Ensure 'content' property exists
                     images: (post.images || []).map(img =>
-                        img.startsWith('http') ? img : `${import.meta.env.VITE_SERVER_URL}/${img}`
+                        img.startsWith('http') ? img : `${import.meta.env.VITE_SERVER_URL}${img}`
                     )
                 }));
                 setPosts(normalizedPosts);
@@ -233,7 +232,6 @@ const UserProfile = () => {
             ];
         }
     };
-
     // Post Actions
     const handleLikePost = useCallback((postId) => {
         setPosts(prevPosts =>
@@ -261,10 +259,14 @@ const UserProfile = () => {
 
     const handleImageSelect = (e) => {
         const files = Array.from(e.target.files);
-        const imageUrls = files.map(file => URL.createObjectURL(file));
+        // Store both File objects and URLs for preview
+        const imageData = files.map(file => ({
+            file: file,
+            url: URL.createObjectURL(file)
+        }));
         setNewPost(prev => ({
             ...prev,
-            images: [...prev.images, ...imageUrls]
+            images: [...prev.images, ...imageData]
         }));
         setIsImageInputVisible(false);
     };
@@ -277,10 +279,17 @@ const UserProfile = () => {
     };
 
     const handleRemoveFile = (index, type) => {
-        setNewPost(prev => ({
-            ...prev,
-            [type]: prev[type].filter((_, i) => i !== index)
-        }));
+        setNewPost(prev => {
+            const newArray = [...prev[type]];
+            // If removing an image, revoke the object URL to prevent memory leaks
+            if (type === 'images' && newArray[index]?.url) {
+                URL.revokeObjectURL(newArray[index].url);
+            }
+            return {
+                ...prev,
+                [type]: newArray.filter((_, i) => i !== index)
+            };
+        });
     };
 
     const handleSharePost = useCallback(async () => {
@@ -303,9 +312,9 @@ const UserProfile = () => {
             }
 
             // Add images
-            newPost.images.forEach((image, index) => {
-                if (image instanceof File) {
-                    formData.append('images', image);
+            newPost.images.forEach((imageData, index) => {
+                if (imageData.file instanceof File) {
+                    formData.append('images', imageData.file);
                 }
             });
 
@@ -313,6 +322,9 @@ const UserProfile = () => {
             newPost.files.forEach((file, index) => {
                 formData.append('files', file);
             });
+            //display the form data
+            console.log([...formData.entries()]); // Debugging
+
 
             // API call to create post - interceptor handles Authorization and Content-Type
             const response = await axiosInstance.post('/profiles/posts', formData, {
@@ -335,13 +347,20 @@ const UserProfile = () => {
                     comments: newPostFromServer.comments?.length || 0,
                     isLiked: false,
                     images: (newPostFromServer.images || []).map(img =>
-                        `${import.meta.env.VITE_SERVER_URL}/${img}`
+                        `${import.meta.env.VITE_SERVER_URL}${img}`
                     ),
                     files: newPost.files,
                     location: newPost.location
                 };
 
                 setPosts(prev => [postForState, ...prev]);
+
+                // Clean up object URLs to prevent memory leaks
+                newPost.images.forEach(imageData => {
+                    if (imageData.url) {
+                        URL.revokeObjectURL(imageData.url);
+                    }
+                });
 
                 setNewPost({
                     content: '',
@@ -377,8 +396,9 @@ const UserProfile = () => {
     }, []);
 
     // Image viewer functions
-    const openImageViewer = (image, index) => {
-        setSelectedImage(image);
+    const openImageViewer = (imageData, index) => {
+        const imageUrl = typeof imageData === 'string' ? imageData : imageData.url;
+        setSelectedImage(imageUrl);
         setSelectedImageIndex(index);
         setIsImageViewerOpen(true);
     };
@@ -390,10 +410,16 @@ const UserProfile = () => {
     };
 
     const navigateImage = (direction) => {
-        const currentPost = posts.find(post => post.images && post.images.includes(selectedImage));
+        const currentPost = posts.find(post => post.images && post.images.some(img => {
+            const imgUrl = typeof img === 'string' ? img : img.url;
+            return imgUrl === selectedImage;
+        }));
         if (!currentPost || !currentPost.images) return;
 
-        const currentIndex = currentPost.images.indexOf(selectedImage);
+        const currentIndex = currentPost.images.findIndex(img => {
+            const imgUrl = typeof img === 'string' ? img : img.url;
+            return imgUrl === selectedImage;
+        });
         let newIndex;
 
         if (direction === 'next') {
@@ -402,7 +428,9 @@ const UserProfile = () => {
             newIndex = currentIndex === 0 ? currentPost.images.length - 1 : currentIndex - 1;
         }
 
-        setSelectedImage(currentPost.images[newIndex]);
+        const newImage = currentPost.images[newIndex];
+        const newImageUrl = typeof newImage === 'string' ? newImage : newImage.url;
+        setSelectedImage(newImageUrl);
         setSelectedImageIndex(newIndex);
     };
 
@@ -605,7 +633,7 @@ const UserProfile = () => {
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                             <div>
                                 <h1 className="text-white text-xl md:text-2xl font-medium">Welcome back,</h1>
-                                <p className="text-gray-400 text-sm md:text-base">{userData.name}</p>
+                                <p className="text-gray-400 text-sm md:text-base">{userData.firstName} {userData.lastName}</p>
                             </div>
                             <div className="relative w-full sm:w-auto">
                                 {/* <button
@@ -641,7 +669,7 @@ const UserProfile = () => {
                         <div>
                             <h2 className="text-white text-lg md:text-xl font-medium mb-4">Feeds</h2>
                             <div className="flex gap-4 md:gap-6 border-b border-white/10 overflow-x-auto pb-2 md:pb-0">
-                                {['Recent', 'Friends', 'Popular'].map((tab) => (
+                                {['Recent', 'Friends', 'Popular','Actions'].map((tab) => (
                                     <button
                                         key={tab.toLowerCase()}
                                         onClick={() => setActiveTab(tab.toLowerCase())}
@@ -665,7 +693,7 @@ const UserProfile = () => {
                             <div className="bg-[#231D30] rounded-lg p-3 md:p-4">
                                 <div className="flex items-center gap-3 md:gap-4">
                                     <img
-                                        src={userData?.profileImage ? `${import.meta.env.VITE_SERVER_URL}/${userData.profileImage}` : "/Images/default-avatar.jpg"}
+                                        src={userData?.images?.[0] ? `${import.meta.env.VITE_SERVER_URL}${userData.images[0]}` : "/Images/default-avatar.jpg"}
                                         alt="Profile"
                                         className="w-8 h-8 md:w-10 md:h-10 rounded-full"
                                     />
@@ -686,7 +714,7 @@ const UserProfile = () => {
                                                 {newPost.images.map((image, index) => (
                                                     <div key={index} className="relative group">
                                                         <img
-                                                            src={image}
+                                                            src={image.url}
                                                             alt={`Preview ${index + 1}`}
                                                             className="w-full h-24 md:h-32 object-cover rounded-lg"
                                                         />
@@ -731,19 +759,19 @@ const UserProfile = () => {
 
                                 <div className="flex flex-wrap justify-between mt-3 md:mt-4">
                                     <div className="flex flex-wrap gap-3 md:gap-4">
-                                        <input
+                                        {/* <input
                                             type="file"
                                             ref={fileInputRef}
                                             onChange={handleFileSelect}
                                             className="hidden"
                                             multiple
                                         />
-                                        {/* <button
+                                        <button
                                             onClick={() => fileInputRef.current?.click()}
                                             className={`text-sm md:text-base text-white/60 hover:text-white ${newPost.files.length > 0 ? 'text-[#00FFB2]' : ''}`}
                                         >
                                             File
-                                        </button>
+                                        </button> */}
                                         <input
                                             type="file"
                                             ref={imageInputRef}
@@ -758,7 +786,7 @@ const UserProfile = () => {
                                         >
                                             Image
                                         </button>
-                                        <button
+                                        {/* <button
                                             onClick={() => setIsMapInputVisible(!isMapInputVisible)}
                                             className={`text-sm md:text-base text-white/60 hover:text-white ${newPost.location ? 'text-[#00FFB2]' : ''}`}
                                         >
@@ -787,12 +815,25 @@ const UserProfile = () => {
 
                             {/* Posts List */}
                             {posts.length > 0 ? (
-                                posts.map((post) => (
+                                posts.map((post) => {
+                                    if(post?.postCategory !== activeTab.toLowerCase()) return null
+                                    if(activeTab.toLowerCase() === 'actions' ) return (
+                                        <div className="bg-[#231D30] rounded-lg text-center flex justify-between items-center p-4">
+                                            <p className="text-white/60 text-lg mb-4">{post.message}</p>
+                                            <Link 
+                                                to={`${import.meta.env.VITE_FRONTEND_URL}${post.link}`}
+                                                className="text-[#00FFB2] hover:text-[#00FFB2]/80 underline"
+                                            >
+                                                open
+                                            </Link>
+                                        </div>
+                                    );
+                                    return (
                                     <div key={post.id || post._id} className="bg-[#231D30] rounded-lg p-4 md:p-6">
                                         <div className="flex justify-between items-start mb-4">
                                             <div className="flex items-center gap-2 md:gap-3">
                                                 <img
-                                                    src={post.author?.profileImage ? `${import.meta.env.VITE_SERVER_URL}/${post.author.profileImage}` : "/Images/default-avatar.jpg"}
+                                                    src={post.author?.profileImage ? `${import.meta.env.VITE_SERVER_URL}${post.author.profileImage}` : "/Images/default-avatar.jpg"}
                                                     alt={post.author?.name || 'User'}
                                                     className="w-10 h-10 md:w-12 md:h-12 rounded-full"
                                                 />
@@ -812,20 +853,24 @@ const UserProfile = () => {
 
                                         {post.images && (
                                             <div className="grid grid-cols-2 gap-2 mb-4">
-                                                {post.images.map((image, index) => (
-                                                    <button
-                                                        key={index}
-                                                        onClick={() => openImageViewer(image, index)}
-                                                        className="relative overflow-hidden rounded-lg group"
-                                                    >
-                                                        <img
-                                                            src={image}
-                                                            alt={`Post ${index + 1}`}
-                                                            className="w-full h-32 md:h-48 object-cover transition-transform duration-300 group-hover:scale-105"
-                                                        />
-                                                        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                                                    </button>
-                                                ))}
+                                                {post.images.map((image, index) => {
+                                                    // Handle both old format (string URLs) and new format (objects with url property)
+                                                    const imageUrl = typeof image === 'string' ? image : image.url;
+                                                    return (
+                                                        <button
+                                                            key={index}
+                                                            onClick={() => openImageViewer(image, index)}
+                                                            className="relative overflow-hidden rounded-lg group"
+                                                        >
+                                                            <img
+                                                                src={imageUrl}
+                                                                alt={`Post ${index + 1}`}
+                                                                className="w-full h-32 md:h-48 object-cover transition-transform duration-300 group-hover:scale-105"
+                                                            />
+                                                            <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                                        </button>
+                                                    );
+                                                })}
                                             </div>
                                         )}
 
@@ -856,7 +901,8 @@ const UserProfile = () => {
                                             </button>
                                         </div>
                                     </div>
-                                ))
+                                )
+                            })
                             ) : (
                                 <div className="bg-[#231D30] rounded-lg p-8 text-center">
                                     <p className="text-white/60 text-lg">No posts yet</p>
@@ -1433,7 +1479,6 @@ const UserProfile = () => {
                 );
         }
     };
-
     // Show loading state
     if (loading) {
         return (
@@ -1478,7 +1523,7 @@ const UserProfile = () => {
                     {/* Profile Card */}
                     <div className="bg-[#231D30] rounded-lg p-4 text-center">
                         <img
-                            src={userData?.profileImage ? `${import.meta.env.VITE_SERVER_URL}/${userData.profileImage}` : "/Images/default-avatar.jpg"}
+                            src={userData?.images?.[0] ? `${import.meta.env.VITE_SERVER_URL}${userData.images[0]}` : "/Images/default-avatar.jpg"}
                             alt="Profile"
                             className="w-20 h-20 md:w-24 md:h-24 rounded-full mx-auto mb-2"
                         />
@@ -1699,12 +1744,23 @@ const UserProfile = () => {
                         </div>
 
                         <div className="absolute bottom-4 md:bottom-8 left-0 right-0 flex justify-center gap-1 md:gap-2">
-                            {posts.find(post => post.images?.some(img => img === selectedImage))?.images.map((_, index) => (
+                            {posts.find(post => post.images?.some(img => {
+                                const imgUrl = typeof img === 'string' ? img : img.url;
+                                return imgUrl === selectedImage;
+                            }))?.images.map((_, index) => (
                                 <button
                                     key={index}
                                     onClick={() => {
-                                        setSelectedImageIndex(index);
-                                        setSelectedImage(posts.find(post => post.images?.some(img => img === selectedImage)).images[index]);
+                                        const currentPost = posts.find(post => post.images?.some(img => {
+                                            const imgUrl = typeof img === 'string' ? img : img.url;
+                                            return imgUrl === selectedImage;
+                                        }));
+                                        if (currentPost && currentPost.images) {
+                                            setSelectedImageIndex(index);
+                                            const newImage = currentPost.images[index];
+                                            const newImageUrl = typeof newImage === 'string' ? newImage : newImage.url;
+                                            setSelectedImage(newImageUrl);
+                                        }
                                     }}
                                     className={`w-1.5 md:w-2 h-1.5 md:h-2 rounded-full transition-all ${index === selectedImageIndex
                                         ? 'bg-[#00FFB2] w-3 md:w-4'

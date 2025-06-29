@@ -58,6 +58,9 @@ export default function CreateEvent() {
   // Venue Owners
   const [venues, setVenues] = useState([]);
   const [selectedVenueId, setSelectedVenueId] = useState("");
+  const [venueSearch, setVenueSearch] = useState("");
+  const [sponsorSearch, setSponsorSearch] = useState("");
+  const [curatorSearch, setCuratorSearch] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -185,11 +188,32 @@ export default function CreateEvent() {
     fetchVenues();
   }, []);
 
+  // Venue selection
+  const handleSelectVenue = (id) => {
+    if (id) setSelectedVenueId(id);
+    setVenueSearch("");
+  };
+  const handleRemoveVenue = () => {
+    setSelectedVenueId("");
+  };
+
+  // Filter functions for search
+  const filteredVenues = venues.filter(venue => 
+    venue.name.toLowerCase().includes(venueSearch.toLowerCase())
+  );
+  const filteredSponsors = sponsors.filter(sponsor => 
+    sponsor.email.toLowerCase().includes(sponsorSearch.toLowerCase())
+  );
+  const filteredCurators = curators.filter(curator => 
+    curator.email.toLowerCase().includes(curatorSearch.toLowerCase())
+  );
+
   // Add sponsor
   const handleAddSponsor = (e) => {
     const id = e.target.value;
     if (id && !sponsorIds.includes(id)) {
       setSponsorIds([...sponsorIds, id]);
+      setSponsorSearch("");
     }
   };
   // Remove sponsor
@@ -201,20 +225,12 @@ export default function CreateEvent() {
     const id = e.target.value;
     if (id && !curatorIds.includes(id)) {
       setCuratorIds([...curatorIds, id]);
+      setCuratorSearch("");
     }
   };
   // Remove curator
   const handleRemoveCurator = (id) => {
     setCuratorIds(curatorIds.filter((cid) => cid !== id));
-  };
-
-  // Venue selection
-  const handleSelectVenue = (e) => {
-    const id = e.target.value;
-    if (id) setSelectedVenueId(id);
-  };
-  const handleRemoveVenue = () => {
-    setSelectedVenueId("");
   };
 
   const handleSubmit = async () => {
@@ -568,13 +584,33 @@ export default function CreateEvent() {
                       );
                     })}
                   </div>
-                  <div className="relative flex items-center gap-2">
-                    <select className="w-full bg-[#1F1F1F] text-white rounded-lg p-3 border border-[#2D2F36] focus:outline-none focus:border-[#2FE2AF]" onChange={handleAddSponsor} value="">
-                      <option value="">Select a sponsor</option>
-                      {sponsors.length > 0 && sponsors.filter(s => !sponsorIds.includes(s._id)).map((sponsor) => (
-                        <option value={sponsor._id} key={sponsor._id}>{sponsor.email}</option>
-                      ))}
-                    </select>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder="Search sponsors..."
+                      value={sponsorSearch}
+                      onChange={(e) => setSponsorSearch(e.target.value)}
+                      className="w-full bg-[#1F1F1F] text-white rounded-lg p-3 border border-[#2D2F36] focus:outline-none focus:border-[#2FE2AF]"
+                    />
+                    {sponsorSearch && (
+                      <div className="absolute z-10 w-full mt-1 bg-[#1F1F1F] border border-[#2D2F36] rounded-lg max-h-48 overflow-y-auto">
+                        {filteredSponsors.filter(s => !sponsorIds.includes(s._id)).length > 0 ? (
+                          filteredSponsors.filter(s => !sponsorIds.includes(s._id)).map((sponsor) => (
+                            <div
+                              key={sponsor._id}
+                              onClick={() => handleAddSponsor({ target: { value: sponsor._id } })}
+                              className="p-3 hover:bg-[#2D2F36] cursor-pointer text-white border-b border-[#2D2F36] last:border-b-0"
+                            >
+                              {sponsor.email}
+                            </div>
+                          ))
+                        ) : (
+                          <div className="p-3 text-[#96A1AE] text-center">
+                            No sponsors found
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
                 {/* Venues Section */}
@@ -593,13 +629,33 @@ export default function CreateEvent() {
                       </span>
                     )}
                   </div>
-                  <div className="relative flex items-center gap-2">
-                    <select className="w-full bg-[#1F1F1F] text-white rounded-lg p-3 border border-[#2D2F36] focus:outline-none focus:border-[#2FE2AF]" onChange={handleSelectVenue} value="">
-                      <option value="">Select a venue</option>
-                      {venues.length > 0 && venues.filter(v => v._id !== selectedVenueId).map((venue) => (
-                        <option value={venue._id} key={venue._id}>{venue.name}</option>
-                      ))}
-                    </select>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder="Search venues..."
+                      value={venueSearch}
+                      onChange={(e) => setVenueSearch(e.target.value)}
+                      className="w-full bg-[#1F1F1F] text-white rounded-lg p-3 border border-[#2D2F36] focus:outline-none focus:border-[#2FE2AF]"
+                    />
+                    {venueSearch && (
+                      <div className="absolute z-10 w-full mt-1 bg-[#1F1F1F] border border-[#2D2F36] rounded-lg max-h-48 overflow-y-auto">
+                        {filteredVenues.length > 0 ? (
+                          filteredVenues.map((venue) => (
+                            <div
+                              key={venue._id}
+                              onClick={() => handleSelectVenue(venue._id)}
+                              className="p-3 hover:bg-[#2D2F36] cursor-pointer text-white border-b border-[#2D2F36] last:border-b-0"
+                            >
+                              {venue.name}
+                            </div>
+                          ))
+                        ) : (
+                          <div className="p-3 text-[#96A1AE] text-center">
+                            No venues found
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
                 {/* Curators Section */}
@@ -621,13 +677,33 @@ export default function CreateEvent() {
                       );
                     })}
                   </div>
-                  <div className="relative flex items-center gap-2">
-                    <select className="w-full bg-[#1F1F1F] text-white rounded-lg p-3 border border-[#2D2F36] focus:outline-none focus:border-[#2FE2AF]" onChange={handleAddCurator} value="">
-                      <option value="">Select a curator</option>
-                      {curators.length > 0 && curators.filter(c => !curatorIds.includes(c._id)).map((curator) => (
-                        <option value={curator._id} key={curator._id}>{curator.email}</option>
-                      ))}
-                    </select>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder="Search curators..."
+                      value={curatorSearch}
+                      onChange={(e) => setCuratorSearch(e.target.value)}
+                      className="w-full bg-[#1F1F1F] text-white rounded-lg p-3 border border-[#2D2F36] focus:outline-none focus:border-[#2FE2AF]"
+                    />
+                    {curatorSearch && (
+                      <div className="absolute z-10 w-full mt-1 bg-[#1F1F1F] border border-[#2D2F36] rounded-lg max-h-48 overflow-y-auto">
+                        {filteredCurators.filter(c => !curatorIds.includes(c._id)).length > 0 ? (
+                          filteredCurators.filter(c => !curatorIds.includes(c._id)).map((curator) => (
+                            <div
+                              key={curator._id}
+                              onClick={() => handleAddCurator({ target: { value: curator._id } })}
+                              className="p-3 hover:bg-[#2D2F36] cursor-pointer text-white border-b border-[#2D2F36] last:border-b-0"
+                            >
+                              {curator.email}
+                            </div>
+                          ))
+                        ) : (
+                          <div className="p-3 text-[#96A1AE] text-center">
+                            No curators found
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
                 {/* Navigation Buttons */}
@@ -729,13 +805,18 @@ export default function CreateEvent() {
                           </div>
                           <div>
                             <label className="block text-sm text-white mb-2">Ticket Type</label>
-                            <input
-                              type="text"
-                              placeholder="e.g. Early Bird"
+                            <select
                               value={ticket.type}
                               onChange={(e) => handleTicketChange(index, "type", e.target.value)}
                               className="w-full bg-[#1F1F1F] text-white p-3 rounded-lg border border-[#2D2F36] focus:outline-none focus:border-[#2FE2AF]"
-                            />
+                            >
+                              <option value="">Select ticket type</option>
+                              <option value="Standard">Standard</option>
+                              <option value="VIP">VIP</option>
+                              <option value="Early Bird">Early Bird</option>
+                              <option value="Group">Group</option>
+                              <option value="Other">Other</option>
+                            </select>
                           </div>
                         </div>
                         <div className="grid grid-cols-2 gap-4 mb-4">

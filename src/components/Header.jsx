@@ -40,8 +40,9 @@ export default function Header() {
         <nav className="flex items-center justify-between">
           {/* Logo */}
           <div className="flex lg:flex-1 items-center">
-            <a href="/" className="-m-1.5 p-1.5 flex items-center gap-2">
-              <img alt="FaderFanz" src="/faderfanz.png" className="h-16 w-auto rounded" />
+            <a href="/" className="-m-1.5 p-1.5 flex items-center gap-2 h-16">
+              {/* <img alt="FaderFanz" src="/faderfanz.png" className=" h-16 w-auto rounded" /> */}
+              <img alt="FaderFanz" src="/faderfanz.png" className="absolute -top-7 left-0 h-36 w-auto rounded" />
             </a>
           </div>
 
