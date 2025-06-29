@@ -204,9 +204,9 @@ export default function CreateEvent() {
   const filteredSponsors = sponsors.filter(sponsor => 
     sponsor.email.toLowerCase().includes(sponsorSearch.toLowerCase())
   );
-  const filteredCurators = curators.filter(curator => 
-    curator.email.toLowerCase().includes(curatorSearch.toLowerCase())
-  );
+  const filteredCurators = curators.filter(curator => {
+    return curator.firstName.toLowerCase().includes(curatorSearch.toLowerCase()) || curator.lastName.toLowerCase().includes(curatorSearch.toLowerCase())
+  });
 
   // Add sponsor
   const handleAddSponsor = (e) => {
@@ -601,7 +601,7 @@ export default function CreateEvent() {
                               onClick={() => handleAddSponsor({ target: { value: sponsor._id } })}
                               className="p-3 hover:bg-[#2D2F36] cursor-pointer text-white border-b border-[#2D2F36] last:border-b-0"
                             >
-                              {sponsor.email}
+                              {sponsor.businessName}
                             </div>
                           ))
                         ) : (
@@ -694,7 +694,7 @@ export default function CreateEvent() {
                               onClick={() => handleAddCurator({ target: { value: curator._id } })}
                               className="p-3 hover:bg-[#2D2F36] cursor-pointer text-white border-b border-[#2D2F36] last:border-b-0"
                             >
-                              {curator.email}
+                              {curator.firstName} {curator.lastName}  ({curator.email})
                             </div>
                           ))
                         ) : (
