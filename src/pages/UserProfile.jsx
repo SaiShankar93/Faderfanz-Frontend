@@ -9,8 +9,8 @@ import { MdEvent, MdPhotoLibrary } from 'react-icons/md';
 import { Dialog, Menu } from '@headlessui/react';
 import { CuratorCard } from "../components/CuratorCard";
 import { VenueOwnerCard } from "../components/VenueOwnerCard";
-import { toast } from 'react-hot-toast';
 import axiosInstance from "@/configs/axiosConfig";
+import { toast } from "react-toastify";
 
 const UserProfile = () => {
     const { id } = useParams();
@@ -153,11 +153,11 @@ const UserProfile = () => {
                 if (blogPostsData) setBlogPosts(blogPostsData);
 
                 // Set default suggestions (can be replaced with API call later)
-                setSuggestions([
-                    { id: 1, name: "DJ Kazi", rating: 4.8, image: "/Images/curator-img.png" },
-                    { id: 2, name: "Event Pro", rating: 4.6, image: "/Images/curator-img.png" },
-                    { id: 3, name: "Music Master", rating: 4.9, image: "/Images/curator-img.png" }
-                ]);
+                // setSuggestions([
+                //     { id: 1, name: "DJ Kazi", rating: 4.8, image: "/Images/curator-img.png" },
+                //     { id: 2, name: "Event Pro", rating: 4.6, image: "/Images/curator-img.png" },
+                //     { id: 3, name: "Music Master", rating: 4.9, image: "/Images/curator-img.png" }
+                // ]);
 
                 // Set default media items (can be replaced with API call later)
                 setMediaItems([
@@ -181,9 +181,36 @@ const UserProfile = () => {
         }
     };
 
+    const handleFollow = async (userId) => {
+        try {
+            const response = await axiosInstance.post(`profiles/curator/${userId}/follow`,{
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                }
+            });
+            toast.success('Followed successfully');
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Failed to follow user');
+            console.error('Error following user:', error);
+        }
+    }
+
+    const fetchSuggestions = async () => {
+        try {
+            const response = await axiosInstance.get('trending/curators');
+            setSuggestions(response.data.data);
+        } catch (error) {
+            console.error('Error fetching suggestions:', error);
+            setError(error.response?.data?.message || 'Failed to load suggestions');
+        } finally {
+            setLoading(false);
+        }
+    }
+
     // Fetch data on component mount
     useEffect(() => {
-        fetchUserProfile();
+        fetchUserProfile()
+        fetchSuggestions();
     }, []);
 
     // Dynamic navigation items based on user role
@@ -1646,7 +1673,7 @@ const UserProfile = () => {
                     <div className="bg-[#231D30] rounded-lg p-6">
                         <div className="flex justify-between items-center mb-4">
                             <h2 className="text-white text-xl">Suggestions</h2>
-                            <Link to="/suggestions" className="text-gray-400 text-sm hover:text-[#00FFB2]">
+                            <Link to="/events/all/all" className="text-gray-400 text-sm hover:text-[#00FFB2]">
                                 See All
                             </Link>
                         </div>
@@ -1655,19 +1682,19 @@ const UserProfile = () => {
                                 <div key={suggestion.id} className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
                                         <img
-                                            src={suggestion.image}
+                                            src={suggestion.images?.[0] ? `${import.meta.env.VITE_SERVER_URL}${suggestion.images[0]}` : "/Images/default-avatar.jpg"}
                                             alt={suggestion.name}
                                             className="w-10 h-10 rounded-full"
                                         />
                                         <div>
-                                            <h3 className="text-white">{suggestion.name}</h3>
+                                            <h3 className="text-white">{suggestion.firstName} {suggestion.lastName}</h3>
                                             <div className="flex items-center">
                                                 <span className="text-yellow-400 text-sm">★</span>
-                                                <span className="text-gray-400 text-sm ml-1">{suggestion.rating}</span>
+                                                <span className="text-gray-400 text-sm ml-1">{suggestion.averageRating || 0} </span>
                                             </div>
                                         </div>
                                     </div>
-                                    <button className="bg-[#3FE1B6] text-black px-4 py-1 rounded-md text-sm hover:bg-[#3FE1B6]/90">
+                                    <button className="bg-[#3FE1B6] text-black px-4 py-1 rounded-md text-sm hover:bg-[#3FE1B6]/90" onClick={() => handleFollow(suggestion._id)}>
                                         Follow
                                     </button>
                                 </div>
