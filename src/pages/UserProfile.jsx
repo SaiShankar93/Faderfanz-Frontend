@@ -846,7 +846,7 @@ const UserProfile = () => {
                                     if(post?.postCategory !== activeTab.toLowerCase()) return null
                                     if(activeTab.toLowerCase() === 'actions' ) return (
                                         <div className="bg-[#231D30] rounded-lg text-center flex justify-between items-center p-4">
-                                            <p className="text-white/60 text-lg mb-4">{post.message}</p>
+                                            <p className="text-white/60 text-lg mb-4 text-left w-full">{post.message}</p>
                                             <Link 
                                                 to={`${import.meta.env.VITE_FRONTEND_URL}${post.link}`}
                                                 className="text-[#00FFB2] hover:text-[#00FFB2]/80 underline"
@@ -916,7 +916,7 @@ const UserProfile = () => {
                                                     <AiOutlineHeart className="w-4 h-4 md:w-5 md:h-5" />
                                                 )}
                                                 <span className={post.isLiked ? "text-[#00FFB2]" : ""}>
-                                                    {post.likes} Like
+                                                    {post.likes.length} Like
                                                 </span>
                                             </button>
                                             <button
