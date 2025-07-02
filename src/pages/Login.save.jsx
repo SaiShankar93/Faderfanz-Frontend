@@ -162,6 +162,9 @@ const Login = () => {
                                 <option value="curator" className="text-black">
                                     Curator
                                 </option>
+                                <option value="vendor" className="text-black">
+                                    Vendor
+                                </option>
                                 <option value="guest" className="text-black">
                                     Guest
                                 </option>

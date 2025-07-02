@@ -54,6 +54,8 @@ export default function CreateEvent() {
   const [sponsorIds, setSponsorIds] = useState([]);
   const [curators, setCurators] = useState([]);
   const [curatorIds, setCuratorIds] = useState([]);
+  const [vendors, setVendors] = useState([]);
+  const [vendorIds, setVendorIds] = useState([]);
 
   // Venue Owners
   const [venues, setVenues] = useState([]);
@@ -61,9 +63,11 @@ export default function CreateEvent() {
   const [venueSearch, setVenueSearch] = useState("");
   const [sponsorSearch, setSponsorSearch] = useState("");
   const [curatorSearch, setCuratorSearch] = useState("");
+  const [vendorSearch, setVendorSearch] = useState("");
   const [venueFocused, setVenueFocused] = useState(false);
   const [sponsorFocused, setSponsorFocused] = useState(false);
   const [curatorFocused, setCuratorFocused] = useState(false);
+  const [vendorFocused, setVendorFocused] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -186,9 +190,18 @@ export default function CreateEvent() {
         setVenues([]);
       }
     };
+    const fetchVendors = async () => {
+      try {
+        const { data } = await axiosInstance.get("/vendors");
+        setVendors(data);
+      } catch (err) {
+        setVendors([]);
+      }
+    };
     fetchSponsors();
     fetchCurators();
     fetchVenues();
+    fetchVendors();
   }, []);
 
   // Venue selection
@@ -209,6 +222,9 @@ export default function CreateEvent() {
   );
   const filteredCurators = curators.filter(curator => {
     return curator.firstName.toLowerCase().includes(curatorSearch.toLowerCase()) || curator.lastName.toLowerCase().includes(curatorSearch.toLowerCase())
+  });
+  const filteredVendors = vendors.filter(vendor => {
+    return vendor.business_name?.toLowerCase().includes(vendorSearch.toLowerCase()) || vendor.email?.toLowerCase().includes(vendorSearch.toLowerCase())
   });
 
   // Add sponsor
@@ -235,6 +251,18 @@ export default function CreateEvent() {
   const handleRemoveCurator = (id) => {
     setCuratorIds(curatorIds.filter((cid) => cid !== id));
   };
+  // Add vendor
+  const handleAddVendor = (e) => {
+    const id = e.target.value;
+    if (id && !vendorIds.includes(id)) {
+      setVendorIds([...vendorIds, id]);
+      setVendorSearch("");
+    }
+  };
+  // Remove vendor
+  const handleRemoveVendor = (id) => {
+    setVendorIds(vendorIds.filter((vid) => vid !== id));
+  };
 
   const handleSubmit = async () => {
     const fData = new FormData();
@@ -250,6 +278,7 @@ export default function CreateEvent() {
     fData.append("tickets", JSON.stringify(tickets));
     fData.append("sponsors", JSON.stringify(sponsorIds));
     fData.append("curators", JSON.stringify(curatorIds));
+    fData.append("vendors", JSON.stringify(vendorIds));
     fData.append("eventImages", selectedFile);
     if (selectedVenueId) {
       fData.append("venue", selectedVenueId);
@@ -603,7 +632,7 @@ export default function CreateEvent() {
                           filteredSponsors.filter(s => !sponsorIds.includes(s._id)).map((sponsor) => (
                             <div
                               key={sponsor._id}
-                              onClick={() => handleAddSponsor({ target: { value: sponsor._id } })}
+                              onMouseDown={() => handleAddSponsor({ target: { value: sponsor._id } })}
                               className="p-3 hover:bg-[#2D2F36] cursor-pointer text-white border-b border-[#2D2F36] last:border-b-0"
                             >
                               {sponsor.businessName}
@@ -650,7 +679,7 @@ export default function CreateEvent() {
                           filteredVenues.map((venue) => (
                             <div
                               key={venue._id}
-                              onClick={() => handleSelectVenue(venue._id)}
+                              onMouseDown={() => handleSelectVenue(venue._id)}
                               className="p-3 hover:bg-[#2D2F36] cursor-pointer text-white border-b border-[#2D2F36] last:border-b-0"
                             >
                               {venue.name}
@@ -700,7 +729,7 @@ export default function CreateEvent() {
                           filteredCurators.filter(c => !curatorIds.includes(c._id)).map((curator) => (
                             <div
                               key={curator._id}
-                              onClick={() => handleAddCurator({ target: { value: curator._id } })}
+                              onMouseDown={() => handleAddCurator({ target: { value: curator._id } })}
                               className="p-3 hover:bg-[#2D2F36] cursor-pointer text-white border-b border-[#2D2F36] last:border-b-0"
                             >
                               {curator.firstName} {curator.lastName}  ({curator.email})
@@ -709,6 +738,56 @@ export default function CreateEvent() {
                         ) : (
                           <div className="p-3 text-[#96A1AE] text-center">
                             No curators found
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                {/* Vendors Section */}
+                <div className="mb-6">
+                  <h3 className="text-white text-lg font-semibold mb-3">Vendors</h3>
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="text-sm text-white">
+                      Choose vendor(s)
+                    </label>
+                  </div>
+                  <div className="flex gap-2 mb-2 flex-wrap">
+                    {vendorIds.map((id) => {
+                      const vendor = vendors.find((v) => v._id === id);
+                      return (
+                        <span key={id} className="bg-[#2FE2AF] text-black px-3 py-1 rounded-full flex items-center mr-2 mb-2">
+                          {vendor?.business_name || vendor?.email || id}
+                          <button type="button" className="ml-2 text-black" onClick={() => handleRemoveVendor(id)}>&times;</button>
+                        </span>
+                      );
+                    })}
+                  </div>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder="Search vendors..."
+                      value={vendorSearch}
+                      onChange={(e) => setVendorSearch(e.target.value)}
+                      onFocus={() => setVendorFocused(true)}
+                      onBlur={() => setTimeout(() => setVendorFocused(false), 200)}
+                      className="w-full bg-[#1F1F1F] text-white rounded-lg p-3 border border-[#2D2F36] focus:outline-none focus:border-[#2FE2AF]"
+                    />
+                    {(vendorSearch || vendorFocused) && (
+                      <div className="absolute z-10 w-full mt-1 bg-[#1F1F1F] border border-[#2D2F36] rounded-lg max-h-48 overflow-y-auto">
+                        {filteredVendors.filter(v => !vendorIds.includes(v._id)).length > 0 ? (
+                          filteredVendors.filter(v => !vendorIds.includes(v._id)).map((vendor) => (
+                            <div
+                              key={vendor._id}
+                              onMouseDown={() => handleAddVendor({ target: { value: vendor._id } })}
+                              className="p-3 hover:bg-[#2D2F36] cursor-pointer text-white border-b border-[#2D2F36] last:border-b-0"
+                            >
+                              {vendor.business_name} ({vendor.email})
+                            </div>
+                          ))
+                        ) : (
+                          <div className="p-3 text-[#96A1AE] text-center">
+                            No vendors found
                           </div>
                         )}
                       </div>

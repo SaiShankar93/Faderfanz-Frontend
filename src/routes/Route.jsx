@@ -44,6 +44,7 @@ import SponsorRegistration from "@/pages/SponsorRegistration";
 import VenueOwnerRegistration from "@/pages/VenueOwnerRegistration";
 import CuratorRegistration from "@/pages/CuratorRegistration";
 import GuestRegistration from "@/pages/GuestRegistration";
+import VendorRegistration from "@/pages/VendorRegistration";
 import RoleSelectionModal from "@/components/RoleSelectionModal";
 import RegistrationForm from "@/pages/RegistrationForm";
 import AllSponsers from "@/pages/AllSponsers";
@@ -304,6 +305,12 @@ export const userRoutes = [
     title: "Guest Registration",
     component: <GuestRegistration />,
     path: "/register/guest",
+  },
+  {
+    name: "vendor-register",
+    title: "Vendor Registration",
+    component: <VendorRegistration />,
+    path: "/register/vendor",
   },
   {
     name: "register-role-select",

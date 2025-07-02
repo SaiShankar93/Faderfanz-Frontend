@@ -22,6 +22,11 @@ const RoleSelectionModal = () => {
             description: "Register as an event manager, artist, DJ etc."
         },
         {
+            id: "vendor",
+            title: "Vendor",
+            description: "Register as equipment and service provider"
+        },
+        {
             id: "guest",
             title: "Guest/Fans",
             description: "Register as a fan/guest"
@@ -44,6 +49,9 @@ const RoleSelectionModal = () => {
                 break;
             case "curator":
                 navigate("/register/curator");
+                break;
+            case "vendor":
+                navigate("/register/vendor");
                 break;
             case "guest":
                 navigate("/register/guest");
@@ -70,7 +78,7 @@ const RoleSelectionModal = () => {
 
                 <p className="text-gray-400 mb-4 font-sen">Register as:</p>
 
-                <div className="space-y-3">
+                <div className="space-y-3 max-h-[50vh] overflow-y-auto p-2">
                     {roleOptions.map((role) => (
                         <button
                             key={role.id}
