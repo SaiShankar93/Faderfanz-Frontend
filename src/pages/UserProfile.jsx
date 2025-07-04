@@ -660,7 +660,7 @@ const UserProfile = () => {
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                             <div>
                                 <h1 className="text-white text-xl md:text-2xl font-medium">Welcome back,</h1>
-                                <p className="text-gray-400 text-sm md:text-base">{userData.firstName} {userData.lastName}</p>
+                                <p className="text-gray-400 text-sm md:text-base">{userData.firstName} {userData.lastName} {userData.owner_name}</p>
                             </div>
                             <div className="relative w-full sm:w-auto">
                                 {/* <button
@@ -1557,7 +1557,7 @@ const UserProfile = () => {
                         <h2 className="text-white font-medium">
                             {userData?.firstName && userData?.lastName
                                 ? `${userData.firstName} ${userData.lastName}`
-                                : userData?.businessName || userData?.venueName || userData?.stageName || 'User'
+                                : userData?.businessName || userData?.venueName || userData?.stageName || userData?.owner_name || 'User'
                             }
                         </h2>
                         <p className="text-gray-400 text-sm capitalize">
