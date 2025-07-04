@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { IoChevronDown } from 'react-icons/io5';
 import { useAuth } from '@/context/AuthContext';
-import { toast } from 'react-hot-toast';
+import { toast } from "react-toastify";
 import axiosInstance from '@/configs/axiosConfig'; // Import your axios instance
 
 const Settings = () => {
@@ -170,13 +170,23 @@ const Settings = () => {
             return;
         }
         try {
+        
             setIsLoading(true);
             // Use the current email from profileData or emailData
             const oldEmail = emailData.currentEmail || profileData.email;
             const newEmail = emailData.newEmail;
-            await axiosInstance.put('/auth/change-email', { oldEmail, newEmail });
-            toast.success('Email updated successfully. Please verify your new email.');
-            setEmailData(prev => ({ ...prev, currentEmail: newEmail, newEmail: '', confirmEmail: '' }));
+            const {data}=await axiosInstance.put('/auth/change-email', { oldEmail, newEmail },{
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                }
+            });
+            if (data.user) {
+                toast.success('Email updated successfully. Please verify your new email.');
+                setEmailData(prev => ({ ...prev, currentEmail: newEmail, newEmail: '', confirmEmail: '' }));
+            } else {
+                toast.error(data.message);
+            }
             // Optionally, refetch user data to update UI
             fetchUserData();
         } catch (error) {

@@ -570,7 +570,7 @@ const CuratorCard = ({ curator, onSocialClick }) => {
         <div className="w-full sm:w-60 h-48 sm:h-full flex-shrink-0">
           <img
             // src={curator.images?.[0] || "/Images/post.png"}
-            src={"/Images/post.png"}
+            src={`${import.meta.env.VITE_SERVER_URL}${curator.images?.[0]}` || "/Images/post.png"}
             alt={curator.stageName}
             className="w-full h-full object-cover"
           />

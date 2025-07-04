@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { EventCard } from "../components/EventCard"; // Ensure EventCard is imported correctly
 import { FaInstagram, FaTwitter, FaFacebook } from "react-icons/fa";
 import { Swiper, SwiperSlide } from "swiper/react";
+import parse from 'html-react-parser';
 
 import "swiper/css";
 import "swiper/css/pagination";
@@ -166,7 +167,9 @@ const formatDate = (dateString) => {
               </defs>
             </svg>
             <div className="flex py-12">
-              {blogData?.content || "No content"}
+              <div className="blog-content max-w-none text-white">
+                {blogData?.content ? parse(blogData.content) : "No content"}
+              </div>
             </div>
           </div>
         </div>

@@ -41,12 +41,12 @@ export default function CreateEvent() {
   const [eventTypeTicketing, setEventTypeTicketing] = useState("ticketed"); // Default: Ticketed Event
   const [tickets, setTickets] = useState([
     {
-      name: "Early Bird",
-      type: "Early Bird",
-      price: 799,
-      available: 100,
-      description: "Limited early bird tickets",
-      benefits: ["Entry to main event", "Welcome drink"]
+      name: "",
+      type: "",
+      price: "",
+      available: "",
+      description: "",
+      benefits: []
     }
   ]);
 

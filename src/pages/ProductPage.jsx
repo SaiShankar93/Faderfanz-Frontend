@@ -94,6 +94,9 @@ const EventPage = ({}) => {
     gst: 0,
     total: 0
   });
+  console.log("event",event);
+  
+  const [embedUrl,setEmbedUrl] = useState(``);
 
   // Helper function to calculate price details (matching backend calculation)
   const calculatePriceDetails = (price, quantity) => {
@@ -147,6 +150,10 @@ const EventPage = ({}) => {
         
         console.log('event data:', eventData);
         setEvent(eventData);
+        const mapQuery = encodeURIComponent(
+          `${eventData?.location?.address}, ${eventData?.location?.city}, ${eventData?.location?.state}, ${eventData?.location?.country}, ${eventData?.location?.postalCode}`
+        );
+        setEmbedUrl(`https://www.google.com/maps?q=${mapQuery}&output=embed`);
         
         // Initialize the ticket price and selected ticket type if available
         if (eventData.tickets && eventData.tickets.length > 0) {
@@ -801,7 +808,7 @@ const EventPage = ({}) => {
                     ></iframe>
                   ) : (
                     <iframe
-                      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3771.803960726307!2d72.82824147499422!3d19.0507943570711!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3be7c9c000000001%3A0x3c1c64a0f6c13656!2sBandra%20West%2C%20Mumbai%2C%20Maharashtra!5e0!3m2!1sen!2sin!4v1709825037044!5m2!1sen!2sin"
+                      src={embedUrl}
                       className="w-full h-full rounded-xl"
                       allowFullScreen=""
                       loading="lazy"
@@ -1005,12 +1012,14 @@ const EventPage = ({}) => {
                     const curatorImage = isObject && curator.profileImage ? 
                       getFullImageUrl(curator.profileImage) : 
                       "/Images/curator-img.png";
+
+                      console.log(event.curator.profileImage)
                     
                     return (
                       <div key={i} className="flex flex-col items-center">
                         <div className="w-32 h-32 rounded-full overflow-hidden mb-2">
                           <img
-                            src={curatorImage}
+                            src={`${import.meta.env.VITE_SERVER_URL}${event.curator.profileImage}` || curatorImage}
                             alt={curatorName}
                             className="w-full h-full object-cover"
                           />

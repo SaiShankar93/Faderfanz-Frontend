@@ -76,10 +76,15 @@ const Blogs = () => {
         },
       });
       const data = response.data;
-      console.log(data)
       if (data.success) {
         toast.success("Blog added successfully");
         getBlogs();
+        setBlogTitle("");
+        setBlogContent("");
+        setTags([]);
+        setAuthor("");
+        setCategory("");
+        setBlogImage(null);
       } else toast.error("Blog Not Added");
     } catch (error) {
       console.error("Error adding blog:", error);

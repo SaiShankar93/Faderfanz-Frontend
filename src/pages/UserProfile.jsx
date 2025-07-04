@@ -662,8 +662,8 @@ const UserProfile = () => {
                                 <h1 className="text-white text-xl md:text-2xl font-medium">Welcome back,</h1>
                                 <p className="text-gray-400 text-sm md:text-base">{userData.firstName} {userData.lastName} {userData.owner_name}</p>
                             </div>
-                            <div className="relative w-full sm:w-auto">
-                                {/* <button
+                            {userData.role === 'curator' && <div className="relative w-full sm:w-auto">
+                                <button
                                     onClick={() => setIsCreateMenuOpen(!isCreateMenuOpen)}
                                     className="w-full sm:w-auto bg-[#00FFB2] text-black px-4 py-2 rounded-lg flex items-center justify-center sm:justify-start gap-2 text-sm md:text-base"
                                 >
@@ -671,26 +671,25 @@ const UserProfile = () => {
                                     <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none">
                                         <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                     </svg>
-                                </button> */}
-
-                                {isCreateMenuOpen && (
+                                </button>
+                                {(isCreateMenuOpen ) && (
                                     <div className="absolute right-0 mt-2 w-full sm:w-48 bg-[#231D30] rounded-lg shadow-lg py-2 z-10">
-                                        <button className="w-full text-left px-4 py-2 text-sm md:text-base text-white hover:bg-[#1E1B33]">
+                                        {/* <button className="w-full text-left px-4 py-2 text-sm md:text-base text-white hover:bg-[#1E1B33]">
                                             Create Post
-                                        </button>
+                                        </button> */}
                                         {(userData.role === 'curator' || userData.role === 'venueOwner') && (
-                                            <button className="w-full text-left px-4 py-2 text-sm md:text-base text-white hover:bg-[#1E1B33]">
+                                            <button onClick={() => navigate('/create-event')} className="w-full text-left px-4 py-2 text-sm md:text-base text-white hover:bg-[#1E1B33]">
                                                 Create Event
                                             </button>
                                         )}
-                                        {userData.role === 'sponsor' && (
+                                        {/* {userData.role === 'sponsor' && (
                                             <button className="w-full text-left px-4 py-2 text-sm md:text-base text-white hover:bg-[#1E1B33]">
                                                 Create Product
                                             </button>
-                                        )}
+                                        )} */}
                                     </div>
                                 )}
-                            </div>
+                            </div>}
                         </div>
 
                         <div>
@@ -1603,16 +1602,7 @@ const UserProfile = () => {
                             );
                         })}
                         
-                        {/* Create Event Option for Curators and Venue Owners */}
-                        {(userData.role === 'curator' || userData.role === 'venueOwner') && (
-                            <Link
-                                to="/create-event"
-                                className="w-full flex items-center gap-3 p-2 md:p-3 rounded-lg text-sm md:text-base text-white/80 hover:bg-[#231D30]"
-                            >
-                                <MdEvent className="w-4 h-4 md:w-5 md:h-5" />
-                                <span className="flex-1 text-left">Create Event</span>
-                            </Link>
-                        )}
+                        
                     </div>
                 </div>
 

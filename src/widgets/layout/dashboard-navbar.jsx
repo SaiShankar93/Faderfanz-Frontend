@@ -199,7 +199,7 @@ export function DashboardNavbar() {
               </MenuItem>
             </MenuList>
           </Menu> */}
-          {!isDarkMode ? (
+          {/* {!isDarkMode ? (
             <IconButton
               variant="text"
               color="blue-gray"
@@ -234,7 +234,7 @@ export function DashboardNavbar() {
             onClick={() => setOpenConfigurator(dispatch, true)}
           >
             <Cog6ToothIcon className="h-5 w-5 text-blue-gray-500 dark:text-gray-300 " />
-          </IconButton>
+          </IconButton> */}
         </div>
       </div>
     </Navbar>

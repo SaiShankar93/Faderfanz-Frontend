@@ -48,7 +48,7 @@ export function BlogCard({ event }) {
                     {/* Date and Author */}
                     <div className="flex items-center justify-between text-sm text-gray-400 mb-3">
                         <p>{formatDate(event?.createdAt)}</p>
-                        <p>Publish by: {"No Author"}</p>
+                        <p>Publish by: {event?.author}</p>
                     </div>
                 </div>
             </div>
