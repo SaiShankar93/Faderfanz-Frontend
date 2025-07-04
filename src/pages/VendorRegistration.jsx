@@ -269,7 +269,10 @@ const VendorRegistration = () => {
 
       if (response.data.vendor) {
         toast.success("Registration successful!");
-        navigate("/profile");
+        localStorage.setItem("accessToken", response.data.token);
+        localStorage.setItem("token", response.data.token);
+        localStorage.setItem("user", JSON.stringify(response.data.vendor));
+        navigate("/suggestions");
       } else {
         toast.error(response.data.message || "Registration failed");
       }

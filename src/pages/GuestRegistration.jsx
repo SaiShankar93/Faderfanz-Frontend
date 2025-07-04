@@ -206,7 +206,10 @@ const GuestRegistration = () => {
 
       if (response.data.guest) {
         toast.success("Registration successful!");
-        navigate("/login");
+        localStorage.setItem("accessToken", response.data.token);
+        localStorage.setItem("token", response.data.token);
+        localStorage.setItem("user", JSON.stringify(response.data.guest));
+        navigate("/suggestions");
       } else {
         toast.error(response.data.message);
       }

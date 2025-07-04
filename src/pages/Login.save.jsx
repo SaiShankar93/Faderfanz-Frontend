@@ -41,6 +41,7 @@ const Login = () => {
 
             if (data && data.token) {
                 localStorage.setItem("accessToken", data.token);
+                localStorage.setItem("token", data.token);
                 localStorage.setItem("user", JSON.stringify(data.user));
                 toast.success("Login successful");
                 navigate("/profile"); // Navigate to profile after login

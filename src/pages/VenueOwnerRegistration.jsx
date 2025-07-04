@@ -264,8 +264,11 @@ const VenueOwnerRegistration = () => {
       console.log(response);
 
       if (response.data.data) {
+        localStorage.setItem("accessToken", response.data.token);
+        localStorage.setItem("user", JSON.stringify(response.data.data));
+        localStorage.setItem("token", response.data.token);
         toast.success("Registration successful!");
-        navigate("/login");
+        navigate("/suggestions");
       } else {
         toast.error(response.data.message);
       }

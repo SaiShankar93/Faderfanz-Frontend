@@ -133,7 +133,10 @@ const CuratorRegistration = () => {
             console.log(response)
             if(response.data.curator){
                 toast.success("Registration successful!");
-                navigate('/login');
+                localStorage.setItem("accessToken", response.data.token);
+                localStorage.setItem("token", response.data.token);
+                localStorage.setItem("user", JSON.stringify(response.data.curator));
+                navigate('/suggestions'); 
             }else{
                 toast.error(response.data.message);
             }

@@ -53,6 +53,7 @@ import UserProfile from "@/pages/UserProfile";
 import AllCrowdfunding from "@/components/AllCrowdfunding";
 import AllVenueOwners from "@/pages/AllVenueOwners";
 import CreateCampaign from "@/pages/createCampaign";
+import Suggestions from "@/pages/Suggestions";
 
 export const userRoutes = [
   {
@@ -180,6 +181,12 @@ export const userRoutes = [
     title: "Profile",
     component: <UserProfile />,
     path: "/profile",
+  },
+  {
+    name: "suggestions",
+    title: "Suggestions",
+    component: <Suggestions />,
+    path: "/suggestions",
   },
   {
     name: "checkout",

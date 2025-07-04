@@ -278,7 +278,10 @@ const SponsorRegistration = () => {
 
             if (data.sponsor) {
                 toast.success("Registration successful!");
-                navigate("/login");
+                localStorage.setItem("accessToken", data.token);
+                localStorage.setItem("token", data.token);
+                localStorage.setItem("user", JSON.stringify(data.sponsor));
+                navigate("/suggestions");
             } else {
                 toast.error(data.message);
             }
