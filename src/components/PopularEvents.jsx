@@ -51,7 +51,7 @@ const timeFilters = [
 //     }
 // ];
 
-const PopularEvents = ({ showTitle = true, showBackground = true }) => {
+const PopularEvents = ({ showTitle = true, showBackground = true, currentEventId  }) => {
     const [activeFilter, setActiveFilter] = React.useState('all');
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -191,9 +191,12 @@ const PopularEvents = ({ showTitle = true, showBackground = true }) => {
                     </div>
                 ) : events.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {events.slice(0, showAllEvents ? events.length : 3).map((event) => (
-                            <PopularEventCard key={event._id} event={event} />
-                        ))}
+                        {events.slice(0, showAllEvents ? events.length : 3).map((event) => {
+                            if(event.id === currentEventId){
+                                return null
+                            }
+                            return <PopularEventCard key={event._id} event={event} />
+                        })}
                     </div>
                 ) : (
                     <div className="text-center py-8">

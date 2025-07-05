@@ -5,13 +5,14 @@ import { BsCalendarEvent, BsPeople } from "react-icons/bs";
 import { AiFillStar } from "react-icons/ai";
 
 export function CuratorCard({ curator }) {
+    console.log(curator);
     return (
         <div className="backdrop-blur-sm border border-[#565656] rounded-lg">
             {/* Profile Image - Larger size */}
             <div className="relative w-full h-64">
                 <img
                     // src={curator?.images?.[0] || "/Images/CuratorCard.png"}
-                    src={"/Images/CuratorCard.png"}
+                    src={`${import.meta.env.VITE_SERVER_URL}${curator?.images?.[0]}` || "/Images/CuratorCard.png"}
                     alt={`${curator?.firstName} ${curator?.lastName}`}
                     className="w-full h-full object-cover"
                 />

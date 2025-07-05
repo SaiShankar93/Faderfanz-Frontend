@@ -94,7 +94,6 @@ const EventPage = ({}) => {
     gst: 0,
     total: 0
   });
-  console.log("event",event);
   
   const [embedUrl,setEmbedUrl] = useState(``);
 
@@ -546,7 +545,7 @@ const EventPage = ({}) => {
           Authorization: `Bearer ${token}`
         }
       });
-      
+      console.log(response.data,"response.data")
       // Handle successful response
       if (response.data && response.data.paymentUrl) {
         // Redirect to payment gateway
@@ -828,7 +827,7 @@ const EventPage = ({}) => {
               {event?.curator || event?.creator ? (
                 <>
                   <img
-                    src={event.curator?.profileImage || (event.creator?.profileImage ? getFullImageUrl(event.creator.profileImage) : "/Images/host-image.png")}
+                    src={`${import.meta.env.VITE_SERVER_URL}${event?.creator?.images?.[0]}`}
                     alt={event.curator?.name || event.creator?.stageName || "Event Host"}
                     className="w-16 h-16 md:w-20 md:h-20 rounded-lg object-cover"
                   />
@@ -917,7 +916,7 @@ const EventPage = ({}) => {
             {event?.sponsors && event.sponsors.length > 0 ? (
               <div className="flex gap-6 overflow-x-auto pb-4">
                 {event.sponsors.map((sponsor, i) => (
-                  <div key={i} className="flex flex-col items-center">
+                  <Link to={`/sponsor/${sponsor.id}`} key={i} className="flex flex-col items-center">
                     <div className="w-32 h-32 rounded-full overflow-hidden mb-2">
                       <img
                         src={sponsor.businessLogo ? getFullImageUrl(sponsor.businessLogo) : "/Images/sponsor-logo.png"}
@@ -926,7 +925,7 @@ const EventPage = ({}) => {
                       />
                     </div>
                     <span className="text-white text-sm">{sponsor.businessName || sponsor.name}</span>
-                  </div>
+                  </Link>
                 ))}
               </div>
             ) : (
@@ -1002,30 +1001,17 @@ const EventPage = ({}) => {
               <div className="flex gap-6 overflow-x-auto pb-4">
                 {Array.isArray(event.curators) ? (
                   event.curators.map((curator, i) => {
-                    // Handle both string IDs and object curator representations
-                    const isObject = typeof curator === 'object' && curator !== null;
-                    
-                    const curatorName = isObject ? 
-                      (curator.stageName || `${curator.firstName || ''} ${curator.lastName || ''}`.trim()) : 
-                      `Curator ${i+1}`;
-                    
-                    const curatorImage = isObject && curator.profileImage ? 
-                      getFullImageUrl(curator.profileImage) : 
-                      "/Images/curator-img.png";
-
-                      console.log(event.curator.profileImage)
-                    
                     return (
-                      <div key={i} className="flex flex-col items-center">
+                      <Link to={`/curator/${curator._id}`} key={i} className="flex flex-col items-center">
                         <div className="w-32 h-32 rounded-full overflow-hidden mb-2">
                           <img
-                            src={`${import.meta.env.VITE_SERVER_URL}${event.curator.profileImage}` || curatorImage}
-                            alt={curatorName}
+                            src={`${import.meta.env.VITE_SERVER_URL}${curator?.images?.[0]}`}
+                            alt={curator?.stageName}
                             className="w-full h-full object-cover"
                           />
                         </div>
-                        <span className="text-white text-sm">{curatorName}</span>
-                      </div>
+                        <span className="text-white text-sm">{curator?.firstName} {curator?.lastName}</span>
+                      </Link>
                     );
                   })
                 ) : (
@@ -1040,7 +1026,7 @@ const EventPage = ({}) => {
             <h2 className="text-[#94A3B8] text-2xl font-semibold mb-4">
               Other events you may Like
             </h2>
-            <PopularEvents showTitle={false} showBackground={false} />
+            <PopularEvents showTitle={false} showBackground={false} currentEventId={event?._id}/>
           </div>
         </div>
       </div>

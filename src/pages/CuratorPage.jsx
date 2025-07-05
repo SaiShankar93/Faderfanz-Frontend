@@ -75,6 +75,7 @@ const CuratorPage = () => {
                 const { data } = await axiosInstance.get(`management/curators/${id}`);
                 if (data) {
                     setCurator(data);
+                    console.log(data);
                     // TODO: Uncomment when API is ready
                     // setReviews(data.ratings || []);
                     // setPosts(data.posts || []);
@@ -508,7 +509,7 @@ const CuratorPage = () => {
                             <div className="absolute left-8 -top-16">
                                 <div className="w-32 h-32 rounded-full border-4 border-[#1A1625] overflow-hidden">
                                     <img
-                                        src={curator.images[0] || "/Images/default-avatar.jpg"}
+                                        src={`${import.meta.env.VITE_SERVER_URL}${curator.images[0]}` || "/Images/default-avatar.jpg"}
                                         alt="Profile"
                                         className="w-full h-full object-cover"
                                     />

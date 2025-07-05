@@ -5,13 +5,16 @@ import { useNavigate } from 'react-router-dom';
 
 // Local SponsorCard component (copied and simplified from AllSponsers.jsx)
 const SponsorCard = ({ sponsor }) => {
+
+  const imageUrl = `${import.meta.env.VITE_SERVER_URL}/${sponsor?.businessLogo}`.replace(/\\/g, '/');
+  console.log(imageUrl);
   return (
     <div className="bg-[#1C1D24]/50 backdrop-blur-sm rounded-xl overflow-hidden hover:bg-[#1C1D24]/70 transition-colors ">
       <div className="flex flex-col sm:flex-row items-stretch h-auto sm:h-60">
         {/* Sponsor Logo/Image */}
         <div className="w-full sm:w-40 h-48 sm:h-full flex-shrink-0">
           <img
-            src={"/Images/sponsor-logo.png"}
+            src={imageUrl || "/Images/sponsor-logo.png"}
             alt={sponsor.businessName}
             className="w-full h-full object-cover"
           />
@@ -70,17 +73,37 @@ const Suggestions = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Fetch curators
+    // Get current user from localStorage
+    const currentUser = JSON.parse(localStorage.getItem("user"));
+    const currentUserId = currentUser?._id || currentUser?.id;
+
+    // Fetch curators and filter out current user
     axiosInstance.get('/management/curators')
-      .then(res => setCurators(res.data?.slice(0, 10) || []))
+      .then(res => {
+        const filteredCurators = res.data?.filter(curator => 
+          curator._id !== currentUserId && curator.id !== currentUserId
+        )?.slice(0, 10) || [];
+        setCurators(filteredCurators);
+      })
       .catch(err => console.error('Error fetching curators:', err));
-    // Fetch sponsors
+
+    // Fetch sponsors and filter out current user
     axiosInstance.get('/management/sponsors')
-      .then(res => setSponsors(res.data?.slice(0, 10) || []))
+      .then(res => {
+        const filteredSponsors = res.data?.filter(sponsor => 
+          sponsor._id !== currentUserId && sponsor.id !== currentUserId
+        )?.slice(0, 10) || [];
+        setSponsors(filteredSponsors);
+      })
       .catch(() => {
         // fallback to /sponsers if /sponsors fails
         axiosInstance.get('/management/sponsers')
-          .then(res => setSponsors(res.data?.slice(0, 10) || []))
+          .then(res => {
+            const filteredSponsors = res.data?.filter(sponsor => 
+              sponsor._id !== currentUserId && sponsor.id !== currentUserId
+            )?.slice(0, 10) || [];
+            setSponsors(filteredSponsors);
+          })
           .catch(err => console.error('Error fetching sponsors:', err));
       });
   }, []);

@@ -123,6 +123,11 @@ const UserProfile = () => {
                     followers: followersData, following: followingData, favorites: favoritesData,
                     feed: feedData, sponsoredEvents: sponsoredEventsData } = response.data.data;
 
+                localStorage.setItem("followDetails", JSON.stringify({
+                    followers: followersData,
+                    following: followingData,
+                }));
+
                 setUserData(profile);
                 // console.log("Profile Data Received:", profile);
                 setStats(statsData || {});
@@ -189,6 +194,7 @@ const UserProfile = () => {
                 }
             });
             toast.success('Followed successfully');
+            navigate(`/curator/${userId}`);
         } catch (error) {
             toast.error(error.response?.data?.message || 'Failed to follow user');
             console.error('Error following user:', error);
@@ -1663,13 +1669,20 @@ const UserProfile = () => {
                     <div className="bg-[#231D30] rounded-lg p-6">
                         <div className="flex justify-between items-center mb-4">
                             <h2 className="text-white text-xl">Suggestions</h2>
-                            <Link to="/events/all/all" className="text-gray-400 text-sm hover:text-[#00FFB2]">
+                            <Link to="/suggestions" className="text-gray-400 text-sm hover:text-[#00FFB2]">
                                 See All
                             </Link>
                         </div>
                         <div className="space-y-4">
-                            {suggestions.map((suggestion) => (
-                                <div key={suggestion.id} className="flex items-center justify-between">
+                            {suggestions.map((suggestion) => {
+                                if(suggestion._id === userData._id ){
+                                    return null
+                                }
+                                if(following.some(user => user._id === suggestion._id)){
+                                    return null
+                                }
+                                return(
+                                <div key={suggestion._id} className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
                                         <img
                                             src={suggestion.images?.[0] ? `${import.meta.env.VITE_SERVER_URL}${suggestion.images[0]}` : "/Images/default-avatar.jpg"}
@@ -1688,7 +1701,7 @@ const UserProfile = () => {
                                         Follow
                                     </button>
                                 </div>
-                            ))}
+                            )})}
                         </div>
                     </div>
 

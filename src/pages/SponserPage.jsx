@@ -55,22 +55,25 @@ const SponserPage = () => {
     const [isFollowing, setIsFollowing] = useState(false);
     const [isFollowingLoading, setIsFollowingLoading] = useState(false);
 
-    useEffect(() => {        const fetchSponsor = async () => {
+    useEffect(() => {
+        const fetchSponsor = async () => {
             try {
                 // Fetch sponsor profile (includes reviews)
-                const res = await axiosInstance.get(`/profiles/sponsor/${id}`);
-                if (res.data && res.data.data) {
-                    setSponsor(res.data.data.profile);
-                    setReviews(res.data.data.reviews || []);
-                    setPosts(res.data.data.feed || []);
-                    setSponsoredEvents(res.data.data.sponsoredEvents || []);
-                    setUpcomingEvents(res.data.data.upcomingSponsoredEvents || []);
-                      // Check if current user is following this sponsor
+                const res = await axiosInstance.get(`/management/sponsors/${id}`);
+                if (res.data) {
+                    console.log(res.data);
+                    setSponsor(res.data);
+                    setReviews(res.data.reviews || []);
+                    setPosts(res.data.posts || []);
+                    setSponsoredEvents(res.data.eventsSponsored || []);
+                    setUpcomingEvents(res.data.eventsSponsored || []); // Using same data for upcoming events
+                    
+                    // Check if current user is following this sponsor
                     const token = localStorage.getItem('accessToken');
                     if (token) {
                         try {
                             const currentUserId = JSON.parse(atob(token.split('.')[1])).id;
-                            const isCurrentlyFollowing = res.data.data.profile.followers?.some(
+                            const isCurrentlyFollowing = res.data.followers?.some(
                                 follower => follower._id === currentUserId || follower.user === currentUserId
                             );
                             setIsFollowing(isCurrentlyFollowing || false);
@@ -85,11 +88,14 @@ const SponserPage = () => {
             } catch (error) {
                 console.error('Error fetching sponsor:', error);
                 setLoading(false);
-            }        };        fetchSponsor();
+            }
+        };
+        fetchSponsor();
     }, [id]);
 
     const totalPosts = posts.length;
-    const totalSponsoredEvents = sponsoredEvents.length;    const tabs = [
+    const totalSponsoredEvents = sponsoredEvents.length;
+    const tabs = [
         { id: "reviews", label: "Reviews/Rating" },
         { id: "posts", label: `Posts (${totalPosts})` },
         { id: "sponsoredEvents", label: `Events Sponsored (${totalSponsoredEvents})` }
@@ -263,13 +269,13 @@ const SponserPage = () => {
                         <div className="flex items-center gap-3">
                             <div className="w-12 h-12 rounded-full overflow-hidden">
                                 <img
-                                    src={post.authorImage || "/Images/default-avatar.jpg"}
-                                    alt={post.author || "Author"}
+                                    src={post.authorImage || post.author?.profileImage || "/Images/default-avatar.jpg"}
+                                    alt={post.author?.name || post.author || "Author"}
                                     className="w-full h-full object-cover"
                                 />
                             </div>
                             <div>
-                                <h3 className="text-white font-medium">{post.author || "Unknown Author"}</h3>
+                                <h3 className="text-white font-medium">{post.author?.name || post.author || "Unknown Author"}</h3>
                                 <p className="text-gray-400 text-sm">{post.timeAgo || new Date(post.createdAt).toLocaleDateString()}</p>
                             </div>
                         </div>
@@ -277,12 +283,12 @@ const SponserPage = () => {
                     </div>
 
                     <div className="mb-4">
-                        {formatPostContent(post.content || post.text || "")}
+                        {formatPostContent(post.content || post.text || post.description || "")}
                     </div>
 
-                    {post.images && post.images.length > 0 && (
+                    {(post.images && post.images.length > 0) || (post.media && post.media.length > 0) && (
                         <div className="grid grid-cols-2 gap-2 mb-6">
-                            {post.images.map((image, index) => (
+                            {(post.images || post.media || []).map((image, index) => (
                                 <button
                                     key={index}
                                     onClick={() => openImageViewer(image)}
@@ -379,21 +385,23 @@ const SponserPage = () => {
                                 </h3>
                                 <div className="flex items-center gap-2 text-gray-400 text-sm mb-2">
                                     <IoLocationOutline className="w-4 h-4 flex-shrink-0" />
-                                    <span className="line-clamp-1">{event.location?.address || event.location || "Location not specified"}</span>
+                                    <span className="line-clamp-1">
+                                        {event.location?.address || event.location || "Location not specified"}
+                                    </span>
                                 </div>
 
                                 <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-gray-400 text-sm">
                                     <div className="flex items-center gap-2">
                                         <BsCalendarEvent className="w-4 h-4 flex-shrink-0" />
-                                        <span>{new Date(event.startDate).toLocaleDateString()}</span>
+                                        <span>{new Date(event.startDate || event.date).toLocaleDateString()}</span>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <FaRegHeart className="w-4 h-4 flex-shrink-0" />
-                                        <span>{event.likes || 0} Likes</span>
+                                        <span>{event.likes || event.likesCount || 0} Likes</span>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <FaRegComment className="w-4 h-4 flex-shrink-0" />
-                                        <span>{event.comments || 0} Comments</span>
+                                        <span>{event.comments || event.commentsCount || 0} Comments</span>
                                     </div>
                                 </div>
                             </div>
@@ -512,9 +520,11 @@ const SponserPage = () => {
             <div className="flex flex-col lg:flex-row gap-8 px-4 lg:px-8">
                 <div className="flex-1">
                     <div className="relative">
-                        <div className="relative h-48 rounded-t-lg overflow-hidden">
+                                                    <div className="relative h-48 rounded-t-lg overflow-hidden">
                             <div className="absolute inset-0 bg-gradient-to-r from-[#1F1B87] to-[#7B1B87] opacity-80"></div>
-                            <div className="absolute inset-0 bg-[url('/Images/coverimg.png')] bg-cover bg-center mix-blend-overlay"></div>
+                            <div className="absolute inset-0 bg-cover bg-center mix-blend-overlay" 
+                                 style={{ backgroundImage: `url(${sponsor.businessBanner ? `/api/${sponsor.businessBanner}` : '/Images/coverimg.png'})` }}>
+                            </div>
                             <button className="absolute right-4 top-4 bg-white hover:bg-gray-100 text-black px-4 py-1 rounded-md text-sm z-10">
                                 Change Image
                             </button>
@@ -524,7 +534,7 @@ const SponserPage = () => {
                             <div className="absolute left-8 -top-16">
                                 <div className="w-32 h-32 rounded-full border-4 border-[#1A1625] overflow-hidden">
                                     <img
-                                        src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=3087&auto=format&fit=crop"
+                                        src={sponsor.businessLogo ? `${import.meta.env.VITE_SERVER_URL}/${sponsor.businessLogo}` : "/Images/default-avatar.jpg"}
                                         alt="Profile"
                                         className="w-full h-full object-cover"
                                     />
@@ -536,8 +546,14 @@ const SponserPage = () => {
                                     <div className="flex flex-col gap-1">
                                         <h1 className="text-2xl text-white font-bold">{sponsor.businessName || mockSponsor.name}</h1>
                                         <p className="text-[#3FE1B6] text-sm">Sponsor</p>
-                                        <p className="text-gray-400 text-sm">{mockSponsor.location}</p>                                        <div className="flex items-center gap-2 mt-1">
-                                            <span className="text-white text-sm">{sponsor.followersCount || 0} followers</span>
+                                        <p className="text-gray-400 text-sm">
+                                            {sponsor.location?.address ? 
+                                                `${sponsor.location.address}, ${sponsor.location.city || ''}, ${sponsor.location.state || ''}` : 
+                                                mockSponsor.location
+                                            }
+                                        </p>
+                                        <div className="flex items-center gap-2 mt-1">
+                                            <span className="text-white text-sm">{sponsor.followers?.length || 0} followers</span>
                                             <span className="text-gray-400">•</span>
                                             <div className="flex items-center gap-1">
                                                 <span className="text-yellow-400">⭐</span>
@@ -564,6 +580,18 @@ const SponserPage = () => {
                                     <div className="mt-8 lg:mt-0 lg:w-1/3">
                                         <h2 className="text-white text-xl">About me</h2>
                                         <p className="text-gray-400 mt-2">{sponsor.description || mockSponsor.description}</p>
+                                        {sponsor.preferredEvents && sponsor.preferredEvents.length > 0 && (
+                                            <div className="mt-4">
+                                                <h3 className="text-white text-sm font-medium mb-2">Preferred Events:</h3>
+                                                <div className="flex flex-wrap gap-2">
+                                                    {sponsor.preferredEvents.map((event, index) => (
+                                                        <span key={index} className="bg-[#3FE1B6] text-black px-2 py-1 rounded text-xs">
+                                                            {event}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 
@@ -613,7 +641,7 @@ const SponserPage = () => {
                                         </div>
 
                                         <div className="flex-1 min-w-0">
-                                            <h3 className="text-white text-lg font-medium mb-2">{event.title}</h3>
+                                            <h3 className="text-white text-lg font-medium mb-2">{event.title || event.name}</h3>
                                             <div className="space-y-2">
                                                 <div className="flex items-center gap-2 text-gray-400">
                                                     <IoLocationOutline className="w-5 h-5 flex-shrink-0" />
@@ -621,15 +649,15 @@ const SponserPage = () => {
                                                 </div>
                                                 <div className="flex items-center gap-2 text-gray-400">
                                                     <IoCalendarOutline className="w-5 h-5 flex-shrink-0" />
-                                                    <span className="text-sm">{new Date(event.startDate).toLocaleDateString()}</span>
+                                                    <span className="text-sm">{new Date(event.startDate || event.date).toLocaleDateString()}</span>
                                                 </div>
                                                 <div className="flex items-center gap-2 text-gray-400">
                                                     <IoTimeOutline className="w-5 h-5 flex-shrink-0" />
-                                                    <span className="text-sm">{new Date(event.startDate).toLocaleTimeString()}</span>
+                                                    <span className="text-sm">{new Date(event.startDate || event.date).toLocaleTimeString()}</span>
                                                 </div>
                                                 <div className="flex items-center gap-1">
                                                     <FaStar className="w-4 h-4 text-[#7c7d7b]" />
-                                                    <span className="text-[#C5FF32] text-sm">{event.interestedCount || 0} interested</span>
+                                                    <span className="text-[#C5FF32] text-sm">{event.interestedCount || event.attendeesCount || 0} interested</span>
                                                 </div>
                                             </div>
                                         </div>
