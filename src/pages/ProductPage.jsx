@@ -1,4 +1,10 @@
-import React, { useContext, useEffect, useRef, useState, Fragment } from "react";
+import React, {
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  Fragment,
+} from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   SlSocialFacebook,
@@ -27,7 +33,7 @@ import AttributeSlider from "@/components/AttributeSlider";
 import { Tooltip } from "@material-tailwind/react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import PopularEvents from "@/components/PopularEvents";
-import { Dialog, Transition } from '@headlessui/react';
+import { Dialog, Transition } from "@headlessui/react";
 
 import "swiper/css";
 import "swiper/css/pagination";
@@ -92,10 +98,10 @@ const EventPage = ({}) => {
     subtotal: 0,
     bookingFee: 0,
     gst: 0,
-    total: 0
+    total: 0,
   });
-  
-  const [embedUrl,setEmbedUrl] = useState(``);
+
+  const [embedUrl, setEmbedUrl] = useState(``);
 
   // Helper function to calculate price details (matching backend calculation)
   const calculatePriceDetails = (price, quantity) => {
@@ -106,12 +112,12 @@ const EventPage = ({}) => {
     const gst = ((subtotal + bookingFee) * 18) / 100;
     // Calculate total
     const total = subtotal + bookingFee + gst;
-    
+
     return {
       subtotal,
       bookingFee,
       gst,
-      total
+      total,
     };
   };
 
@@ -121,7 +127,7 @@ const EventPage = ({}) => {
     // Update price details
     setPriceDetails(calculatePriceDetails(ticketPrice, newCount));
   };
-  
+
   const handleDecrease = () => {
     if (ticketCount > 1) {
       const newCount = ticketCount - 1;
@@ -130,7 +136,7 @@ const EventPage = ({}) => {
       setPriceDetails(calculatePriceDetails(ticketPrice, newCount));
     }
   };
-  
+
   // Handler for selecting ticket type
   const handleSelectTicketType = (ticket) => {
     setSelectedTicketType(ticket);
@@ -146,14 +152,14 @@ const EventPage = ({}) => {
       if (response.data) {
         // Format the event data properly
         const eventData = response.data;
-        
-        console.log('event data:', eventData);
+
+        console.log("event data:", eventData);
         setEvent(eventData);
         const mapQuery = encodeURIComponent(
           `${eventData?.location?.address}, ${eventData?.location?.city}, ${eventData?.location?.state}, ${eventData?.location?.country}, ${eventData?.location?.postalCode}`
         );
         setEmbedUrl(`https://www.google.com/maps?q=${mapQuery}&output=embed`);
-        
+
         // Initialize the ticket price and selected ticket type if available
         if (eventData.tickets && eventData.tickets.length > 0) {
           setSelectedTicketType(eventData.tickets[0]);
@@ -280,24 +286,25 @@ const EventPage = ({}) => {
   useEffect(() => {
     const fetchEventData = async () => {
       // Check for param.id (from URL) or eventPageId from session storage
-      const eventId = param?.id || JSON.parse(sessionStorage.getItem("eventPageId"));
-      
+      const eventId =
+        param?.id || JSON.parse(sessionStorage.getItem("eventPageId"));
+
       if (eventId) {
         try {
           setLoading(true);
           const response = await axiosInstance.get(`/events/${eventId}`);
-          
+
           if (response.data) {
             const eventData = response.data;
             setEvent(eventData);
-            
+
             // Initialize the ticket price and selected ticket type if available
             if (eventData.tickets && eventData.tickets.length > 0) {
               setSelectedTicketType(eventData.tickets[0]);
               setTicketPrice(eventData.tickets[0].price);
             }
-            
-            console.log('Loaded event data:', eventData);
+
+            console.log("Loaded event data:", eventData);
           }
         } catch (error) {
           console.error("Error fetching event:", error);
@@ -307,7 +314,7 @@ const EventPage = ({}) => {
         }
       }
     };
-    
+
     fetchEventData();
   }, [param?.id]);
   useEffect(() => {
@@ -413,32 +420,32 @@ const EventPage = ({}) => {
   const formatEventDate = (dateString) => {
     if (!dateString) return "TBD";
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
+    return date.toLocaleDateString("en-US", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
     });
   };
-  
+
   // Function to convert relative URLs to full URLs
   const getFullImageUrl = (relativeUrl) => {
     if (!relativeUrl) return "/images/event-placeholder.jpg";
-    
+
     // If it's already a full URL, return it
-    if (relativeUrl.startsWith('http')) return relativeUrl;
-    
+    if (relativeUrl.startsWith("http")) return relativeUrl;
+
     // If it's a relative path starting with /
-    if (relativeUrl.startsWith('/')) {
+    if (relativeUrl.startsWith("/")) {
       return `${import.meta.env.VITE_SERVER_URL}${relativeUrl}`;
     }
-    
+
     // Handle the case where there are backslashes (Windows paths)
-    if (relativeUrl.includes('\\')) {
-      const normalizedPath = relativeUrl.replace(/\\/g, '/');
+    if (relativeUrl.includes("\\")) {
+      const normalizedPath = relativeUrl.replace(/\\/g, "/");
       return `${import.meta.env.VITE_SERVER_URL}/${normalizedPath}`;
     }
-    
+
     // If it's a relative path without /
     return `${import.meta.env.VITE_SERVER_URL}/${relativeUrl}`;
   };
@@ -446,12 +453,12 @@ const EventPage = ({}) => {
   // Function to format event times (convert 24hr to 12hr format)
   const formatEventTime = (timeString) => {
     if (!timeString) return "";
-    
-    const [hours, minutes] = timeString.split(':');
+
+    const [hours, minutes] = timeString.split(":");
     const hour = parseInt(hours, 10);
-    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const ampm = hour >= 12 ? "PM" : "AM";
     const formattedHour = hour % 12 || 12;
-    
+
     return `${formattedHour}:${minutes} ${ampm}`;
   };
 
@@ -460,92 +467,102 @@ const EventPage = ({}) => {
   const [paymentProcessing, setPaymentProcessing] = useState(false);
   const [paymentError, setPaymentError] = useState(null);
   const [userEmail, setUserEmail] = useState("");
-  
+
   // Function to handle ticket purchase
   const handleBuyTickets = async () => {
     try {
       // Check both userLoggedIn state and localStorage for user data
-      const userData = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : null;
-      
+      const userData = localStorage.getItem("user")
+        ? JSON.parse(localStorage.getItem("user"))
+        : null;
+
       if (!userLoggedIn && !userData) {
         toast.error("Please login to purchase tickets");
         navigate("/login");
         return;
       }
-      
+
       // Set initial email value if available from user data
       if (userData && userData.email && !userEmail) {
         setUserEmail(userData.email);
       }
-      
+
       setIsPaymentModalOpen(true);
     } catch (error) {
       console.error("Error opening payment modal:", error);
       toast.error("Something went wrong. Please try again.");
     }
   };
-  
+
   // Function to process payment
   const processPayment = async () => {
     if (!userEmail) {
       setPaymentError("Email is required for payment confirmation");
       return;
     }
-    
+
     try {
       setPaymentProcessing(true);
       setPaymentError(null);
-      
+
       // Get user data from localStorage
       let userData;
       try {
-        userData = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : null;
+        userData = localStorage.getItem("user")
+          ? JSON.parse(localStorage.getItem("user"))
+          : null;
       } catch (err) {
         console.error("Error parsing user data:", err);
         userData = null;
       }
-      
+
       if (!userData) {
         throw new Error("User session expired. Please login again.");
       }
-      
+
       // Get token from userData or accessToken in localStorage
-      const token = userData.token || localStorage.getItem('accessToken');
-      
+      const token = userData.token || localStorage.getItem("accessToken");
+
       if (!token) {
         throw new Error("Authentication token not found. Please login again.");
       }
-      
+
       // Make sure event has an _id
       if (!event || !event._id) {
-        throw new Error("Event information is missing. Please refresh the page.");
+        throw new Error(
+          "Event information is missing. Please refresh the page."
+        );
       }
-      
+
       // Make sure we have a selected ticket
       if (!selectedTicketType || !selectedTicketType._id) {
         throw new Error("Please select a ticket type");
       }
-      
+
       // Prepare ticket booking data according to TicketBookingController format
       const bookingData = {
         ticketQuantities: [
           {
             ticketId: selectedTicketType._id,
-            quantity: ticketCount
-          }
+            quantity: ticketCount,
+          },
         ],
-        email: userEmail
+        email: userEmail,
       };
-      
+
       console.log("Booking data:", bookingData);
-      
+
       // Make the API call to book tickets using the correct endpoint
-      const response = await axiosInstance.post(`/tickets/event/${event._id}/book`, bookingData, {
-        headers: {
-          Authorization: `Bearer ${token}`
+      const response = await axiosInstance.post(
+        `/tickets/event/${event._id}/book`,
+        bookingData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
-      });
-      console.log(response.data,"response.data")
+      );
+      console.log(response.data, "response.data");
       // Handle successful response
       if (response.data && response.data.paymentUrl) {
         // Redirect to payment gateway
@@ -555,12 +572,12 @@ const EventPage = ({}) => {
       }
     } catch (error) {
       console.error("Booking error:", error);
-      const errorMessage = error.response?.data?.message 
-        ? error.response.data.message 
-        : error.message 
-          ? error.message 
-          : "Failed to process booking. Please try again.";
-          
+      const errorMessage = error.response?.data?.message
+        ? error.response.data.message
+        : error.message
+        ? error.message
+        : "Failed to process booking. Please try again.";
+
       setPaymentError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -571,23 +588,22 @@ const EventPage = ({}) => {
   // Check for payment status on page load
   useEffect(() => {
     const queryParams = new URLSearchParams(window.location.search);
-    const reference = queryParams.get('reference');
-    const status = queryParams.get('status');
-    
+    const reference = queryParams.get("reference");
+    const status = queryParams.get("status");
+
     // Handle payment success
-    if (status === 'success' && reference) {
-      toast.success('Payment successful! Your tickets have been booked.');
-      
-      // No need to manually verify - the Paystack webhook in TicketBookingController 
+    if (status === "success" && reference) {
+      toast.success("Payment successful! Your tickets have been booked.");
+
+      // No need to manually verify - the Paystack webhook in TicketBookingController
       // will automatically handle verification and updating ticket status
-      
+
       // Clear query parameters by redirecting to clean URL
       const cleanUrl = window.location.pathname;
       window.history.replaceState({}, document.title, cleanUrl);
-      
-    } else if (status === 'failed' && reference) {
-      toast.error('Payment failed. Please try again.');
-      
+    } else if (status === "failed" && reference) {
+      toast.error("Payment failed. Please try again.");
+
       // Clear query parameters
       const cleanUrl = window.location.pathname;
       window.history.replaceState({}, document.title, cleanUrl);
@@ -608,7 +624,11 @@ const EventPage = ({}) => {
         {/* Hero Image Section */}
         <div className="relative w-full h-[250px] md:h-[400px] rounded-xl overflow-hidden">
           <img
-            src={event?.banner?.url ? getFullImageUrl(event.banner.url) : "/events/event1.jpeg"}
+            src={
+              event?.banner?.url
+                ? getFullImageUrl(event.banner.url)
+                : "/events/event1.jpeg"
+            }
             alt={event?.banner?.alt || "Event Cover"}
             className="w-full h-full object-cover"
           />
@@ -650,7 +670,12 @@ const EventPage = ({}) => {
                     alt="Calendar"
                     className="w-5 h-5"
                   />
-                  <span>{formatEventDate(event?.startDate)} {event?.endDate && event?.startDate !== event?.endDate ? `- ${formatEventDate(event?.endDate)}` : ""}</span>
+                  <span>
+                    {formatEventDate(event?.startDate)}{" "}
+                    {event?.endDate && event?.startDate !== event?.endDate
+                      ? `- ${formatEventDate(event?.endDate)}`
+                      : ""}
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <img
@@ -658,7 +683,10 @@ const EventPage = ({}) => {
                     alt="Time"
                     className="w-5 h-5"
                   />
-                  <span>{formatEventTime(event?.startTime)} - {formatEventTime(event?.endTime)}</span>
+                  <span>
+                    {formatEventTime(event?.startTime)} -{" "}
+                    {formatEventTime(event?.endTime)}
+                  </span>
                 </div>
                 {/* <button className="text-[#00FFB3] text-sm hover:text-[#00cc8f] transition-colors w-fit">
                   + Add to Calendar
@@ -669,7 +697,7 @@ const EventPage = ({}) => {
             {/* Right Side - Ticket Info */}
             <div className="flex-1">
               <div className="flex flex-col items-end">
-                <button 
+                <button
                   onClick={handleBuyTickets}
                   className="bg-[#00FFB3] text-black px-6 md:px-8 py-2 md:py-3 rounded-lg font-medium mb-4 w-full md:w-auto flex items-center justify-center gap-2 hover:bg-[#00cc8f] transition-colors"
                 >
@@ -686,17 +714,21 @@ const EventPage = ({}) => {
                         {/* Ticket selection if multiple tickets available */}
                         {event.tickets.length > 1 && (
                           <div className="mb-4">
-                            <label className="text-[#94A3B8] block mb-2">Select Ticket Type:</label>
-                            <select 
+                            <label className="text-[#94A3B8] block mb-2">
+                              Select Ticket Type:
+                            </label>
+                            <select
                               className="w-full bg-[#2A2C37] text-white p-2 rounded-lg focus:outline-none"
                               value={selectedTicketType?._id || ""}
                               onChange={(e) => {
-                                const selected = event.tickets.find(t => t._id === e.target.value);
+                                const selected = event.tickets.find(
+                                  (t) => t._id === e.target.value
+                                );
                                 if (selected) handleSelectTicketType(selected);
                               }}
                             >
                               <option value="">Select a ticket type</option>
-                              {event.tickets.map(ticket => (
+                              {event.tickets.map((ticket) => (
                                 <option key={ticket._id} value={ticket._id}>
                                   {ticket.name} - ₹{ticket.price}
                                 </option>
@@ -704,7 +736,7 @@ const EventPage = ({}) => {
                             </select>
                           </div>
                         )}
-                        
+
                         {/* Display selected ticket or first ticket */}
                         <div className="flex items-center gap-2">
                           <img
@@ -713,16 +745,23 @@ const EventPage = ({}) => {
                             className="w-5 h-5"
                           />
                           <span className="text-[#94A3B8]">
-                            {selectedTicketType?.name || event.tickets[0].name}: ₹ {ticketPrice || event.tickets[0].price} each
+                            {selectedTicketType?.name || event.tickets[0].name}:
+                            ₹ {ticketPrice || event.tickets[0].price} each
                           </span>
                         </div>
-                        
+
                         {/* Ticket benefits if available */}
-                        {(selectedTicketType?.benefits || event.tickets[0].benefits) && (
+                        {(selectedTicketType?.benefits ||
+                          event.tickets[0].benefits) && (
                           <div className="mt-2 ml-7 text-xs text-[#94A3B8]">
-                            <p className="font-medium text-[#C5FF32] mb-1">Includes:</p>
+                            <p className="font-medium text-[#C5FF32] mb-1">
+                              Includes:
+                            </p>
                             <ul className="list-disc pl-4">
-                              {(selectedTicketType?.benefits || event.tickets[0].benefits).map((benefit, idx) => (
+                              {(
+                                selectedTicketType?.benefits ||
+                                event.tickets[0].benefits
+                              ).map((benefit, idx) => (
                                 <li key={idx}>{benefit}</li>
                               ))}
                             </ul>
@@ -734,13 +773,13 @@ const EventPage = ({}) => {
                         Ticket information not available
                       </span>
                     )}
-                    
+
                     {/* Add ticket quantity selector */}
                     {event?.tickets && event.tickets.length > 0 && (
                       <div className="mt-4 flex items-center gap-2">
                         <span className="text-[#94A3B8]">Quantity:</span>
                         <div className="flex items-center bg-[#2A2C37] rounded-lg">
-                          <button 
+                          <button
                             onClick={handleDecrease}
                             className="w-8 h-8 flex items-center justify-center text-[#94A3B8] hover:text-white"
                           >
@@ -749,7 +788,7 @@ const EventPage = ({}) => {
                           <span className="w-8 h-8 flex items-center justify-center text-white">
                             {ticketCount}
                           </span>
-                          <button 
+                          <button
                             onClick={handleIncrease}
                             className="w-8 h-8 flex items-center justify-center text-[#94A3B8] hover:text-white"
                           >
@@ -757,7 +796,9 @@ const EventPage = ({}) => {
                           </button>
                         </div>
                         <span className="text-[#94A3B8] ml-4">
-                          Total: ₹ {(ticketPrice || (event.tickets[0]?.price || 0)) * ticketCount}
+                          Total: ₹{" "}
+                          {(ticketPrice || event.tickets[0]?.price || 0) *
+                            ticketCount}
                         </span>
                       </div>
                     )}
@@ -785,9 +826,15 @@ const EventPage = ({}) => {
                       {event?.location?.address ? (
                         <>
                           {event.location.address}
-                          {event.location.landmark && <><br />{event.location.landmark}</>}
+                          {event.location.landmark && (
+                            <>
+                              <br />
+                              {event.location.landmark}
+                            </>
+                          )}
                           <br />
-                          {event.location.city}, {event.location.state} {event.location.postalCode}
+                          {event.location.city}, {event.location.state}{" "}
+                          {event.location.postalCode}
                           <br />
                           {event.location.country}
                         </>
@@ -798,21 +845,12 @@ const EventPage = ({}) => {
                   </div>
                 </div>
                 <div className="flex-1 h-[200px] md:h-[250px]">
-                  {event?.location?.embedUrl ? (
-                    <iframe
-                      src={event.location.embedUrl}
-                      className="w-full h-full rounded-xl"
-                      allowFullScreen=""
-                      loading="lazy"
-                    ></iframe>
-                  ) : (
-                    <iframe
-                      src={embedUrl}
-                      className="w-full h-full rounded-xl"
-                      allowFullScreen=""
-                      loading="lazy"
-                    ></iframe>
-                  )}
+                  <iframe
+                    src={embedUrl}
+                    className="w-full h-full rounded-xl"
+                    allowFullScreen=""
+                    loading="lazy"
+                  ></iframe>
                 </div>
               </div>
             </div>
@@ -827,14 +865,26 @@ const EventPage = ({}) => {
               {event?.curator || event?.creator ? (
                 <>
                   <img
-                    src={`${import.meta.env.VITE_SERVER_URL}${event?.creator?.images?.[0]}`}
-                    alt={event.curator?.name || event.creator?.stageName || "Event Host"}
+                    src={`${import.meta.env.VITE_SERVER_URL}${
+                      event?.creator?.images?.[0]
+                    }`}
+                    alt={
+                      event.curator?.name ||
+                      event.creator?.stageName ||
+                      "Event Host"
+                    }
                     className="w-16 h-16 md:w-20 md:h-20 rounded-lg object-cover"
                   />
                   <div>
                     <h3 className="text-white font-medium text-lg mb-2">
-                      {event.curator?.stageName || event.curator?.name || 
-                      (event.creator ? (event.creator.stageName || `${event.creator.firstName || ''} ${event.creator.lastName || ''}`.trim()) : "Event Host")}
+                      {event.curator?.stageName ||
+                        event.curator?.name ||
+                        (event.creator
+                          ? event.creator.stageName ||
+                            `${event.creator.firstName || ""} ${
+                              event.creator.lastName || ""
+                            }`.trim()
+                          : "Event Host")}
                     </h3>
                     {(event.curator?.bio || event.creator?.bio) && (
                       <p className="text-[#94A3B8] text-sm mb-2 line-clamp-2">
@@ -842,8 +892,10 @@ const EventPage = ({}) => {
                       </p>
                     )}
                     <div className="flex gap-2">
-                      <Link 
-                        to={`/curator/${event.curator?.id || event.creator?._id}`} 
+                      <Link
+                        to={`/curator/${
+                          event.curator?.id || event.creator?._id
+                        }`}
                         className="bg-white text-black px-6 py-2 rounded-lg text-sm font-medium hover:bg-gray-100 transition-colors"
                       >
                         Visit Profile
@@ -866,8 +918,10 @@ const EventPage = ({}) => {
                       Event Host
                     </h3>
                     <div className="flex gap-2">
-                      <button 
-                        onClick={() => toast.info("Profile information not available")}
+                      <button
+                        onClick={() =>
+                          toast.info("Profile information not available")
+                        }
                         className="bg-white text-black px-6 py-2 rounded-lg text-sm font-medium hover:bg-gray-100 transition-colors"
                       >
                         Visit Profile
@@ -889,7 +943,7 @@ const EventPage = ({}) => {
               <p className="text-[#94A3B8] whitespace-pre-line">
                 {event?.description || "Event description not available."}
               </p>
-              
+
               {/* Display event categories and type */}
               {(event?.category || event?.eventType) && (
                 <div className="mt-4 flex flex-wrap gap-2">
@@ -916,15 +970,25 @@ const EventPage = ({}) => {
             {event?.sponsors && event.sponsors.length > 0 ? (
               <div className="flex gap-6 overflow-x-auto pb-4">
                 {event.sponsors.map((sponsor, i) => (
-                  <Link to={`/sponsor/${sponsor.id}`} key={i} className="flex flex-col items-center">
+                  <Link
+                    to={`/sponsor/${sponsor.id}`}
+                    key={i}
+                    className="flex flex-col items-center"
+                  >
                     <div className="w-32 h-32 rounded-full overflow-hidden mb-2">
                       <img
-                        src={sponsor.businessLogo ? getFullImageUrl(sponsor.businessLogo) : "/Images/sponsor-logo.png"}
+                        src={
+                          sponsor.businessLogo
+                            ? getFullImageUrl(sponsor.businessLogo)
+                            : "/Images/sponsor-logo.png"
+                        }
                         alt={sponsor.businessName || sponsor.name || "Sponsor"}
                         className="w-full h-full object-cover"
                       />
                     </div>
-                    <span className="text-white text-sm">{sponsor.businessName || sponsor.name}</span>
+                    <span className="text-white text-sm">
+                      {sponsor.businessName || sponsor.name}
+                    </span>
                   </Link>
                 ))}
               </div>
@@ -934,65 +998,83 @@ const EventPage = ({}) => {
           </div>
 
           {/* Products by sponsor Section */}
-          {event?.sponsors && event.sponsors.some(sponsor => sponsor.products && sponsor.products.length > 0) && (
-            <div className="mt-8">
-              {event.sponsors.map((sponsor, sponsorIndex) => (
-                sponsor.products && sponsor.products.length > 0 && (
-                  <div key={sponsorIndex} className="mb-8">
-                    <div className="flex justify-between items-center mb-4">
-                      <h2 className="text-[#94A3B8] text-xl">
-                        Products by sponsor: {sponsor.businessName || sponsor.name}
-                      </h2>
-                      <a
-                        href={`/sponsor/${sponsor.id}`}
-                        className="text-[#C5FF32] hover:text-[#a3cc28] transition-colors"
-                      >
-                        Visit page
-                      </a>
-                    </div>
-
-                    {/* Horizontal scrollable container */}
-                    <div className="relative overflow-x-auto pb-4">
-                      <div className="flex gap-6 min-w-min">
-                        {sponsor.products.map((product, i) => (
-                          <div
-                            key={i}
-                            className="flex-shrink-0 w-[320px] bg-[#1C1D24] rounded-xl overflow-hidden"
+          {event?.sponsors &&
+            event.sponsors.some(
+              (sponsor) => sponsor.products && sponsor.products.length > 0
+            ) && (
+              <div className="mt-8">
+                {event.sponsors.map(
+                  (sponsor, sponsorIndex) =>
+                    sponsor.products &&
+                    sponsor.products.length > 0 && (
+                      <div key={sponsorIndex} className="mb-8">
+                        <div className="flex justify-between items-center mb-4">
+                          <h2 className="text-[#94A3B8] text-xl">
+                            Products by sponsor:{" "}
+                            {sponsor.businessName || sponsor.name}
+                          </h2>
+                          <a
+                            href={`/sponsor/${sponsor.id}`}
+                            className="text-[#C5FF32] hover:text-[#a3cc28] transition-colors"
                           >
-                            <div className="aspect-square relative">
-                              <img
-                                src={product.images || product.image ? getFullImageUrl(product.images || product.image) : "/Images/product-image.png"}
-                                alt={product.name}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                            <div className="p-4">
-                              <h3 className="text-white text-xl font-medium mb-3">
-                                {product.name}
-                              </h3>
-                              <div className="flex justify-between items-center mb-4">
-                                <span className="text-[#94A3B8] text-lg">₹{product.price}</span>
-                                {product.stock && <span className="text-[#94A3B8]">Stock: {product.stock}</span>}
-                              </div>
-                              <button 
-                                onClick={() => {
-                                  toast.info("Redirecting to product page");
-                                  // You can add navigation to product page here
-                                }}
-                                className="bg-[#00FFB3] hover:bg-[#00cc8f] transition-colors text-black px-4 py-3 rounded-lg text-base w-full font-medium"
+                            Visit page
+                          </a>
+                        </div>
+
+                        {/* Horizontal scrollable container */}
+                        <div className="relative overflow-x-auto pb-4">
+                          <div className="flex gap-6 min-w-min">
+                            {sponsor.products.map((product, i) => (
+                              <div
+                                key={i}
+                                className="flex-shrink-0 w-[320px] bg-[#1C1D24] rounded-xl overflow-hidden"
                               >
-                                Buy Now
-                              </button>
-                            </div>
+                                <div className="aspect-square relative">
+                                  <img
+                                    src={
+                                      product.images || product.image
+                                        ? getFullImageUrl(
+                                            product.images || product.image
+                                          )
+                                        : "/Images/product-image.png"
+                                    }
+                                    alt={product.name}
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                                <div className="p-4">
+                                  <h3 className="text-white text-xl font-medium mb-3">
+                                    {product.name}
+                                  </h3>
+                                  <div className="flex justify-between items-center mb-4">
+                                    <span className="text-[#94A3B8] text-lg">
+                                      ₹{product.price}
+                                    </span>
+                                    {product.stock && (
+                                      <span className="text-[#94A3B8]">
+                                        Stock: {product.stock}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <button
+                                    onClick={() => {
+                                      toast.info("Redirecting to product page");
+                                      // You can add navigation to product page here
+                                    }}
+                                    className="bg-[#00FFB3] hover:bg-[#00cc8f] transition-colors text-black px-4 py-3 rounded-lg text-base w-full font-medium"
+                                  >
+                                    Buy Now
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
                           </div>
-                        ))}
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                )
-              ))}
-            </div>
-          )}
+                    )
+                )}
+              </div>
+            )}
 
           {/* Curators Section */}
           {event?.curators && (
@@ -1002,20 +1084,30 @@ const EventPage = ({}) => {
                 {Array.isArray(event.curators) ? (
                   event.curators.map((curator, i) => {
                     return (
-                      <Link to={`/curator/${curator._id}`} key={i} className="flex flex-col items-center">
+                      <Link
+                        to={`/curator/${curator._id}`}
+                        key={i}
+                        className="flex flex-col items-center"
+                      >
                         <div className="w-32 h-32 rounded-full overflow-hidden mb-2">
                           <img
-                            src={`${import.meta.env.VITE_SERVER_URL}${curator?.images?.[0]}`}
+                            src={`${import.meta.env.VITE_SERVER_URL}${
+                              curator?.images?.[0]
+                            }`}
                             alt={curator?.stageName}
                             className="w-full h-full object-cover"
                           />
                         </div>
-                        <span className="text-white text-sm">{curator?.firstName} {curator?.lastName}</span>
+                        <span className="text-white text-sm">
+                          {curator?.firstName} {curator?.lastName}
+                        </span>
                       </Link>
                     );
                   })
                 ) : (
-                  <p className="text-[#94A3B8]">Curator information not available</p>
+                  <p className="text-[#94A3B8]">
+                    Curator information not available
+                  </p>
                 )}
               </div>
             </div>
@@ -1026,7 +1118,11 @@ const EventPage = ({}) => {
             <h2 className="text-[#94A3B8] text-2xl font-semibold mb-4">
               Other events you may Like
             </h2>
-            <PopularEvents showTitle={false} showBackground={false} currentEventId={event?._id}/>
+            <PopularEvents
+              showTitle={false}
+              showBackground={false}
+              currentEventId={event?._id}
+            />
           </div>
         </div>
       </div>
@@ -1068,58 +1164,80 @@ const EventPage = ({}) => {
                   >
                     Complete Your Purchase
                   </Dialog.Title>
-                  
+
                   <div className="mt-2">
                     <div className="space-y-4">
                       <div>
-                        <h4 className="text-white text-lg mb-2">Event Details</h4>
+                        <h4 className="text-white text-lg mb-2">
+                          Event Details
+                        </h4>
                         <div className="bg-[#2A2C37] rounded-lg p-3">
-                          <p className="text-white font-medium">{event?.title || 'Event'}</p>
+                          <p className="text-white font-medium">
+                            {event?.title || "Event"}
+                          </p>
                           <p className="text-gray-400 text-sm mt-1">
-                            {formatEventDate(event?.startDate || new Date())} • {formatEventTime(event?.startTime || '09:00')} - {formatEventTime(event?.endTime || '17:00')}
+                            {formatEventDate(event?.startDate || new Date())} •{" "}
+                            {formatEventTime(event?.startTime || "09:00")} -{" "}
+                            {formatEventTime(event?.endTime || "17:00")}
                           </p>
                           <p className="text-gray-400 text-sm">
-                            {event?.location?.address ? `${event.location.address}, ${event.location.city}` : 'Location not available'}
+                            {event?.location?.address
+                              ? `${event.location.address}, ${event.location.city}`
+                              : "Location not available"}
                           </p>
                         </div>
                       </div>
-                      
+
                       <div>
-                        <h4 className="text-white text-lg mb-2">Payment Information</h4>
+                        <h4 className="text-white text-lg mb-2">
+                          Payment Information
+                        </h4>
                         <div className="bg-[#2A2C37] rounded-lg p-3">
                           <div className="flex flex-col gap-2">
                             <div className="flex justify-between">
-                              <span className="text-[#94A3B8] text-sm">Ticket Type</span>
+                              <span className="text-[#94A3B8] text-sm">
+                                Ticket Type
+                              </span>
                               <span className="text-white text-sm">
                                 {selectedTicketType?.name || "Standard Ticket"}
                               </span>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-[#94A3B8] text-sm">Ticket Price</span>
+                              <span className="text-[#94A3B8] text-sm">
+                                Ticket Price
+                              </span>
                               <span className="text-white text-sm">
                                 ₹ {ticketPrice || 0}
                               </span>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-[#94A3B8] text-sm">Quantity</span>
+                              <span className="text-[#94A3B8] text-sm">
+                                Quantity
+                              </span>
                               <span className="text-white text-sm">
                                 {ticketCount}
                               </span>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-[#94A3B8] text-sm">Subtotal</span>
+                              <span className="text-[#94A3B8] text-sm">
+                                Subtotal
+                              </span>
                               <span className="text-white text-sm">
                                 ₹ {priceDetails.subtotal.toFixed(2)}
                               </span>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-[#94A3B8] text-sm">Booking Fee (2%)</span>
+                              <span className="text-[#94A3B8] text-sm">
+                                Booking Fee (2%)
+                              </span>
                               <span className="text-white text-sm">
                                 ₹ {priceDetails.bookingFee.toFixed(2)}
                               </span>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-[#94A3B8] text-sm">GST (18%)</span>
+                              <span className="text-[#94A3B8] text-sm">
+                                GST (18%)
+                              </span>
                               <span className="text-white text-sm">
                                 ₹ {priceDetails.gst.toFixed(2)}
                               </span>
@@ -1136,12 +1254,15 @@ const EventPage = ({}) => {
                           </div>
                         </div>
                       </div>
-                      
+
                       <div>
-                        <h4 className="text-white text-lg mb-2">Payment Method</h4>
+                        <h4 className="text-white text-lg mb-2">
+                          Payment Method
+                        </h4>
                         <div className="bg-[#2A2C37] rounded-lg p-3">
                           <p className="text-[#94A3B8] text-sm mb-2">
-                            You will be redirected to Paystack to complete your payment.
+                            You will be redirected to Paystack to complete your
+                            payment.
                           </p>
                           <label className="block text-[#C5FF32] text-sm font-medium mb-1">
                             Email Address *
@@ -1150,7 +1271,9 @@ const EventPage = ({}) => {
                             type="email"
                             placeholder="Enter your email for receipt"
                             className={`w-full p-3 rounded-lg bg-[#1C1D24] text-white placeholder:text-[#94A3B8] focus:outline-none ${
-                              !userEmail && paymentError ? 'border border-red-500 focus:ring-red-500' : 'focus:ring-2 focus:ring-[#C5FF32]'
+                              !userEmail && paymentError
+                                ? "border border-red-500 focus:ring-red-500"
+                                : "focus:ring-2 focus:ring-[#C5FF32]"
                             }`}
                             value={userEmail}
                             onChange={(e) => setUserEmail(e.target.value)}
@@ -1158,7 +1281,7 @@ const EventPage = ({}) => {
                           />
                         </div>
                       </div>
-                      
+
                       {paymentError && (
                         <div className="bg-red-900/30 border border-red-500 rounded-lg p-3 text-red-300 text-sm">
                           {paymentError}
@@ -1178,21 +1301,43 @@ const EventPage = ({}) => {
                     <button
                       type="button"
                       className={`inline-flex justify-center rounded-lg px-4 py-2 text-sm font-medium text-black bg-[#00FFB3] hover:bg-[#00cc8f] focus:outline-none ${
-                        paymentProcessing || !userEmail ? "opacity-70 cursor-not-allowed" : ""
+                        paymentProcessing || !userEmail
+                          ? "opacity-70 cursor-not-allowed"
+                          : ""
                       }`}
                       onClick={processPayment}
                       disabled={paymentProcessing || !userEmail}
-                      title={!userEmail ? "Please enter your email address" : ""}
+                      title={
+                        !userEmail ? "Please enter your email address" : ""
+                      }
                     >
                       {paymentProcessing ? (
                         <span className="flex items-center">
-                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-black" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          <svg
+                            className="animate-spin -ml-1 mr-2 h-4 w-4 text-black"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            ></circle>
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            ></path>
                           </svg>
                           Processing...
                         </span>
-                      ) : "Proceed to Payment"}
+                      ) : (
+                        "Proceed to Payment"
+                      )}
                     </button>
                   </div>
                 </Dialog.Panel>
