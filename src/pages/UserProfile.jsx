@@ -58,16 +58,8 @@ const UserProfile = () => {
     const [showAllMyEvents, setShowAllMyEvents] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [eventToDelete, setEventToDelete] = useState(null);
-    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-    const [eventToEdit, setEventToEdit] = useState(null);
-    const [editFormData, setEditFormData] = useState({
-        title: '',
-        location: '',
-        date: { month: '', days: '' },
-        time: '',
-        isFree: false,
-        image: ''
-    });
+
+
     const [isProductEditModalOpen, setIsProductEditModalOpen] = useState(false);
     const [productToEdit, setProductToEdit] = useState(null);
     const [productEditFormData, setProductEditFormData] = useState({
@@ -469,34 +461,11 @@ const UserProfile = () => {
 
     // Event management functions
     const handleEditEvent = (event) => {
-        setEventToEdit(event);
-        setEditFormData({
-            title: event.title,
-            location: event.location,
-            date: event.date,
-            time: event.time,
-            isFree: event.isFree,
-            image: event.image
-        });
-        setIsEditModalOpen(true);
+        // Navigate to the edit event page with the event ID
+        navigate(`/create-event/${event._id || event.id}`);
     };
 
-    const handleUpdateEvent = async () => {
-        try {
-            // API call to update event would go here
-            setEvents(prev =>
-                prev.map(event =>
-                    event.id === eventToEdit.id
-                        ? { ...event, ...editFormData }
-                        : event
-                )
-            );
-            setIsEditModalOpen(false);
-            toast.success('Event updated successfully!');
-        } catch (error) {
-            toast.error('Failed to update event');
-        }
-    };
+
 
     const handleDeleteEvent = (event) => {
         setEventToDelete(event);
@@ -1066,20 +1035,15 @@ const UserProfile = () => {
                                     })
                                     .slice(0, showAllMyEvents ? events.length : 6)
                                     .map((event) => (
+                                        console.log(event),
                                         <div key={event._id || event.id} className="bg-[#231D30] rounded-lg p-4">
                                             <div className="flex gap-4">
                                                 <div className="relative w-[200px] h-[200px] flex-shrink-0">
                                                     <img
                                                         src={
-                                                            event.images?.[0]
-                                                                ? (event.images[0].startsWith('http')
-                                                                    ? event.images[0]
-                                                                    : `${import.meta.env.VITE_SERVER_URL}/${event.images[0].replace(/^\\|^\//, '').replace(/\\/g, '/')}`)
-                                                                : (event.image
-                                                                    ? (event.image.startsWith('http')
-                                                                        ? event.image
-                                                                        : `${import.meta.env.VITE_SERVER_URL}/${event.image.replace(/^\\|^\//, '').replace(/\\/g, '/')}`)
-                                                                    : "/Images/post.png")
+                                                            event.banner?.url
+                                                                ? `${import.meta.env.VITE_SERVER_URL}/${event.banner.url.replace(/^\\|^\//, '').replace(/\\/g, '/')}`
+                                                                : "/Images/post.png"
                                                         }
                                                         alt={event.title || event.name}
                                                         className="w-full h-full object-cover rounded-lg"
@@ -1836,103 +1800,7 @@ const UserProfile = () => {
                 </div>
             </Dialog>
 
-            {/* Edit Event Modal */}
-            <Dialog
-                open={isEditModalOpen}
-                onClose={() => setIsEditModalOpen(false)}
-                className="relative z-50"
-            >
-                <div className="fixed inset-0 bg-black/70" aria-hidden="true" />
-                <div className="fixed inset-0 flex items-center justify-center p-4">
-                    <Dialog.Panel className="bg-[#231D30] rounded-lg p-6 md:p-8 w-full max-w-md">
-                        <Dialog.Title className="text-white text-lg md:text-xl font-medium mb-4">
-                            Edit Event
-                        </Dialog.Title>
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-gray-400 text-sm mb-2">Title</label>
-                                <input
-                                    type="text"
-                                    value={editFormData.title}
-                                    onChange={(e) => setEditFormData({ ...editFormData, title: e.target.value })}
-                                    className="w-full bg-[#1A1625] text-white p-3 rounded-lg border border-white/10 focus:border-[#00FFB2] outline-none"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-gray-400 text-sm mb-2">Location</label>
-                                <input
-                                    type="text"
-                                    value={editFormData.location}
-                                    onChange={(e) => setEditFormData({ ...editFormData, location: e.target.value })}
-                                    className="w-full bg-[#1A1625] text-white p-3 rounded-lg border border-white/10 focus:border-[#00FFB2] outline-none"
-                                />
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-gray-400 text-sm mb-2">Date</label>
-                                    <input
-                                        type="date"
-                                        value={editFormData.date}
-                                        onChange={(e) => setEditFormData({ ...editFormData, date: e.target.value })}
-                                        className="w-full bg-[#1A1625] text-white p-3 rounded-lg border border-white/10 focus:border-[#00FFB2] outline-none"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-gray-400 text-sm mb-2">Time</label>
-                                    <input
-                                        type="time"
-                                        value={editFormData.time}
-                                        onChange={(e) => setEditFormData({ ...editFormData, time: e.target.value })}
-                                        className="w-full bg-[#1A1625] text-white p-3 rounded-lg border border-white/10 focus:border-[#00FFB2] outline-none"
-                                    />
-                                </div>
-                            </div>
-                            <div>
-                                <label className="block text-gray-400 text-sm mb-2">Image</label>
-                                <input
-                                    type="file"
-                                    onChange={(e) => {
-                                        const file = e.target.files[0];
-                                        if (file) {
-                                            const reader = new FileReader();
-                                            reader.onloadend = () => {
-                                                setEditFormData({ ...editFormData, image: reader.result });
-                                            };
-                                            reader.readAsDataURL(file);
-                                        }
-                                    }}
-                                    className="w-full bg-[#1A1625] text-white p-3 rounded-lg border border-white/10 focus:border-[#00FFB2] outline-none"
-                                />
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <input
-                                    type="checkbox"
-                                    checked={editFormData.isFree}
-                                    onChange={() => setEditFormData({ ...editFormData, isFree: !editFormData.isFree })}
-                                    className="w-5 h-5 text-[#00FFB2] rounded-lg focus:ring-0"
-                                />
-                                <label className="text-white/80 text-sm cursor-pointer">
-                                    This event is free
-                                </label>
-                            </div>
-                        </div>
-                        <div className="mt-4 flex justify-end gap-2">
-                            <button
-                                onClick={() => setIsEditModalOpen(false)}
-                                className="bg-transparent text-white border border-white/20 px-4 py-2 rounded-lg text-sm md:text-base hover:bg-white/10 transition-colors"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={handleUpdateEvent}
-                                className="bg-[#00FFB2] text-black px-4 py-2 rounded-lg text-sm md:text-base hover:bg-[#00FFB2]/90"
-                            >
-                                Update Event
-                            </button>
-                        </div>
-                    </Dialog.Panel>
-                </div>
-            </Dialog>
+
 
             {/* Edit Product Modal */}
             <Dialog

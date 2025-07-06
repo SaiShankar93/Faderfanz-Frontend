@@ -12,10 +12,13 @@ import FileUpload from "@/assets/svgs/FileUpload";
 import axiosInstance from "@/configs/axiosConfig";
 import { toast } from 'react-toastify';
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
-export default function CreateEvent() {
+export default function CreateEventEdit() {
   const navigate = useNavigate();
+  const { id } = useParams(); // Get event ID from URL if editing
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [eventType, setEventType] = useState("single");
   const [currentStep, setcurrentStep] = useState(1); // Track which step the user is on
   const [formData, setFormData] = useState({
@@ -68,6 +71,7 @@ export default function CreateEvent() {
   const [sponsorFocused, setSponsorFocused] = useState(false);
   const [curatorFocused, setCuratorFocused] = useState(false);
   const [vendorFocused, setVendorFocused] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -91,8 +95,80 @@ export default function CreateEvent() {
 
   // data by spreading the current state and adding the new data.
   const handleNextStep = () => {
+    // Validate current step before proceeding
+    let isValid = true;
+    
+    if (currentStep === 1) {
+      // Validate step 1: Basic event details
+      if (!formData.eventTitle.trim()) {
+        toast.error('Event title is required');
+        isValid = false;
+      }
+      if (!formData.eventCategory) {
+        toast.error('Event category is required');
+        isValid = false;
+      }
+      if (!formData.date) {
+        toast.error('Event date is required');
+        isValid = false;
+      }
+      if (!formData.startTime) {
+        toast.error('Start time is required');
+        isValid = false;
+      }
+      if (!formData.endTime) {
+        toast.error('End time is required');
+        isValid = false;
+      }
+      if (!formData.location.address.trim()) {
+        toast.error('Event address is required');
+        isValid = false;
+      }
+    } else if (currentStep === 2) {
+      // Validate step 2: Sponsors, curators, and venue
+      if (sponsorIds.length === 0) {
+        toast.error('At least one sponsor is required');
+        isValid = false;
+      }
+      if (curatorIds.length === 0) {
+        toast.error('At least one curator is required');
+        isValid = false;
+      }
+      if (!selectedVenueId) {
+        toast.error('A venue is required');
+        isValid = false;
+      }
+    } else if (currentStep === 3) {
+      // Validate step 3: Ticketing
+      if (eventTypeTicketing === "ticketed") {
+        if (tickets.length === 0) {
+          toast.error('At least one ticket type is required for ticketed events');
+          isValid = false;
+        } else {
+          for (let i = 0; i < tickets.length; i++) {
+            const ticket = tickets[i];
+            if (!ticket.name.trim()) {
+              toast.error(`Ticket ${i + 1}: Name is required`);
+              isValid = false;
+              break;
+            }
+            if (!ticket.price || ticket.price <= 0) {
+              toast.error(`Ticket ${i + 1}: Valid price is required`);
+              isValid = false;
+              break;
+            }
+            if (!ticket.available || ticket.available <= 0) {
+              toast.error(`Ticket ${i + 1}: Valid quantity is required`);
+              isValid = false;
+              break;
+            }
+          }
+        }
+      }
+    }
+    
     // Save the data and move to the next step
-    if (currentStep < 4) {
+    if (isValid && currentStep < 4) {
       setcurrentStep(currentStep + 1);
       window.scrollTo(0, 0);
       console.log(currentStep);
@@ -149,7 +225,10 @@ export default function CreateEvent() {
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
+    handleFileValidation(file);
+  };
 
+  const handleFileValidation = (file) => {
     // Check if a file was selected
     if (file) {
       // Check file type (only allow images)
@@ -172,8 +251,127 @@ export default function CreateEvent() {
     }
   };
 
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+    
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      handleFileValidation(files[0]);
+    }
+  };
+
+  // Fetch event data if editing
+  const fetchEventData = async (eventId) => {
+    try {
+      setLoading(true);
+      const response = await axiosInstance.get(`/events/${eventId}`);
+      const eventData = response.data;
+      
+      // Populate form with existing event data
+      setFormData({
+        eventTitle: eventData.title || "",
+        eventCategory: eventData.category || "",
+        eventType: eventData.eventType || "single",
+        date: eventData.startDate ? new Date(eventData.startDate).toISOString().split('T')[0] : "",
+        startTime: eventData.startTime || "",
+        endTime: eventData.endTime || "",
+        location: eventData.location || {
+          address: "",
+          city: "",
+          state: "",
+          country: "",
+          postalCode: "",
+          landmark: ""
+        },
+        eventDescription: eventData.description || "",
+      });
+
+      // Set event type ticketing
+      setEventTypeTicketing(eventData.eventType || "ticketed");
+      
+      // Set tickets if they exist
+      if (eventData.tickets && eventData.tickets.length > 0) {
+        setTickets(eventData.tickets);
+      }
+
+      // Set venue if it exists
+      if (eventData.venue && eventData.venue._id) {
+        setSelectedVenueId(eventData.venue._id);
+      }
+
+      // Set sponsors if they exist - handle both array of IDs and array of objects
+      if (eventData.sponsors) {
+        if (Array.isArray(eventData.sponsors)) {
+          const sponsorIds = eventData.sponsors.map(sponsor => 
+            typeof sponsor === 'string' ? sponsor : sponsor.id || sponsor._id
+          );
+          setSponsorIds(sponsorIds);
+        }
+      }
+
+      // Set curators if they exist - handle both array of IDs and array of objects
+      if (eventData.curators) {
+        if (Array.isArray(eventData.curators)) {
+          const curatorIds = eventData.curators.map(curator => 
+            typeof curator === 'string' ? curator : curator._id
+          );
+          setCuratorIds(curatorIds);
+        }
+      }
+
+      // Set vendors if they exist
+      if (eventData.vendors) {
+        if (Array.isArray(eventData.vendors)) {
+          const vendorIds = eventData.vendors.map(vendor => 
+            typeof vendor === 'string' ? vendor : vendor._id
+          );
+          setVendorIds(vendorIds);
+        }
+      }
+
+      // Set image preview if it exists - check banner first, then images
+      if (eventData.banner && eventData.banner.url) {
+        const imageUrl = eventData.banner.url.startsWith('http') 
+          ? eventData.banner.url 
+          : `${import.meta.env.VITE_SERVER_URL}${eventData.banner.url}`;
+        setPreviewUrl(imageUrl);
+      } else if (eventData.images && eventData.images.length > 0) {
+        const imageUrl = eventData.images[0].startsWith('http') 
+          ? eventData.images[0] 
+          : `${import.meta.env.VITE_SERVER_URL}${eventData.images[0]}`;
+        setPreviewUrl(imageUrl);
+      }
+
+      setIsEditMode(true);
+    } catch (error) {
+      console.error('Error fetching event data:', error);
+      toast.error('Failed to load event data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Fetch sponsors and curators
   useEffect(() => {
+    // If we have an ID, fetch the event data for editing
+    if (id) {
+      fetchEventData(id);
+    }
+
     const fetchSponsors = async () => {
       const { data } = await axiosInstance.get("management/sponsors");
       setSponsors(data);
@@ -279,7 +477,9 @@ export default function CreateEvent() {
     fData.append("sponsors", JSON.stringify(sponsorIds));
     fData.append("curators", JSON.stringify(curatorIds));
     fData.append("vendors", JSON.stringify(vendorIds));
-    fData.append("eventImages", selectedFile);
+    if (selectedFile) {
+      fData.append("eventImages", selectedFile); // Changed from eventImages to banner
+    }
     if (selectedVenueId) {
       fData.append("venue", selectedVenueId);
     }
@@ -288,39 +488,74 @@ export default function CreateEvent() {
       console.log(`${pair[0]}:`, pair[1]);
     }
 
-
-    // return;
     const token = localStorage.getItem("token");
 
     try {
-      const { data } = await axiosInstance.post(
-        `/events`,
-        fData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${token}`,
-          },
+      let response;
+      if (isEditMode && id) {
+        // Update existing event
+        console.log("Updating event:", id);
+        response = await axiosInstance.put(
+          `/events/${id}`,
+          fData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        if (response.data) {
+          toast.success("Event updated successfully");
+          // Log the response for debugging
+          console.log("Event updated:", response.data);
+          navigate("/profile");
+        } else {
+          toast.error(response.data?.message || "Update failed");
         }
-      );
-      if (data.event) {
-        toast.success("Event created successfully");
-        navigate("/");
       } else {
-        toast.error(data.message);
+        // Create new event
+        response = await axiosInstance.post(
+          `/events`,
+          fData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        if (response.data) {
+          toast.success("Event created successfully");
+          // Log the response for debugging
+          console.log("Event created:", response.data);
+          navigate("/");
+        } else {
+          toast.error(response.data?.message || "Creation failed");
+        }
       }
     } catch (error) {
-      console.log(error);
-      toast.error(error.response?.data?.message || "Create Event failed");
+      console.log("Error details:", error);
+      const action = isEditMode ? "Update" : "Create";
+      toast.error(error.response?.data?.message || `${action} Event failed`);
     }
   };
+
+  // Show loading state while fetching event data
+  if (loading) {
+    return (
+      <div className="bg-[#0E0F13] min-h-screen flex flex-col items-center justify-center md:p-16 p-2 text-white font-sen">
+        <div className="text-xl">Loading event data...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-[#0E0F13] min-h-screen flex flex-col items-center md:p-16 p-2 text-white font-sen">
       <div className="bg-2 z-0 pointer-events-none"></div>
       <div className="w-full h-min-screen flex flex-col items-center bg-[rgba(255,255,255,0.05)] rounded-lg">
         <h1 className="text-3xl font-semibold mb-8 pt-4 justify-between font-sen">
-          Create a New Event
+          {isEditMode ? "Edit Event" : "Create a New Event"}
         </h1>
 
         <div className="w-full max-w-3xl flex items-center justify-between mb-8 p-3">
@@ -366,7 +601,16 @@ export default function CreateEvent() {
           {/* Details Step */}
           {currentStep === 1 && (
             <>
-              <div className="border-2 border-dashed border-[#96A1AE] rounded-lg h-60 flex flex-col items-center justify-center cursor-pointer hover:bg-[#20222A] transition-colors">
+              <div 
+                className={`border-2 border-dashed rounded-lg h-60 flex flex-col items-center justify-center cursor-pointer transition-colors relative overflow-hidden ${
+                  isDragOver 
+                    ? 'border-[#2FE2AF] bg-[#2FE2AF] bg-opacity-10' 
+                    : 'border-[#96A1AE] hover:bg-[#20222A]'
+                }`}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+              >
                 <input
                   type="file"
                   onChange={handleFileChange}
@@ -376,31 +620,56 @@ export default function CreateEvent() {
                   multiple={false}
                 />
 
-                <label
-                  htmlFor="fileInput"
-                  className="cursor-pointer text-center"
-                >
-                  <div>
-                    <FileUpload />
-                  </div>
-                  {selectedFile ? (
-                    <div className="mt-2">
-                      <p className="text-white">{selectedFile.name}</p>
-                      <p className="text-[#96A1AE] text-sm">
-                        {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB
-                      </p>
+                {previewUrl ? (
+                  <div className="w-full h-full relative">
+                    <img
+                      src={previewUrl}
+                      alt="Event preview"
+                      className="w-full h-full object-cover rounded-lg"
+                    />
+                    <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                      <label
+                        htmlFor="fileInput"
+                        className="cursor-pointer text-center text-white"
+                      >
+                        <div className="mb-2">
+                          <FileUpload />
+                        </div>
+                        <p className="text-sm">Click to change image</p>
+                      </label>
                     </div>
-                  ) : (
-                    <>
-                      <p className="text-[#96A1AE] text-lg font-sen">
-                        Drag and drop your image here to upload
-                      </p>
-                      <p className="text-[#2FE2AF] mt-2 underline font-sen">
-                        or browse for image
-                      </p>
-                    </>
-                  )}
-                </label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedFile(null);
+                        setPreviewUrl("");
+                      }}
+                      className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-red-600 transition-colors"
+                    >
+                      ×
+                    </button>
+                    {selectedFile && (
+                      <div className="absolute bottom-2 left-2 bg-black bg-opacity-75 text-white text-xs px-2 py-1 rounded">
+                        {selectedFile.name} ({(selectedFile.size / (1024 * 1024)).toFixed(2)} MB)
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <label
+                    htmlFor="fileInput"
+                    className="cursor-pointer text-center"
+                  >
+                    <div>
+                      <FileUpload />
+                    </div>
+                    <p className="text-[#96A1AE] text-lg font-sen">
+                      Drag and drop your image here to upload
+                    </p>
+                    <p className="text-[#2FE2AF] mt-2 underline font-sen">
+                      or browse for image
+                    </p>
+                  </label>
+                )}
               </div>
 
               <div className="bg-[#1A1C23] p-8 rounded-xl border border-[#2D2F36] space-y-6 max-w-3xl mx-auto">
@@ -610,7 +879,7 @@ export default function CreateEvent() {
                       const sponsor = sponsors.find((s) => s._id === id);
                       return (
                         <span key={id} className="bg-[#2FE2AF] text-black px-3 py-1 rounded-full flex items-center mr-2 mb-2">
-                          {sponsor?.email || id}
+                          {sponsor?.businessName || sponsor?.email || id}
                           <button type="button" className="ml-2 text-black" onClick={() => handleRemoveSponsor(id)}>&times;</button>
                         </span>
                       );
@@ -635,7 +904,7 @@ export default function CreateEvent() {
                               onMouseDown={() => handleAddSponsor({ target: { value: sponsor._id } })}
                               className="p-3 hover:bg-[#2D2F36] cursor-pointer text-white border-b border-[#2D2F36] last:border-b-0"
                             >
-                              {sponsor.businessName}
+                              {sponsor.businessName || sponsor.email}
                             </div>
                           ))
                         ) : (
@@ -707,7 +976,7 @@ export default function CreateEvent() {
                       const curator = curators.find((c) => c._id === id);
                       return (
                         <span key={id} className="bg-[#2FE2AF] text-black px-3 py-1 rounded-full flex items-center mr-2 mb-2">
-                          {curator?.email || curator?.stageName || id}
+                          {curator?.stageName || `${curator?.firstName} ${curator?.lastName}` || curator?.email || id}
                           <button type="button" className="ml-2 text-black" onClick={() => handleRemoveCurator(id)}>&times;</button>
                         </span>
                       );
@@ -732,7 +1001,7 @@ export default function CreateEvent() {
                               onMouseDown={() => handleAddCurator({ target: { value: curator._id } })}
                               className="p-3 hover:bg-[#2D2F36] cursor-pointer text-white border-b border-[#2D2F36] last:border-b-0"
                             >
-                              {curator.firstName} {curator.lastName}  ({curator.email})
+                              {curator.stageName || `${curator.firstName} ${curator.lastName}`} ({curator.email})
                             </div>
                           ))
                         ) : (

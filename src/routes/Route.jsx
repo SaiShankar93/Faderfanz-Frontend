@@ -54,6 +54,7 @@ import AllCrowdfunding from "@/components/AllCrowdfunding";
 import AllVenueOwners from "@/pages/AllVenueOwners";
 import CreateCampaign from "@/pages/createCampaign";
 import Suggestions from "@/pages/Suggestions";
+import CreateEventEdit from "@/pages/CreateEventEdit";
 
 export const userRoutes = [
   {
@@ -127,6 +128,12 @@ export const userRoutes = [
     title: "Create Event page",
     component: <CreateEvent />,
     path: "/create-event",
+  },
+  {
+    name: "Edit Event page",
+    title: "Edit Event page",
+    component: <CreateEventEdit/>,
+    path: "/create-event/:id",
   },
   {
     name: "Create Event page",
