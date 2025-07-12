@@ -727,7 +727,7 @@ const SponsorRegistration = () => {
                                 >
                                     <option value="">Choose event</option>
                                     <option value="Music Events">Music Events</option>
-                                    <option value="Sports Events">Sports Events</option>
+                                    <option value="Sport Events">Sport Events</option>
                                     <option value="Cultural Events">Cultural Events</option>
                                     <option value="Technology Events">Technology Events</option>
                                 </select>
