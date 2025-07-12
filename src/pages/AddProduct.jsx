@@ -115,6 +115,8 @@ const AddProduct = () => {
     fetchUserEvents();
   }, [user]);
 
+  console.log(user)
+
   if (!user || user.role !== 'sponsor') {
     return (
       <div className="min-h-screen bg-[#0F0B1A] flex items-center justify-center">
