@@ -906,11 +906,11 @@ const UserProfile = () => {
                                                 Create Event
                                             </button>
                                         )}
-                                        {/* {userData.role === 'sponsor' && (
-                                            <button className="w-full text-left px-4 py-2 text-sm md:text-base text-white hover:bg-[#1E1B33]">
+                                        {userData.role === 'sponsor' && (
+                                            <button onClick={() => navigate('/add-product')} className="w-full text-left px-4 py-2 text-sm md:text-base text-white hover:bg-[#1E1B33]">
                                                 Create Product
                                             </button>
-                                        )} */}
+                                        )}
                                     </div>
                                 )}
                             </div>}
@@ -1485,6 +1485,12 @@ const UserProfile = () => {
                     <div className="space-y-6">
                         <div className="flex items-center justify-between">
                             <h2 className="text-white text-2xl font-medium">My Products</h2>
+                            <button
+                                onClick={() => navigate('/add-product')}
+                                className="bg-[#00FFB2] text-black px-4 py-2 rounded-lg hover:bg-[#00FFB2]/90 transition-colors text-sm"
+                            >
+                                Create Product
+                            </button>
                         </div>
 
                         <div className="space-y-4">

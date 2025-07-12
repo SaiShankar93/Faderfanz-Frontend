@@ -27,7 +27,7 @@ import SearchPage from "@/pages/Search";
 import Shop from "@/pages/Shop";
 import SponserPage from "@/pages/SponserPage";
 import SuccessTransactionPage from "@/pages/SuccessTransactionPage";
-import AddProduct from "@/pages/Vendordashboard/AddProduct";
+import AddProduct from "@/pages/AddProduct";
 import Dashboard from "@/pages/Vendordashboard/Dashboard";
 import OrderList from "@/pages/Vendordashboard/OrderList";
 import Payments from "@/pages/Vendordashboard/Payments";
@@ -343,6 +343,12 @@ export const userRoutes = [
     title: "Settings",
     component: <Settings />,
     path: "/settings",
+  },
+  {
+    name: "add-product",
+    title: "Add Product",
+    component: <AddProduct />,
+    path: "/add-product",
   },
 ];
 
