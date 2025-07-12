@@ -78,6 +78,10 @@ const UserProfile = () => {
     const [followLoading, setFollowLoading] = useState({});
     const [selectedMediaTab, setSelectedMediaTab] = useState('images');
     const [showAllMedia, setShowAllMedia] = useState(false);
+    const [isPostModalOpen, setIsPostModalOpen] = useState(false);
+    const [selectedPost, setSelectedPost] = useState(null);
+    const [newComment, setNewComment] = useState('');
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
     // Share Post State
     const [newPost, setNewPost] = useState({
@@ -126,13 +130,52 @@ const UserProfile = () => {
                 setReviews(reviewsData || []);
 
                 // Normalize posts from the backend to have a 'content' property and full image URLs
-                const normalizedPosts = (feedData || []).map(post => ({
-                    ...post,
-                    content: post.text, // Ensure 'content' property exists
-                    images: (post.images || []).map(img =>
-                        img.startsWith('http') ? img : `${import.meta.env.VITE_SERVER_URL}${img}`
-                    )
-                }));
+                const normalizedPosts = (feedData || []).map(post => {
+                    // Check if current user has liked the post
+                    const currentUserId = profile._id;
+                    const isLiked = (post.likes || []).some(like => 
+                        like.user === currentUserId || like.user._id === currentUserId
+                    );
+                    
+                    // Generate fake comments for demonstration
+                    const fakeComments = [
+                        {
+                            _id: `comment_${post._id || post.id}_1`,
+                            user: 'fake_user_1',
+                            role: 'guest',
+                            name: 'John Doe',
+                            text: 'Great post! Looking forward to more content like this.',
+                            createdAt: new Date(Date.now() - Math.random() * 86400000).toISOString()
+                        },
+                        {
+                            _id: `comment_${post._id || post.id}_2`,
+                            user: 'fake_user_2',
+                            role: 'guest',
+                            name: 'Jane Smith',
+                            text: 'This is amazing! Thanks for sharing.',
+                            createdAt: new Date(Date.now() - Math.random() * 86400000).toISOString()
+                        },
+                        {
+                            _id: `comment_${post._id || post.id}_3`,
+                            user: 'fake_user_3',
+                            role: 'guest',
+                            name: 'Mike Johnson',
+                            text: 'Really enjoyed this! Keep it up!',
+                            createdAt: new Date(Date.now() - Math.random() * 86400000).toISOString()
+                        }
+                    ];
+                    
+                    return {
+                        ...post,
+                        content: post.text, // Ensure 'content' property exists
+                        isLiked: isLiked,
+                        comments: post.comments || fakeComments,
+                        timeAgo: formatTimeAgo(new Date(post.createdAt)),
+                        images: (post.images || []).map(img =>
+                            img.startsWith('http') ? img : `${import.meta.env.VITE_SERVER_URL}${img}`
+                        )
+                    };
+                });
                 setPosts(normalizedPosts);
 
                 setFollowers(followersData || []);
@@ -205,6 +248,26 @@ const UserProfile = () => {
         }
     }
 
+    // Format time ago for posts
+    const formatTimeAgo = (date) => {
+        const now = new Date();
+        const diffMs = now - date;
+        const diffSec = Math.floor(diffMs / 1000);
+        const diffMin = Math.floor(diffSec / 60);
+        const diffHour = Math.floor(diffMin / 60);
+        const diffDay = Math.floor(diffHour / 24);
+        
+        if (diffDay > 0) {
+            return `${diffDay} day${diffDay !== 1 ? 's' : ''} ago`;
+        } else if (diffHour > 0) {
+            return `${diffHour} hour${diffHour !== 1 ? 's' : ''} ago`;
+        } else if (diffMin > 0) {
+            return `${diffMin} minute${diffMin !== 1 ? 's' : ''} ago`;
+        } else {
+            return 'Just now';
+        }
+    };
+
     // Fetch data on component mount
     useEffect(() => {
         fetchUserProfile()
@@ -258,19 +321,205 @@ const UserProfile = () => {
         }
     };
     // Post Actions
-    const handleLikePost = useCallback((postId) => {
-        setPosts(prevPosts =>
-            prevPosts.map(post =>
-                post.id === postId
-                    ? { ...post, isLiked: !post.isLiked, likes: post.isLiked ? post.likes - 1 : post.likes + 1 }
-                    : post
-            )
-        );
-    }, []);
+    const handleLikePost = useCallback(async (postId) => {
+        try {
+            const token = localStorage.getItem('accessToken');
+            if (!token) {
+                toast.error('Please login to like posts');
+                return;
+            }
+
+            // Get current post state before optimistic update
+            const currentPost = posts.find(post => post.id === postId || post._id === postId);
+            if (!currentPost) {
+                toast.error('Post not found');
+                return;
+            }
+
+            // Optimistically update the UI first
+            setPosts(prevPosts =>
+                prevPosts.map(post =>
+                    post.id === postId || post._id === postId
+                        ? { 
+                            ...post, 
+                            isLiked: !post.isLiked, 
+                            likes: currentPost.isLiked 
+                                ? (Array.isArray(post.likes) ? post.likes.filter(like => 
+                                    like.user !== userData._id && like.user._id !== userData._id) : [])
+                                : [...(Array.isArray(post.likes) ? post.likes : []), { user: userData._id, role: userData.role }]
+                        }
+                        : post
+                )
+            );
+
+            // Make API call to like/unlike the post
+            const response = await axiosInstance.post(`/profiles/posts/${postId}/like`);
+
+            if (response.data && response.data.success) {
+                // Update with server response
+                const updatedPost = response.data.data;
+                
+                // Check if current user has liked the post by looking in the likes array
+                const currentUserId = userData._id;
+                const isLiked = updatedPost.likes.some(like => 
+                    like.user === currentUserId || like.user._id === currentUserId
+                );
+                
+                setPosts(prevPosts =>
+                    prevPosts.map(post =>
+                        post.id === postId || post._id === postId
+                            ? { 
+                                ...post, 
+                                isLiked: isLiked,
+                                likes: updatedPost.likes || []
+                            }
+                            : post
+                    )
+                );
+                
+                toast.success(isLiked ? 'Post liked' : 'Post unliked');
+            }
+        } catch (error) {
+            console.error('Error liking post:', error);
+            
+            // Revert the optimistic update on error
+            setPosts(prevPosts =>
+                prevPosts.map(post =>
+                    post.id === postId || post._id === postId
+                        ? { 
+                            ...post, 
+                            isLiked: !post.isLiked, 
+                            likes: currentPost.isLiked 
+                                ? [...(Array.isArray(post.likes) ? post.likes : []), { user: userData._id, role: userData.role }]
+                                : (Array.isArray(post.likes) ? post.likes.filter(like => 
+                                    like.user !== userData._id && like.user._id !== userData._id) : [])
+                        }
+                        : post
+                )
+            );
+            
+            toast.error(error.response?.data?.message || 'Failed to like post');
+        }
+    }, [posts]);
 
     const handleCommentPost = useCallback((postId) => {
-        // Implement comment functionality
-    }, []);
+        const post = posts.find(p => p.id === postId || p._id === postId);
+        console.log('Opening modal for post:', postId, 'Found post:', post);
+        if (post) {
+            // Clear any previous comment input
+            setNewComment('');
+            // Reset image index to first image
+            setCurrentImageIndex(0);
+            // Set the selected post
+            setSelectedPost(post);
+            // Open the modal
+            setIsPostModalOpen(true);
+        }
+    }, [posts]);
+
+    const handleAddComment = useCallback(async () => {
+        if (!newComment.trim() || !selectedPost) return;
+
+        try {
+            const token = localStorage.getItem('accessToken');
+            if (!token) {
+                toast.error('Please login to comment');
+                return;
+            }
+
+            const postId = selectedPost._id || selectedPost.id;
+            const commentText = newComment.trim();
+
+            // Optimistically add comment to UI
+            const optimisticComment = {
+                _id: `temp_${Date.now()}`,
+                user: userData._id,
+                role: userData.role,
+                name: userData.firstName
+                    ? `${userData.firstName} ${userData.lastName}`
+                    : userData.businessName || userData.venueName || userData.stageName,
+                text: commentText,
+                createdAt: new Date().toISOString()
+            };
+
+            // Update posts with optimistic comment
+            setPosts(prevPosts =>
+                prevPosts.map(post =>
+                    post.id === postId || post._id === postId
+                        ? {
+                            ...post,
+                            comments: [...(post.comments || []), optimisticComment]
+                        }
+                        : post
+                )
+            );
+
+            // Update selected post
+            setSelectedPost(prev => ({
+                ...prev,
+                comments: [...(prev.comments || []), optimisticComment]
+            }));
+
+            // Clear input immediately for better UX
+            setNewComment('');
+
+            // Make API call to post comment
+            const response = await axiosInstance.post(`/profiles/posts/${postId}/comment`, {
+                text: commentText
+            });
+
+            if (response.data && response.data.success) {
+                // Update with server response
+                const serverComments = response.data.data;
+                
+                // Update posts with server comments
+                setPosts(prevPosts =>
+                    prevPosts.map(post =>
+                        post.id === postId || post._id === postId
+                            ? {
+                                ...post,
+                                comments: serverComments
+                            }
+                            : post
+                    )
+                );
+
+                // Update selected post
+                setSelectedPost(prev => ({
+                    ...prev,
+                    comments: serverComments
+                }));
+
+                toast.success('Comment posted successfully!');
+            }
+        } catch (error) {
+            console.error('Error posting comment:', error);
+            
+            // Revert optimistic update on error
+            const postId = selectedPost._id || selectedPost.id;
+            setPosts(prevPosts =>
+                prevPosts.map(post =>
+                    post.id === postId || post._id === postId
+                        ? {
+                            ...post,
+                            comments: post.comments.filter(comment => !comment._id.startsWith('temp_'))
+                        }
+                        : post
+                )
+            );
+
+            // Revert selected post
+            setSelectedPost(prev => ({
+                ...prev,
+                comments: prev.comments.filter(comment => !comment._id.startsWith('temp_'))
+            }));
+
+            // Restore the comment text
+            setNewComment(newComment);
+
+            toast.error(error.response?.data?.message || 'Failed to post comment');
+        }
+    }, [newComment, selectedPost, userData, posts]);
 
     // File handling functions
     const handleFileSelect = (e) => {
@@ -839,11 +1088,10 @@ const UserProfile = () => {
                                                     className="w-10 h-10 md:w-12 md:h-12 rounded-full"
                                                 />
                                                 <div>
-                                                    <h3 className="text-white text-sm md:text-base font-medium">{post.author?.name || 'User'}</h3>
+                                                    <h3 className="text-white text-sm md:text-base font-medium m-0">{post.author?.name || 'User'}</h3>
                                                     <p className="text-white/60 text-xs md:text-sm">{post.timeAgo}</p>
                                                 </div>
                                             </div>
-                                            <button className="text-white/60 hover:text-white">•••</button>
                                         </div>
 
                                         <div className="mb-4">
@@ -867,6 +1115,9 @@ const UserProfile = () => {
                                                                 src={imageUrl}
                                                                 alt={`Post ${index + 1}`}
                                                                 className="w-full h-32 md:h-48 object-cover transition-transform duration-300 group-hover:scale-105"
+                                                                onError={(e) => {
+                                                                    e.target.src = "/Images/post.png";
+                                                                }}
                                                             />
                                                             <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                                                         </button>
@@ -881,7 +1132,7 @@ const UserProfile = () => {
                                                 <span>{post.views}</span>
                                             </div> */}
                                             <button
-                                                onClick={() => handleLikePost(post.id)}
+                                                onClick={() => handleLikePost(post._id || post.id)}
                                                 className="flex items-center gap-1 md:gap-2 hover:text-[#00FFB2]"
                                             >
                                                 {post.isLiked ? (
@@ -890,15 +1141,15 @@ const UserProfile = () => {
                                                     <AiOutlineHeart className="w-4 h-4 md:w-5 md:h-5" />
                                                 )}
                                                 <span className={post.isLiked ? "text-[#00FFB2]" : ""}>
-                                                    {post.likes.length} Like
+                                                    {Array.isArray(post.likes) ? post.likes.length : 0} Like
                                                 </span>
                                             </button>
                                             <button
-                                                onClick={() => handleCommentPost(post.id)}
+                                                onClick={() => handleCommentPost(post._id || post.id)}
                                                 className="flex items-center gap-1 md:gap-2 hover:text-[#00FFB2]"
                                             >
                                                 <FaRegComment className="w-4 h-4 md:w-5 md:h-5" />
-                                                <span>{post.comments} Comment</span>
+                                                <span>{Array.isArray(post.comments) ? post.comments.length : 0} Comment</span>
                                             </button>
                                         </div>
                                     </div>
@@ -1887,6 +2138,205 @@ const UserProfile = () => {
                             >
                                 Update Product
                             </button>
+                        </div>
+                    </Dialog.Panel>
+                </div>
+            </Dialog>
+
+            {/* Instagram-style Post Modal */}
+            <Dialog
+                open={isPostModalOpen}
+                onClose={() => {
+                    console.log('Closing modal, clearing selectedPost');
+                    setIsPostModalOpen(false);
+                    setSelectedPost(null);
+                    setNewComment('');
+                    setCurrentImageIndex(0);
+                }}
+                className="relative z-50"
+            >
+                <div className="fixed inset-0 bg-black/90" aria-hidden="true" />
+                <div className="fixed inset-0 flex items-center justify-center p-4">
+                    <Dialog.Panel className="bg-[#231D30] rounded-lg w-full max-w-4xl h-[90vh] flex flex-col">
+                        {/* Header */}
+                        <div className="flex items-center justify-between p-4 border-b border-white/10">
+                            <div className="flex items-center gap-3">
+                                <img
+                                    src={selectedPost?.author?.profileImage ? `${import.meta.env.VITE_SERVER_URL}${selectedPost.author.profileImage}` : "/Images/default-avatar.jpg"}
+                                    alt={selectedPost?.author?.name || 'User'}
+                                    className="w-10 h-10 rounded-full"
+                                />
+                                <div>
+                                    <h3 className="text-white font-medium m-0">
+                                        {selectedPost?.author?.name || 'User'} 
+                                        
+                                    </h3>
+                                    <p className="text-white/60 text-sm">{selectedPost?.timeAgo}</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => {
+                                    setIsPostModalOpen(false);
+                                    setSelectedPost(null);
+                                    setNewComment('');
+                                    setCurrentImageIndex(0);
+                                }}
+                                className="text-white/60 hover:text-white"
+                            >
+                                <span className="text-xl">✕</span>
+                            </button>
+                        </div>
+
+                        {/* Content */}
+                        <div className="flex-1 flex overflow-hidden">
+                            {/* Left side - Images */}
+                            <div className="w-1/2 bg-black flex items-center justify-center relative">
+                                {selectedPost?.images && selectedPost.images.length > 0 ? (
+                                    <div className="relative w-full h-full">
+                                        {/* Current Image */}
+                                        <img
+                                            src={selectedPost.images[currentImageIndex]}
+                                            alt={`Post ${currentImageIndex + 1}`}
+                                            className="w-full h-full object-contain"
+                                            onError={(e) => {
+                                                e.target.src = "/Images/post.png";
+                                            }}
+                                        />
+                                        
+                                        {/* Navigation Arrows - Only show if multiple images */}
+                                        {selectedPost.images.length > 1 && (
+                                            <>
+                                                {/* Previous Button */}
+                                                <button
+                                                    onClick={() => setCurrentImageIndex(prev => 
+                                                        prev === 0 ? selectedPost.images.length - 1 : prev - 1
+                                                    )}
+                                                    className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-colors"
+                                                >
+                                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                                    </svg>
+                                                </button>
+                                                
+                                                {/* Next Button */}
+                                                <button
+                                                    onClick={() => setCurrentImageIndex(prev => 
+                                                        prev === selectedPost.images.length - 1 ? 0 : prev + 1
+                                                    )}
+                                                    className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-colors"
+                                                >
+                                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                                    </svg>
+                                                </button>
+                                                
+                                                {/* Image Indicators */}
+                                                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
+                                                    {selectedPost.images.map((_, index) => (
+                                                        <button
+                                                            key={index}
+                                                            onClick={() => setCurrentImageIndex(index)}
+                                                            className={`w-2 h-2 rounded-full transition-colors ${
+                                                                index === currentImageIndex 
+                                                                    ? 'bg-white' 
+                                                                    : 'bg-white/50 hover:bg-white/70'
+                                                            }`}
+                                                        />
+                                                    ))}
+                                                </div>
+                                                
+                                                {/* Image Counter */}
+                                                <div className="absolute top-4 right-4 bg-black/50 text-white px-2 py-1 rounded text-sm">
+                                                    {currentImageIndex + 1} / {selectedPost.images.length}
+                                                </div>
+                                            </>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div className="text-white/60 text-center">
+                                        <p>No image</p>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Right side - Comments and actions */}
+                            <div className="w-1/2 flex flex-col">
+                                {/* Post content */}
+                                <div className="p-4 border-b border-white/10">
+                                    <div className="flex gap-2">
+                                        <span className="text-white font-medium">
+                                            {selectedPost?.author?.name || 'User'}
+                                        </span>
+                                        <span className="text-white/80">
+                                            {selectedPost?.content}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {/* Comments */}
+                                <div className="flex-1 overflow-y-auto p-4">
+                                    <div className="space-y-4">
+                                        {Array.isArray(selectedPost?.comments) && selectedPost.comments.map((comment) => (
+                                            <div key={comment._id} className="flex gap-3">
+                                                <img
+                                                    src={comment.user?.profileImage || "/Images/default-avatar.jpg"}
+                                                    alt={comment.name || comment.user?.name || 'User'}
+                                                    className="w-8 h-8 rounded-full flex-shrink-0"
+                                                />
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-center gap-2 mb-1">
+                                                        <span className="text-white text-sm font-medium">
+                                                            {comment.name || comment.user?.name || 'User'}
+                                                        </span>
+                                                        <span className="text-white/40 text-xs">
+                                                            {new Date(comment.createdAt).toLocaleDateString()}
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-white/80 text-sm">
+                                                        {comment.text || comment.content}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Add comment */}
+                                <div className="p-4 border-t border-white/10">
+                                    <div className="flex gap-3">
+                                        <img
+                                            src={userData?.images?.[0] ? `${import.meta.env.VITE_SERVER_URL}${userData.images[0]}` : "/Images/default-avatar.jpg"}
+                                            alt="Your profile"
+                                            className="w-8 h-8 rounded-full flex-shrink-0"
+                                        />
+                                        <div className="flex-1 flex gap-2">
+                                            <input
+                                                type="text"
+                                                value={newComment}
+                                                onChange={(e) => setNewComment(e.target.value)}
+                                                placeholder="Add a comment..."
+                                                className="flex-1 bg-transparent text-white placeholder-white/60 outline-none text-sm"
+                                                onKeyPress={(e) => {
+                                                    if (e.key === 'Enter') {
+                                                        handleAddComment();
+                                                    }
+                                                }}
+                                            />
+                                            <button
+                                                onClick={handleAddComment}
+                                                disabled={!newComment.trim()}
+                                                className={`text-sm font-medium ${
+                                                    newComment.trim() 
+                                                        ? 'text-[#00FFB2] hover:text-[#00FFB2]/80' 
+                                                        : 'text-white/40'
+                                                }`}
+                                            >
+                                                Post
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </Dialog.Panel>
                 </div>
