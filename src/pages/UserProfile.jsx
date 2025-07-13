@@ -37,6 +37,7 @@ const UserProfile = () => {
     const [favorites, setFavorites] = useState([]);
     const [mediaItems, setMediaItems] = useState([]);
     const [suggestions, setSuggestions] = useState([]);
+    const [upcomingEvents, setUpcomingEvents] = useState([]);
 
     // Loading and Error States
     const [loading, setLoading] = useState(true);
@@ -247,6 +248,44 @@ const UserProfile = () => {
             setLoading(false);
         }
     }
+    console.log("upcomingEvents",upcomingEvents)
+
+    // Fetch upcoming events using the events API
+    const fetchUpcomingEvents = async () => {
+        try {
+            // Try different API endpoints that might be used in the events page
+            let response;
+            
+            // Try the events API with different approaches
+            try {
+                // Try the standard events endpoint first
+                response = await axiosInstance.get('/events');
+                if(response.data && response.data.success){
+                    setUpcomingEvents(response.data.data);
+                }
+            } catch (error) {
+                console.error("Error with /events endpoint:", error);
+                // Try alternative endpoints
+                try {
+                    response = await axiosInstance.get('/events/all');
+                    console.log("Using /events/all endpoint");
+                } catch (error2) {
+                    try {
+                        response = await axiosInstance.get('/events?category=all&status=upcoming');
+                        console.log("Using /events with category and status params");
+                    } catch (error3) {
+                        console.error("All events API attempts failed:", error3);
+                        return;
+                    }
+                }
+            }
+            
+            
+        } catch (error) {
+            console.error('Error fetching upcoming events:', error);
+            // Don't set error state for this, just log it
+        }
+    }
 
     // Format time ago for posts
     const formatTimeAgo = (date) => {
@@ -272,6 +311,7 @@ const UserProfile = () => {
     useEffect(() => {
         fetchUserProfile()
         fetchSuggestions();
+        fetchUpcomingEvents();
     }, []);
 
     // Dynamic navigation items based on user role
@@ -940,8 +980,8 @@ const UserProfile = () => {
                         {/* Share Something Box and Posts */}
                         <div className="space-y-4 md:space-y-6">
                             {/* Share Something Box */}
-                            <div className="bg-[#231D30] rounded-lg p-3 md:p-4">
-                                <div className="flex items-center gap-3 md:gap-4">
+                            <div className="border border-white/10 rounded-2xl p-3 md:p-4">
+                                <div className="flex items-center gap-3 md:gap-4 bg-black rounded-2xl">
                                     <img
                                         src={userData?.images?.[0] ? `${import.meta.env.VITE_SERVER_URL}${userData.images[0]}` : "/Images/default-avatar.jpg"}
                                         alt="Profile"
@@ -1032,7 +1072,7 @@ const UserProfile = () => {
                                         />
                                         <button
                                             onClick={() => imageInputRef.current?.click()}
-                                            className={`text-sm md:text-base text-white/60 hover:text-white ${newPost.images.length > 0 ? 'text-[#00FFB2]' : ''}`}
+                                            className={`text-sm md:text-base text-white hover:text-white ${newPost.images.length > 0 ? 'text-[#00FFB2]' : ''}`}
                                         >
                                             Image
                                         </button>
@@ -1056,7 +1096,7 @@ const UserProfile = () => {
                                     </div>
                                     <button
                                         onClick={handleSharePost}
-                                        className="bg-[#00FFB2] text-black px-4 py-1 rounded-lg text-sm md:text-base hover:bg-[#00FFB2]/90"
+                                        className="bg-[#00FFB2] text-black px-4 py-1 rounded-2xl text-sm md:text-base hover:bg-[#00FFB2]/90"
                                     >
                                         Send
                                     </button>
@@ -1068,7 +1108,7 @@ const UserProfile = () => {
                                 posts.map((post) => {
                                     if(post?.postCategory !== activeTab.toLowerCase()) return null
                                     if(activeTab.toLowerCase() === 'actions' ) return (
-                                        <div className="bg-[#231D30] rounded-lg text-center flex justify-between items-center p-4">
+                                        <div className="border border-white/10 rounded-2xl text-center flex justify-between items-center p-4">
                                             <p className="text-white/60 text-lg mb-4 text-left w-full">{post.message}</p>
                                             <Link 
                                                 to={`${import.meta.env.VITE_FRONTEND_URL}${post.link}`}
@@ -1079,7 +1119,7 @@ const UserProfile = () => {
                                         </div>
                                     );
                                     return (
-                                    <div key={post.id || post._id} className="bg-[#231D30] rounded-lg p-4 md:p-6">
+                                    <div key={post.id || post._id} className="border border-white/10 rounded-2xl p-4 md:p-6">
                                         <div className="flex justify-between items-start mb-4">
                                             <div className="flex items-center gap-2 md:gap-3">
                                                 <img
@@ -1126,27 +1166,27 @@ const UserProfile = () => {
                                             </div>
                                         )}
 
-                                        <div className="flex items-center gap-4 md:gap-6 text-white/60 text-sm md:text-base">
+                                        <div className="flex items-center gap-4 md:gap-6 text-white text-sm md:text-base">
                                             {/* <div className="flex items-center gap-1 md:gap-2">
                                                 <IoEyeOutline className="w-4 h-4 md:w-5 md:h-5" />
                                                 <span>{post.views}</span>
                                             </div> */}
                                             <button
                                                 onClick={() => handleLikePost(post._id || post.id)}
-                                                className="flex items-center gap-1 md:gap-2 hover:text-[#00FFB2]"
+                                                className="flex items-center gap-1 md:gap-2 hover:text-[#CAEB0E]"
                                             >
                                                 {post.isLiked ? (
-                                                    <AiFillHeart className="w-4 h-4 md:w-5 md:h-5 text-[#00FFB2]" />
+                                                    <AiFillHeart className="w-4 h-4 md:w-5 md:h-5 text-[#CAEB0E]" />
                                                 ) : (
                                                     <AiOutlineHeart className="w-4 h-4 md:w-5 md:h-5" />
                                                 )}
-                                                <span className={post.isLiked ? "text-[#00FFB2]" : ""}>
+                                                <span className={post.isLiked ? "text-[#CAEB0E]" : ""}>
                                                     {Array.isArray(post.likes) ? post.likes.length : 0} Like
                                                 </span>
                                             </button>
                                             <button
                                                 onClick={() => handleCommentPost(post._id || post.id)}
-                                                className="flex items-center gap-1 md:gap-2 hover:text-[#00FFB2]"
+                                                className="flex items-center gap-1 md:gap-2 hover:text-[#CAEB0E]"
                                             >
                                                 <FaRegComment className="w-4 h-4 md:w-5 md:h-5" />
                                                 <span>{Array.isArray(post.comments) ? post.comments.length : 0} Comment</span>
@@ -1841,53 +1881,69 @@ const UserProfile = () => {
                 {/* Right Sidebar - Hidden on mobile, visible on large screens */}
                 <div className="hidden lg:block w-full space-y-6">
                     {/* Upcoming Events */}
-                    <div className="bg-[#231D30] rounded-lg p-6">
-                        <h2 className="text-white text-xl mb-4">Upcoming Events</h2>
-                        <div className="space-y-4">
-                            {events.filter(event => event.status === 'upcoming').map((event) => (
-                                <Link
-                                    key={event._id}
-                                    to={`/event/${event._id}`}
-                                    className="block bg-[#1A1625] rounded-lg p-4 hover:bg-[#1A1625]/70 transition-colors"
-                                >
-                                    <div className="flex gap-4">
-                                        <div className="w-20 h-20 flex-shrink-0">
-                                            <img
-                                                src={event.image}
-                                                alt={event.title}
-                                                className="w-full h-full object-cover rounded-lg"
-                                            />
-                                        </div>
-
-                                        <div className="flex-1 min-w-0">
-                                            <h3 className="text-white text-lg font-medium mb-2">{event.title}</h3>
-                                            <div className="space-y-2 mt-2">
-                                                <div className="flex items-center gap-2 text-gray-400">
-                                                    <IoLocationOutline className="w-5 h-5 flex-shrink-0" />
-                                                    <span className="text-sm">{event.location}</span>
-                                                </div>
-                                                <div className="flex items-center gap-2 text-gray-400">
-                                                    <IoCalendarOutline className="w-5 h-5 flex-shrink-0" />
-                                                    <span className="text-sm">{event.date}</span>
-                                                </div>
-                                                <div className="flex items-center gap-2 text-gray-400">
-                                                    <IoTimeOutline className="w-5 h-5 flex-shrink-0" />
-                                                    <span className="text-sm">{event.time}</span>
-                                                </div>
-                                                <div className="flex items-center gap-1">
-                                                    <FaStar className="w-4 h-4 text-[#7c7d7b]" />
-                                                    <span className="text-[#C5FF32] text-sm">{event.interested} interested</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </Link>
-                            ))}
-                        </div>
+                    <div className=" rounded-lg p-6">
+                      <div className="flex justify-between items-center mb-4">
+                        <h2 className="text-white text-xl">Upcoming Events</h2>
+                        <Link to="/events/all/all" className="text-[#00FFB2] text-sm">See more</Link>
+                      </div>
+                      <div className="space-y-4">
+                        {upcomingEvents && upcomingEvents.length > 0 ? (
+                          upcomingEvents.slice(0, 2).map(event => (
+                            <div key={event.id || event._id} className="border border-white/10 rounded-2xl p-4 flex gap-4">
+                              <img
+                                src={
+                                  event.banner?.url
+                                    ? `${import.meta.env.VITE_SERVER_URL}${event.banner.url}`
+                                    : "/Images/post.png"
+                                }
+                                alt={event.title}
+                                className="w-20 h-20 object-cover rounded-lg"
+                              />
+                              <div className="flex-1 min-w-0">
+                                <h3 className="text-white text-lg font-medium mb-2 m-0">{event.title}</h3>
+                                <div className="flex items-center gap-2 text-gray-400 text-sm mb-1">
+                                  <IoLocationOutline className="w-4 h-4" />
+                                  <span>{event.location?.address || "Location TBD"}</span>
+                                </div>
+                                <div className="flex items-center gap-2 text-gray-400 text-sm mb-1">
+                                  <IoCalendarOutline className="w-4 h-4" />
+                                  <span>
+                                    {event.startDate
+                                      ? new Date(event.startDate).toLocaleDateString("en-GB", {
+                                          day: "2-digit",
+                                          month: "short",
+                                          year: "numeric",
+                                        })
+                                      : "Date TBD"}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-2 text-gray-400 text-sm mb-1">
+                                  <IoTimeOutline className="w-4 h-4" />
+                                  <span>
+                                    {event.startDate && event.endDate
+                                      ? `${new Date(event.startDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${new Date(event.endDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+                                      : "Time TBD"}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-1 mt-2">
+                                  <FaStar className="w-4 h-4 text-[#7c7d7b]" />
+                                  <span className="text-[#C5FF32] text-sm">
+                                    {event.stats?.interested || 0} interested
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="text-center py-4">
+                            <p className="text-gray-400 text-sm">No upcoming events</p>
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     {/* Suggestions */}
-                    <div className="bg-[#231D30] rounded-lg p-6">
+                    <div className="border border-white/10 rounded-2xl p-6">
                         <div className="flex justify-between items-center mb-4">
                             <h2 className="text-white text-xl">Suggestions</h2>
                             <Link to="/suggestions" className="text-gray-400 text-sm hover:text-[#00FFB2]">
@@ -1911,14 +1967,14 @@ const UserProfile = () => {
                                             className="w-10 h-10 rounded-full"
                                         />
                                         <div>
-                                            <h3 className="text-white">{suggestion.firstName} {suggestion.lastName}</h3>
-                                            <div className="flex items-center">
+                                            <h3 className="text-white m-0">{suggestion.firstName} {suggestion.lastName}</h3>
+                                            <div className="flex items-center border border-white/10 rounded-2xl py-1 px-3 max-w-fit">
                                                 <span className="text-yellow-400 text-sm">★</span>
                                                 <span className="text-gray-400 text-sm ml-1">{suggestion.averageRating || 0} </span>
                                             </div>
                                         </div>
                                     </div>
-                                    <button className="bg-[#3FE1B6] text-black px-4 py-1 rounded-md text-sm hover:bg-[#3FE1B6]/90" onClick={() => handleFollow(suggestion._id)}>
+                                    <button className="bg-[#3FE1B6] text-black px-4 py-1 rounded-2xl text-sm hover:bg-[#3FE1B6]/90" onClick={() => handleFollow(suggestion._id)}>
                                         Follow
                                     </button>
                                 </div>
