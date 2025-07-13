@@ -3,7 +3,7 @@ import { Dialog } from '@headlessui/react';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaUserCircle } from 'react-icons/fa';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, Link } from 'react-router-dom';
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -88,12 +88,20 @@ export default function Header() {
                 </button>
               </div>
             ) : (
+              <>  
               <a
                 href="/register"
                 className="rounded-md bg-[#00FFB2] px-6 py-2 text-sm font-semibold text-black hover:bg-[#00E6A0] transition-colors"
               >
                 Signup
               </a>
+              <Link
+              to="/login"
+              className="ml-4 px-4 py-2 rounded-lg border border-white/10 bg-[#00FFB2] hover:bg-[#00FFB2] text-black transition-colors text-sm font-semibold"
+            >
+              Sign In
+            </Link> 
+            </>
             )}
           </div>
         </nav>
