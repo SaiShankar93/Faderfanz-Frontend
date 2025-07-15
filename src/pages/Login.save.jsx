@@ -81,6 +81,14 @@ const Login = () => {
             {/* Left Content - Made wider and responsive */}
             <div className="flex-[2] flex items-center justify-center p-4 lg:p-0">
                 <div className="w-full max-w-xl px-4 lg:px-16 py-8 lg:py-0">
+                    {/* Back Button */}
+                    <button
+                        type="button"
+                        onClick={() => navigate(-1)}
+                        className="mb-6 mt-2 flex items-center text-gray-300 hover:text-white font-medium text-sm focus:outline-none"
+                    >
+                        <span className="mr-2 text-lg">←</span> Back
+                    </button>
                     {/* Logo and Title */}
                     <div className="flex items-center gap-3 mb-8">
                         <img src="/faderfanz.png" alt="FaderFanz" className="w-12 h-12" />
@@ -181,9 +189,12 @@ const Login = () => {
                                 />
                                 <span className="text-sm">Remember me</span>
                             </label>
-                            <a href="/register" className="text-sm text-white hover:underline">
-                                Register
-                            </a>
+                            <Link
+                              to="/register"
+                              className="text-sm bg-[#00FFB3] text-black px-4 py-2 rounded-lg font-medium hover:bg-[#00FFB3]/90 transition-colors"
+                            >
+                              Register
+                            </Link>
                         </div>
 
                         {/* Sign In Button */}
