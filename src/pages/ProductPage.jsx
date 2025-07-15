@@ -42,6 +42,43 @@ import "swiper/css/navigation";
 import { Autoplay, Pagination, Navigation } from "swiper/modules";
 import { Start } from "@mui/icons-material";
 import axiosInstance from "@/configs/axiosConfig";
+const countryCurrencyList = [
+  { code: "IN", name: "India", currency: { code: "INR", symbol: "₹" } },
+  { code: "US", name: "United States", currency: { code: "USD", symbol: "$" } },
+  { code: "GB", name: "United Kingdom", currency: { code: "GBP", symbol: "£" } },
+  { code: "JP", name: "Japan", currency: { code: "JPY", symbol: "¥" } },
+  { code: "AU", name: "Australia", currency: { code: "AUD", symbol: "$" } },
+  { code: "CA", name: "Canada", currency: { code: "CAD", symbol: "$" } },
+  { code: "CH", name: "Switzerland", currency: { code: "CHF", symbol: "₣" } },
+  { code: "CN", name: "China", currency: { code: "CNY", symbol: "¥" } },
+  { code: "DE", name: "Germany", currency: { code: "EUR", symbol: "€" } },
+  { code: "FR", name: "France", currency: { code: "EUR", symbol: "€" } },
+  { code: "IT", name: "Italy", currency: { code: "EUR", symbol: "€" } },
+  { code: "ES", name: "Spain", currency: { code: "EUR", symbol: "€" } },
+  { code: "BG", name: "Bulgaria", currency: { code: "BGN", symbol: "лв" } },
+  { code: "BR", name: "Brazil", currency: { code: "BRL", symbol: "R$" } },
+  { code: "CZ", name: "Czech Republic", currency: { code: "CZK", symbol: "Kč" } },
+  { code: "DK", name: "Denmark", currency: { code: "DKK", symbol: "kr" } },
+  { code: "HK", name: "Hong Kong", currency: { code: "HKD", symbol: "$" } },
+  { code: "HU", name: "Hungary", currency: { code: "HUF", symbol: "Ft" } },
+  { code: "ID", name: "Indonesia", currency: { code: "IDR", symbol: "Rp" } },
+  { code: "IL", name: "Israel", currency: { code: "ILS", symbol: "₪" } },
+  { code: "IS", name: "Iceland", currency: { code: "ISK", symbol: "kr" } },
+  { code: "KR", name: "South Korea", currency: { code: "KRW", symbol: "₩" } },
+  { code: "MX", name: "Mexico", currency: { code: "MXN", symbol: "$" } },
+  { code: "MY", name: "Malaysia", currency: { code: "MYR", symbol: "RM" } },
+  { code: "NO", name: "Norway", currency: { code: "NOK", symbol: "kr" } },
+  { code: "NZ", name: "New Zealand", currency: { code: "NZD", symbol: "$" } },
+  { code: "PH", name: "Philippines", currency: { code: "PHP", symbol: "₱" } },
+  { code: "PL", name: "Poland", currency: { code: "PLN", symbol: "zł" } },
+  { code: "RO", name: "Romania", currency: { code: "RON", symbol: "lei" } },
+  { code: "SE", name: "Sweden", currency: { code: "SEK", symbol: "kr" } },
+  { code: "SG", name: "Singapore", currency: { code: "SGD", symbol: "$" } },
+  { code: "TH", name: "Thailand", currency: { code: "THB", symbol: "฿" } },
+  { code: "TR", name: "Turkey", currency: { code: "TRY", symbol: "₺" } },
+  { code: "ZA", name: "South Africa", currency: { code: "ZAR", symbol: "R" } },
+  { code: "EU", name: "Eurozone", currency: { code: "EUR", symbol: "€" } },
+];
 const EventPage = ({}) => {
   const [activeImage, SetActiveImage] = useState(1);
   const [viewMainImg, SetViewMainImg] = useState(false);
@@ -102,6 +139,11 @@ const EventPage = ({}) => {
   });
 
   const [embedUrl, setEmbedUrl] = useState(``);
+  const [selectedCountry, setSelectedCountry] = useState(() => {
+    return localStorage.getItem("selectedCountry") || "IN";
+  });
+  const [userCurrency, setUserCurrency] = useState({ code: "INR", symbol: "₹" });
+  const [exchangeRate, setExchangeRate] = useState(1);
 
   // Helper function to calculate price details (matching backend calculation)
   const calculatePriceDetails = (price, quantity) => {
@@ -355,6 +397,27 @@ const EventPage = ({}) => {
     setShouldDisableButton(shouldDisableButton);
   }, [setSelectedAttributes, selectedAttribute]);
 
+  useEffect(() => {
+    const selected = countryCurrencyList.find((c) => c.code === selectedCountry);
+    if (!selected || selected.currency.code === "INR") {
+      setExchangeRate(1);
+      return;
+    }
+    fetch(`https://api.frankfurter.app/latest?amount=1&from=INR&to=${selected.currency.code}`)
+      .then((res) => res.json())
+      .then((data) => setExchangeRate(data.rates[selected.currency.code] || 1))
+      .catch(() => setExchangeRate(1));
+  }, [selectedCountry]);
+
+  useEffect(() => {
+    const currencyObj = countryCurrencyList.find((c) => c.code === selectedCountry);
+    if (currencyObj) {
+      setUserCurrency({ code: currencyObj.currency.code, symbol: currencyObj.currency.symbol });
+    }
+  }, [selectedCountry]);
+
+  console.log(selectedCountry, "selectedCountry");
+  console.log(userCurrency.code, "userCurrency");
   const Stars = ({ stars }) => {
     const ratingStars = Array.from({ length: 5 }, (elem, index) => {
       return (
@@ -610,6 +673,16 @@ const EventPage = ({}) => {
     }
   }, []);
 
+  const handleCountryChange = (e) => {
+    const countryCode = e.target.value;
+    setSelectedCountry(countryCode);
+    localStorage.setItem("selectedCountry", countryCode);
+    const currencyObj = countryCurrencyList.find((c) => c.code === countryCode);
+    if (currencyObj) {
+      setUserCurrency({ code: currencyObj.currency.code, symbol: currencyObj.currency.symbol });
+    }
+  };
+
   return (
     <div className="relative bg-[#0E0F13] min-h-screen text-white overflow-hidden font-sen">
       {/* Background gradient */}
@@ -708,6 +781,22 @@ const EventPage = ({}) => {
                   <h2 className="text-[#94A3B8] text-lg md:text-2xl mb-4">
                     Ticket Information
                   </h2>
+                  {/* Country selection dropdown (moved here) */}
+                  <div className="mb-4">
+                    <label className="text-[#94A3B8] block mb-2">Select Country:</label>
+                    <select
+                      className="w-full bg-[#2A2C37] text-white p-2 rounded-lg focus:outline-none"
+                      value={selectedCountry}
+                      onChange={handleCountryChange}
+                    >
+                      {countryCurrencyList.map((country) => (
+                        <option key={country.code} value={country.code}>
+                          {country.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="text-xs text-[#94A3B8] mb-2">Prices are converted from INR and may vary due to exchange rates.</div>
                   <div className="bg-[#1C1D24] rounded-xl p-4">
                     {event?.tickets && event.tickets.length > 0 ? (
                       <>
@@ -730,7 +819,7 @@ const EventPage = ({}) => {
                               <option value="">Select a ticket type</option>
                               {event.tickets.map((ticket) => (
                                 <option key={ticket._id} value={ticket._id}>
-                                  {ticket.name} - ₹{ticket.price}
+                                  {ticket.name} - {userCurrency.symbol}{ticket.price}
                                 </option>
                               ))}
                             </select>
@@ -746,7 +835,7 @@ const EventPage = ({}) => {
                           />
                           <span className="text-[#94A3B8]">
                             {selectedTicketType?.name || event.tickets[0].name}:
-                            ₹ {ticketPrice || event.tickets[0].price} each
+                            {userCurrency.symbol} {(ticketPrice * exchangeRate).toFixed(2)} each
                           </span>
                         </div>
 
@@ -796,9 +885,7 @@ const EventPage = ({}) => {
                           </button>
                         </div>
                         <span className="text-[#94A3B8] ml-4">
-                          Total: ₹{" "}
-                          {(ticketPrice || event.tickets[0]?.price || 0) *
-                            ticketCount}
+                          Total: {userCurrency.symbol}{(ticketPrice * exchangeRate).toFixed(2)}
                         </span>
                       </div>
                     )}
@@ -1048,7 +1135,7 @@ const EventPage = ({}) => {
                                   </h3>
                                   <div className="flex justify-between items-center mb-4">
                                     <span className="text-[#94A3B8] text-lg">
-                                      ₹{product.price}
+                                      {userCurrency.symbol}{(product.price * exchangeRate).toFixed(2)}
                                     </span>
                                     {product.stock && (
                                       <span className="text-[#94A3B8]">
@@ -1207,7 +1294,7 @@ const EventPage = ({}) => {
                                 Ticket Price
                               </span>
                               <span className="text-white text-sm">
-                                ₹ {ticketPrice || 0}
+                                {userCurrency.symbol} {(ticketPrice * exchangeRate).toFixed(2)}
                               </span>
                             </div>
                             <div className="flex justify-between">
@@ -1223,7 +1310,7 @@ const EventPage = ({}) => {
                                 Subtotal
                               </span>
                               <span className="text-white text-sm">
-                                ₹ {priceDetails.subtotal.toFixed(2)}
+                                {userCurrency.symbol} {(priceDetails.subtotal * exchangeRate).toFixed(2)}
                               </span>
                             </div>
                             <div className="flex justify-between">
@@ -1231,7 +1318,7 @@ const EventPage = ({}) => {
                                 Booking Fee (2%)
                               </span>
                               <span className="text-white text-sm">
-                                ₹ {priceDetails.bookingFee.toFixed(2)}
+                                {userCurrency.symbol} {(priceDetails.bookingFee * exchangeRate).toFixed(2)}
                               </span>
                             </div>
                             <div className="flex justify-between">
@@ -1239,7 +1326,7 @@ const EventPage = ({}) => {
                                 GST (18%)
                               </span>
                               <span className="text-white text-sm">
-                                ₹ {priceDetails.gst.toFixed(2)}
+                                {userCurrency.symbol} {(priceDetails.gst * exchangeRate).toFixed(2)}
                               </span>
                             </div>
                             <div className="border-t border-gray-700 my-1"></div>
@@ -1248,7 +1335,7 @@ const EventPage = ({}) => {
                                 Total Amount
                               </span>
                               <span className="text-white text-sm">
-                                ₹ {priceDetails.total.toFixed(2)}
+                                {userCurrency.symbol} {(priceDetails.total * exchangeRate).toFixed(2)}
                               </span>
                             </div>
                           </div>
