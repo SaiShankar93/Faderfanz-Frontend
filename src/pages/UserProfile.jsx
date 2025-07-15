@@ -2219,7 +2219,7 @@ const UserProfile = () => {
             >
                 <div className="fixed inset-0 bg-black/90" aria-hidden="true" />
                 <div className="fixed inset-0 flex items-center justify-center p-4">
-                    <Dialog.Panel className="bg-[#231D30] rounded-lg w-full max-w-4xl h-[90vh] flex flex-col">
+                    <Dialog.Panel className="bg-[#231D30] rounded-lg w-full max-w-full md:max-w-4xl h-[90vh] flex flex-col">
                         {/* Header */}
                         <div className="flex items-center justify-between p-4 border-b border-white/10">
                             <div className="flex items-center gap-3">
@@ -2250,9 +2250,9 @@ const UserProfile = () => {
                         </div>
 
                         {/* Content */}
-                        <div className="flex-1 flex overflow-hidden">
+                        <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
                             {/* Left side - Images */}
-                            <div className="w-1/2 bg-black flex items-center justify-center relative">
+                            <div className="w-full md:w-1/2 bg-black flex items-center justify-center relative min-h-[200px] max-h-[300px] md:max-h-none">
                                 {selectedPost?.images && selectedPost.images.length > 0 ? (
                                     <div className="relative w-full h-full">
                                         {/* Current Image */}
@@ -2322,7 +2322,7 @@ const UserProfile = () => {
                             </div>
 
                             {/* Right side - Comments and actions */}
-                            <div className="w-1/2 flex flex-col">
+                            <div className="w-full md:w-1/2 flex flex-col">
                                 {/* Post content */}
                                 <div className="p-4 border-b border-white/10">
                                     <div className="flex gap-2">
