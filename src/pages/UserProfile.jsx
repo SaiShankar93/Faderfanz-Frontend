@@ -1326,8 +1326,7 @@ const UserProfile = () => {
                                     })
                                     .slice(0, showAllMyEvents ? events.length : 6)
                                     .map((event) => (
-                                        console.log(event),
-                                        <div key={event._id || event.id} className="bg-[#231D30] rounded-lg p-4">
+                                        <div key={event._id || event.id} className="border border-white/10 rounded-2xl p-4 ">
                                             <div className="flex gap-4">
                                                 <div className="relative w-[200px] h-[200px] flex-shrink-0">
                                                     <img
@@ -1370,19 +1369,19 @@ const UserProfile = () => {
                                                     <div className="mt-4 space-y-2">
                                                         <div className="flex items-center gap-2">
                                                             <IoLocationOutline className="w-5 h-5 text-gray-400" />
-                                                            <span className="text-white">
+                                                            <span className="text-white/80">
                                                                 {event.venue?.location?.address || event.location?.address || event.location || 'Location TBD'}
                                                             </span>
                                                         </div>
                                                         <div className="flex items-center gap-2">
                                                             <IoCalendarOutline className="w-5 h-5 text-gray-400" />
-                                                            <span className="text-white">
+                                                            <span className="text-white/80">
                                                                 {event.startDate ? new Date(event.startDate).toLocaleDateString() : event.date || 'Date TBD'}
                                                             </span>
                                                         </div>
                                                         <div className="flex items-center gap-2">
                                                             <IoTimeOutline className="w-5 h-5 text-gray-400" />
-                                                            <span className="text-white">
+                                                            <span className="text-white/80">
                                                                 {event.startTime && event.endTime
                                                                     ? `${event.startTime} - ${event.endTime}`
                                                                     : event.time || 'Time TBD'
@@ -1392,7 +1391,7 @@ const UserProfile = () => {
                                                         {event.attendeesCount !== undefined && (
                                                             <div className="flex items-center gap-2">
                                                                 <span className="text-gray-400">Interested:</span>
-                                                                <span className="text-white">{event.attendeesCount || event.interested || 0}</span>
+                                                                <span className="text-white/80">{event.attendeesCount || event.interested || 0}</span>
                                                             </div>
                                                         )}
                                                     </div>

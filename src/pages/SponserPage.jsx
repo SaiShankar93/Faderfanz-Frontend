@@ -513,14 +513,14 @@ const SponserPage = () => {
 
     return (
         <div className="bg-[#0E0F13] min-h-screen text-white font-sen pb-32">
-            <div className="p-4">
+            <div className="p-4 pl-16">
                 <button className="text-white hover:text-gray-300">← Back</button>
             </div>
 
             <div className="flex flex-col lg:flex-row gap-8 px-4 lg:px-8">
                 <div className="flex-1">
                     <div className="relative">
-                                                    <div className="relative h-48 rounded-t-lg overflow-hidden">
+                                                    {/* <div className="relative h-48 rounded-t-lg overflow-hidden">
                             <div className="absolute inset-0 bg-gradient-to-r from-[#1F1B87] to-[#7B1B87] opacity-80"></div>
                             <div className="absolute inset-0 bg-cover bg-center mix-blend-overlay" 
                                  style={{ backgroundImage: `url(${sponsor.businessBanner ? `/api/${sponsor.businessBanner}` : '/Images/coverimg.png'})` }}>
@@ -528,10 +528,10 @@ const SponserPage = () => {
                             <button className="absolute right-4 top-4 bg-white hover:bg-gray-100 text-black px-4 py-1 rounded-md text-sm z-10">
                                 Change Image
                             </button>
-                        </div>
+                        </div> */}
 
                         <div className="relative px-8">
-                            <div className="absolute left-8 -top-16">
+                            <div className="absolute left-8 -top-25">
                                 <div className="w-32 h-32 rounded-full border-4 border-[#1A1625] overflow-hidden">
                                     <img
                                         src={sponsor.businessLogo ? `${import.meta.env.VITE_SERVER_URL}/${sponsor.businessLogo}` : "/Images/default-avatar.jpg"}
@@ -541,7 +541,7 @@ const SponserPage = () => {
                                 </div>
                             </div>
 
-                            <div className="pt-20">
+                            <div className="pt-36">
                                 <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start">
                                     <div className="flex flex-col gap-1">
                                         <h1 className="text-2xl text-white font-bold">{sponsor.businessName || mockSponsor.name}</h1>
