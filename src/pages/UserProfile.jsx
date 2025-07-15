@@ -1888,7 +1888,11 @@ const UserProfile = () => {
                       <div className="space-y-4">
                         {upcomingEvents && upcomingEvents.length > 0 ? (
                           upcomingEvents.slice(0, 2).map(event => (
-                            <div key={event.id || event._id} className="border border-white/10 rounded-2xl p-4 flex gap-4">
+                            <div
+                              key={event.id || event._id}
+                              className="border border-white/10 rounded-2xl p-4 flex gap-4 cursor-pointer hover:bg-[#2A2C37] transition-colors"
+                              onClick={() => navigate(`/event/${event._id || event.id}`)}
+                            >
                               <img
                                 src={
                                   event.banner?.url
@@ -1958,26 +1962,31 @@ const UserProfile = () => {
                                     return null
                                 }
                                 return(
-                                <div key={suggestion._id} className="flex items-center justify-between">
+                                  <div
+                                    key={suggestion._id}
+                                    className="flex items-center justify-between cursor-pointer hover:bg-[#2A2C37] transition-colors rounded-lg p-2"
+                                    onClick={() => navigate(`/${suggestion.role || 'curator'}/${suggestion._id}`)}
+                                  >
                                     <div className="flex items-center gap-3">
-                                        <img
-                                            src={suggestion.images?.[0] ? `${import.meta.env.VITE_SERVER_URL}${suggestion.images[0]}` : "/Images/default-avatar.jpg"}
-                                            alt={suggestion.name}
-                                            className="w-10 h-10 rounded-full"
-                                        />
-                                        <div>
-                                            <h3 className="text-white m-0">{suggestion.firstName} {suggestion.lastName}</h3>
-                                            <div className="flex items-center border border-white/10 rounded-2xl py-1 px-3 max-w-fit">
-                                                <span className="text-yellow-400 text-sm">★</span>
-                                                <span className="text-gray-400 text-sm ml-1">{suggestion.averageRating || 0} </span>
-                                            </div>
+                                      <img
+                                        src={suggestion.images?.[0] ? `${import.meta.env.VITE_SERVER_URL}${suggestion.images[0]}` : "/Images/default-avatar.jpg"}
+                                        alt={suggestion.name}
+                                        className="w-10 h-10 rounded-full"
+                                      />
+                                      <div>
+                                        <h3 className="text-white m-0">{suggestion.firstName} {suggestion.lastName}</h3>
+                                        <div className="flex items-center border border-white/10 rounded-2xl py-1 px-3 max-w-fit">
+                                          <span className="text-yellow-400 text-sm">★</span>
+                                          <span className="text-gray-400 text-sm ml-1">{suggestion.averageRating || 0} </span>
                                         </div>
+                                      </div>
                                     </div>
-                                    <button className="bg-[#3FE1B6] text-black px-4 py-1 rounded-2xl text-sm hover:bg-[#3FE1B6]/90" onClick={() => handleFollow(suggestion._id)}>
-                                        Follow
+                                    <button className="bg-[#3FE1B6] text-black px-4 py-1 rounded-2xl text-sm hover:bg-[#3FE1B6]/90" onClick={e => { e.stopPropagation(); handleFollow(suggestion._id); }}>
+                                      Follow
                                     </button>
-                                </div>
-                            )})}
+                                  </div>
+                                )
+                            })}
                         </div>
                     </div>
 
