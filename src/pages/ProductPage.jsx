@@ -3,6 +3,7 @@ import React, {
   useEffect,
   useRef,
   useState,
+  useCallback,
   Fragment,
 } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
@@ -509,22 +510,24 @@ const EventPage = ({}) => {
   const getFullImageUrl = (relativeUrl) => {
     if (!relativeUrl) return "/images/event-placeholder.jpg";
 
-    // If it's already a full URL, return it
-    if (relativeUrl.startsWith("http")) return relativeUrl;
+    // If it's already a full URL, return it (normalize double slashes except after protocol)
+    if (relativeUrl.startsWith("http")) {
+      return relativeUrl.replace(/([^:]\/)\/+/g, "$1");
+    }
 
     // If it's a relative path starting with /
     if (relativeUrl.startsWith("/")) {
-      return `${import.meta.env.VITE_SERVER_URL}${relativeUrl}`;
+      return `${import.meta.env.VITE_SERVER_URL}${relativeUrl}`.replace(/([^:]\/)\/+/g, "$1");
     }
 
     // Handle the case where there are backslashes (Windows paths)
     if (relativeUrl.includes("\\")) {
       const normalizedPath = relativeUrl.replace(/\\/g, "/");
-      return `${import.meta.env.VITE_SERVER_URL}/${normalizedPath}`;
+      return `${import.meta.env.VITE_SERVER_URL}/${normalizedPath}`.replace(/([^:]\/)\/+/g, "$1");
     }
 
     // If it's a relative path without /
-    return `${import.meta.env.VITE_SERVER_URL}/${relativeUrl}`;
+    return `${import.meta.env.VITE_SERVER_URL}/${relativeUrl}`.replace(/([^:]\/)\/+/g, "$1");
   };
 
   // Function to format event times (convert 24hr to 12hr format)
@@ -694,6 +697,51 @@ const EventPage = ({}) => {
     const currencyObj = countryCurrencyList.find((c) => c.code === countryCode);
     if (currencyObj) {
       setUserCurrency({ code: currencyObj.currency.code, symbol: currencyObj.currency.symbol });
+    }
+  };
+
+  // Helper function to get host info based on creatorModel
+  const getHostInfo = (event) => {
+    if (!event?.creatorModel || !event?.creator) return {
+      name: "Event Host",
+      image: "/Images/host-image.png"
+    };
+
+    switch (event.creatorModel) {
+      case "Sponsor":
+        return {
+          name: event.creator.name || event.creator.businessName || "Sponsor",
+          image: event.creator.profileImage || event.creator.businessLogo
+            ? getFullImageUrl(event.creator.profileImage || event.creator.businessLogo)
+            : "/Images/sponsor-logo.png"
+        };
+      case "VenueOwner":
+        let venueOwnerImage = Array.isArray(event.creator.profileImage) && event.creator.profileImage.length > 0
+          ? event.creator.profileImage[0]
+          : event.creator.profileImage;
+        // Only use getFullImageUrl if venueOwnerImage is a non-empty string
+        return {
+          name: event.creator.name || "Venue Owner",
+          image: (typeof venueOwnerImage === "string" && venueOwnerImage)
+            ? getFullImageUrl(venueOwnerImage)
+            : "/Images/host-image.png"
+        };
+      case "Curator":
+        // profileImage can be an array or a string
+        let curatorImage = Array.isArray(event.creator.profileImage)
+          ? event.creator.profileImage[0]
+          : event.creator.profileImage || event.creator.images?.[0];
+        return {
+          name: event.creator.stageName || event.creator.name || "Curator",
+          image: curatorImage
+            ? getFullImageUrl(curatorImage)
+            : "/Images/host-image.png"
+        };
+      default:
+        return {
+          name: "Event Host",
+          image: "/Images/host-image.png"
+        };
     }
   };
 
@@ -947,50 +995,53 @@ const EventPage = ({}) => {
               Hosted by
             </h2>
             <div className="flex items-center gap-4">
-              {event?.curator || event?.creator ? (
-                <>
-                  <img
-                    src={`${import.meta.env.VITE_SERVER_URL}${
-                      event?.creator?.images?.[0]
-                    }`}
-                    alt={
-                      event.curator?.name ||
-                      event.creator?.stageName ||
-                      "Event Host"
-                    }
-                    className="w-16 h-16 md:w-20 md:h-20 rounded-lg object-cover"
-                  />
-                  <div>
-                    <h3 className="text-white font-medium text-lg mb-2">
-                      {event.curator?.stageName ||
-                        event.curator?.name ||
-                        (event.creator
-                          ? event.creator.stageName ||
-                            `${event.creator.firstName || ""} ${
-                              event.creator.lastName || ""
-                            }`.trim()
-                          : "Event Host")}
-                    </h3>
-                    {(event.curator?.bio || event.creator?.bio) && (
-                      <p className="text-[#94A3B8] text-sm mb-2 line-clamp-2">
-                        {event.curator?.bio || event.creator?.bio}
-                      </p>
-                    )}
-                    <div className="flex gap-2">
-                      <Link
-                        to={`/curator/${
-                          event.curator?.id || event.creator?._id
-                        }`}
-                        className="bg-white text-black px-6 py-2 rounded-lg text-sm font-medium hover:bg-gray-100 transition-colors"
-                      >
-                        Visit Profile
-                      </Link>
-                      {/* <button className="bg-transparent text-white px-6 py-2 rounded-lg text-sm font-medium border border-white hover:bg-white/10 transition-colors">
-                        + Follow
-                      </button> */}
-                    </div>
-                  </div>
-                </>
+              {event?.creator ? (
+                (() => {
+                  const hostInfo = getHostInfo(event);
+                  return (
+                    <>
+                      <img
+                        src={hostInfo.image}
+                        alt={hostInfo.name}
+                        className="w-16 h-16 md:w-20 md:h-20 rounded-lg object-cover"
+                      />
+                      {event.creatorModel === "VenueOwner" && (
+                        !(
+                          (Array.isArray(event.creator.profileImage) && event.creator.profileImage.length > 0 && typeof event.creator.profileImage[0] === "string" && event.creator.profileImage[0]) ||
+                          (typeof event.creator.profileImage === "string" && event.creator.profileImage)
+                        ) && (
+                          <div className="text-xs text-gray-400 mt-1">No profile image available</div>
+                        )
+                      )}
+                      <div>
+                        <h3 className="text-white font-medium text-lg mb-2">
+                          {hostInfo.name}
+                        </h3>
+                        {(event.curator?.bio || event.creator?.bio) && (
+                          <p className="text-[#94A3B8] text-sm mb-2 line-clamp-2">
+                            {event.curator?.bio || event.creator?.bio}
+                          </p>
+                        )}
+                        <div className="flex gap-2">
+                          <Link
+                            to={
+                              event.creatorModel === "Curator"
+                                ? `/curator/${event.creator.id || event.creator._id}`
+                                : event.creatorModel === "Sponsor"
+                                ? `/sponsor/${event.creator.id || event.creator._id}`
+                                : event.creatorModel === "VenueOwner"
+                                ? `/venueowner/${event.creator.id || event.creator._id}`
+                                : "#"
+                            }
+                            className="bg-white text-black px-6 py-2 rounded-lg text-sm font-medium hover:bg-gray-100 transition-colors"
+                          >
+                            Visit Profile
+                          </Link>
+                        </div>
+                      </div>
+                    </>
+                  );
+                })()
               ) : (
                 <>
                   <img
@@ -1197,6 +1248,9 @@ const EventPage = ({}) => {
               </div>
             </div>
           )}
+
+          {/* Reviews Section */}
+          <ReviewsSection event={event} />
 
           {/* Other events section (already implemented with PopularEvents) */}
           <div className="mt-16">
@@ -1434,5 +1488,187 @@ const EventPage = ({}) => {
     </div>
   );
 };
+
+function ReviewsSection({ event }) {
+  const [reviews, setReviews] = useState([]);
+  const [sortBy, setSortBy] = useState("top-rated");
+  const [rating, setRating] = useState(0);
+  const [reviewText, setReviewText] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const { userLoggedIn } = useAuth();
+
+  // Fetch reviews on mount or when event changes
+  useEffect(() => {
+    if (!event?._id) return;
+    const fetchReviews = async () => {
+      setLoading(true);
+      try {
+        const res = await axiosInstance.get(`/events/${event._id}`);
+        setReviews(res.data.reviews || []);
+      } catch (e) {
+        setReviews([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchReviews();
+  }, [event?._id]);
+
+  // Calculate average rating
+  const calculateAverageRating = useCallback(() => {
+    if (!reviews.length) return 0;
+    const total = reviews.reduce((sum, r) => sum + (r.rating || 0), 0);
+    return (total / reviews.length).toFixed(1);
+  }, [reviews]);
+
+  // Sort reviews
+  const sortedReviews = [...reviews].sort((a, b) => {
+    if (sortBy === "recent") {
+      return new Date(b.createdAt) - new Date(a.createdAt);
+    } else if (sortBy === "top-rated") {
+      return b.rating - a.rating;
+    }
+    return 0;
+  });
+
+  // Handle review submit
+  const handleReviewSubmit = async () => {
+    if (rating === 0) {
+      toast.error("Please select a rating");
+      return;
+    }
+    if (!reviewText.trim()) {
+      toast.error("Please enter a comment");
+      return;
+    }
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      toast.error("Please login to add a review");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const res = await axiosInstance.post(
+        `/profiles/event/${event._id}/review`,
+        { rating, comment: reviewText },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (res.data && res.data.reviews) {
+        setReviews(res.data.reviews.reverse());
+      }
+      setRating(0);
+      setReviewText("");
+      toast.success("Review submitted successfully");
+    } catch (error) {
+      if (error.response?.status === 401) {
+        toast.error("Please login to add a review");
+      } else {
+        toast.error(error.response?.data?.message || "Failed to submit review");
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="mt-8">
+      <h2 className="text-[#94A3B8] text-xl mb-4">Reviews</h2>
+      <div className="flex justify-between items-center mb-4">
+        <div className="flex items-center gap-2">
+          <span className="text-yellow-400 text-lg">★</span>
+          <span className="text-white text-lg font-medium">
+            {calculateAverageRating()} / 5
+          </span>
+          <span className="text-gray-400 text-sm ml-2">
+            ({reviews.length} reviews)
+          </span>
+        </div>
+        <select
+          className="bg-[#231D30] text-gray-400 px-4 py-2 rounded-lg border border-gray-700"
+          value={sortBy}
+          onChange={e => setSortBy(e.target.value)}
+        >
+          <option value="top-rated">Top rated</option>
+          <option value="recent">Most recent</option>
+        </select>
+      </div>
+      {loading ? (
+        <div className="text-gray-400">Loading reviews...</div>
+      ) : reviews.length > 0 ? (
+        <div className="space-y-6 mb-8">
+          {sortedReviews.map((review, idx) => (
+            <div key={review._id || idx} className="bg-[#231D30] rounded-lg p-6">
+              <div className="flex gap-4 mb-4">
+                <img
+                  src={review.reviewer?.profileImage || review.userImage || "/Images/default-avatar.jpg"}
+                  alt="Reviewer"
+                  className="w-12 h-12 rounded-full object-cover"
+                />
+                <div>
+                  <h3 className="text-white font-medium">
+                    {review.reviewerName || review.userName || (review.reviewer ? `${review.reviewer.firstName} ${review.reviewer.lastName}` : "Anonymous")}
+                  </h3>
+                  <p className="text-gray-400 text-sm">
+                    {review.reviewerRole || review.userType || "User"}
+                  </p>
+                </div>
+              </div>
+              <p className="text-gray-400 mb-4">{review.comment}</p>
+              {review.additionalComment && (
+                <p className="text-gray-400 mb-4">{review.additionalComment}</p>
+              )}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <span className="text-yellow-400">★</span>
+                  <span className="text-white ml-1">{review.rating} Rating</span>
+                </div>
+                <span className="text-gray-500 text-sm">
+                  {new Date(review.createdAt).toLocaleDateString()}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="text-center text-gray-400 py-8">
+          <p>No reviews yet</p>
+        </div>
+      )}
+      {/* Review Form */}
+      <div className="bg-[#231D30] rounded-lg p-6">
+        <h3 className="text-white mb-4">Leave a review</h3>
+        <div className="flex gap-2 mb-4">
+          {[1, 2, 3, 4, 5].map(star => (
+            <button
+              key={star}
+              onClick={() => setRating(star)}
+              className={`text-2xl ${star <= rating ? "text-yellow-400" : "text-gray-600"}`}
+              disabled={submitting}
+            >
+              ★
+            </button>
+          ))}
+        </div>
+        <textarea
+          value={reviewText}
+          onChange={e => setReviewText(e.target.value)}
+          placeholder="Any feedback? (optional)"
+          className="w-full bg-[#1A1625] text-gray-400 rounded-lg p-4 min-h-[100px] mb-4"
+          disabled={submitting}
+        />
+        <div className="flex justify-end">
+          <button
+            onClick={handleReviewSubmit}
+            className="bg-[#3FE1B6] text-black px-8 py-2 rounded-md hover:bg-[#2fcfa4] transition-colors"
+            disabled={submitting}
+          >
+            {submitting ? "Submitting..." : "Submit"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default EventPage;
