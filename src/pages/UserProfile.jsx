@@ -1991,7 +1991,7 @@ const UserProfile = () => {
                     </div>
 
                     {/* Popular Event Owners */}
-                    <div className="bg-[#231D30] rounded-lg p-6">
+                    {/* <div className="bg-[#231D30] rounded-lg p-6">
                         <h2 className="text-white text-xl mb-4">Popular Event Owners</h2>
                         <div className="grid grid-cols-2 gap-4">
                             {[
@@ -2015,7 +2015,7 @@ const UserProfile = () => {
                                 </Link>
                             ))}
                         </div>
-                    </div>
+                    </div> */}
                 </div>
             </div>
 
