@@ -518,7 +518,7 @@ const AllCrowdfunding = () => {
                       {/* Image container */}
                       <div className="w-full sm:w-[200px] h-[200px] sm:h-[140px] flex-shrink-0">
                         <img
-                          src={campaign.mainImage || "/Images/Crowdcard.png"}
+                          src={import.meta.env.VITE_SERVER_URL + campaign?.banner?.url || "/Images/Crowdcard.png"}
                           alt={campaign.title}
                           className="w-full h-full object-cover rounded-lg"
                         />

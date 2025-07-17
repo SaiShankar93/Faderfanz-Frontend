@@ -5,7 +5,43 @@ import { BiChevronDown } from 'react-icons/bi';
 import './CrowdfundingDetail.css';
 import { toast } from 'react-hot-toast';
 import axiosInstance from '@/configs/axiosConfig';
-
+const countryCurrencyList = [
+    { code: "IN", name: "India", currency: { code: "INR", symbol: "₹" } },
+    { code: "US", name: "United States", currency: { code: "USD", symbol: "$" } },
+    { code: "GB", name: "United Kingdom", currency: { code: "GBP", symbol: "£" } },
+    { code: "JP", name: "Japan", currency: { code: "JPY", symbol: "¥" } },
+    { code: "AU", name: "Australia", currency: { code: "AUD", symbol: "$" } },
+    { code: "CA", name: "Canada", currency: { code: "CAD", symbol: "$" } },
+    { code: "CH", name: "Switzerland", currency: { code: "CHF", symbol: "₣" } },
+    { code: "CN", name: "China", currency: { code: "CNY", symbol: "¥" } },
+    { code: "DE", name: "Germany", currency: { code: "EUR", symbol: "€" } },
+    { code: "FR", name: "France", currency: { code: "EUR", symbol: "€" } },
+    { code: "IT", name: "Italy", currency: { code: "EUR", symbol: "€" } },
+    { code: "ES", name: "Spain", currency: { code: "EUR", symbol: "€" } },
+    { code: "BG", name: "Bulgaria", currency: { code: "BGN", symbol: "лв" } },
+    { code: "BR", name: "Brazil", currency: { code: "BRL", symbol: "R$" } },
+    { code: "CZ", name: "Czech Republic", currency: { code: "CZK", symbol: "Kč" } },
+    { code: "DK", name: "Denmark", currency: { code: "DKK", symbol: "kr" } },
+    { code: "HK", name: "Hong Kong", currency: { code: "HKD", symbol: "$" } },
+    { code: "HU", name: "Hungary", currency: { code: "HUF", symbol: "Ft" } },
+    { code: "ID", name: "Indonesia", currency: { code: "IDR", symbol: "Rp" } },
+    { code: "IL", name: "Israel", currency: { code: "ILS", symbol: "₪" } },
+    { code: "IS", name: "Iceland", currency: { code: "ISK", symbol: "kr" } },
+    { code: "KR", name: "South Korea", currency: { code: "KRW", symbol: "₩" } },
+    { code: "MX", name: "Mexico", currency: { code: "MXN", symbol: "$" } },
+    { code: "MY", name: "Malaysia", currency: { code: "MYR", symbol: "RM" } },
+    { code: "NO", name: "Norway", currency: { code: "NOK", symbol: "kr" } },
+    { code: "NZ", name: "New Zealand", currency: { code: "NZD", symbol: "$" } },
+    { code: "PH", name: "Philippines", currency: { code: "PHP", symbol: "₱" } },
+    { code: "PL", name: "Poland", currency: { code: "PLN", symbol: "zł" } },
+    { code: "RO", name: "Romania", currency: { code: "RON", symbol: "lei" } },
+    { code: "SE", name: "Sweden", currency: { code: "SEK", symbol: "kr" } },
+    { code: "SG", name: "Singapore", currency: { code: "SGD", symbol: "$" } },
+    { code: "TH", name: "Thailand", currency: { code: "THB", symbol: "฿" } },
+    { code: "TR", name: "Turkey", currency: { code: "TRY", symbol: "₺" } },
+    { code: "ZA", name: "South Africa", currency: { code: "ZAR", symbol: "R" } },
+    { code: "EU", name: "Eurozone", currency: { code: "EUR", symbol: "€" } },
+  ];
 const CrowdfundingDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -26,6 +62,12 @@ const CrowdfundingDetail = () => {
     });
 
     const [otherCampaigns, setOtherCampaigns] = useState([]);
+    const [country, setCountry] = useState(() => {
+        return localStorage.getItem("country") || "IN";
+    });
+    const [userCurrency, setUserCurrency] = useState({ code: "INR", symbol: "₹" });
+    const [exchangeRate, setExchangeRate] = useState(1);
+
     useEffect(() => {
         const fetchOtherCampaigns = async () => {
             const { data } = await axiosInstance.get(`management/campaigns`);
@@ -49,6 +91,49 @@ const CrowdfundingDetail = () => {
 
         fetchCampaignDetails();
     }, [id]);
+
+    useEffect(() => {
+        const getLocation = async () => {
+            const res = await fetch("https://ipapi.co/json");
+            const data = await res.json();
+            setCountry(data.country_name);
+            localStorage.setItem("country", data.country_name);
+        };
+        if (!localStorage.getItem("country")) {
+            getLocation();
+        }
+    }, []);
+
+    useEffect(() => {
+        const selected = countryCurrencyList.find((c) => c.name === country);
+        if (!selected || selected.currency.code === "INR") {
+            setExchangeRate(1);
+            return;
+        }
+        fetch(`https://api.frankfurter.app/latest?amount=1&from=INR&to=${selected.currency.code}`)
+            .then((res) => res.json())
+            .then((data) => setExchangeRate(data.rates[selected.currency.code] || 1))
+            .catch(() => setExchangeRate(1));
+    }, [country]);
+
+    useEffect(() => {
+        const currencyObj = countryCurrencyList.find((c) => c.name === country);
+        if (currencyObj) {
+            setUserCurrency({ code: currencyObj.currency.code, symbol: currencyObj.currency.symbol });
+        }
+    }, [country]);
+
+    const handleCountryChange = (e) => {
+        const countryName = e.target.value;
+        setCountry(countryName);
+        localStorage.setItem("country", countryName);
+        const currencyObj = countryCurrencyList.find((c) => c.name === countryName);
+        if (currencyObj) {
+            setUserCurrency({ code: currencyObj.currency.code, symbol: currencyObj.currency.symbol });
+        }
+    };
+
+    console.log(campaign, "campaign");
 
     const calculateProgress = (raised, target) => {
         return Math.round((raised / target) * 100);
@@ -144,7 +229,7 @@ const CrowdfundingDetail = () => {
             {/* Content Container */}
             <div className="relative z-10 max-w-[1200px] mx-auto px-4 py-6">
                 {/* Back Button */}
-                <Link to="/home" className="inline-flex items-center text-gray-400 hover:text-white mb-6">
+                <Link to="/" className="inline-flex items-center text-gray-400 hover:text-white mb-6">
                     • Back
                 </Link>
 
@@ -153,7 +238,7 @@ const CrowdfundingDetail = () => {
                     {/* Campaign Image Section */}
                     <div className="relative rounded-2xl overflow-hidden">
                         <img
-                            src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=2070"
+                            src={import.meta.env.VITE_SERVER_URL + campaign?.banner?.url}
                             alt="Campaign"
                             className="w-full h-[250px] sm:h-[300px] md:h-[400px] object-cover"
                         />
@@ -184,12 +269,16 @@ const CrowdfundingDetail = () => {
                     <div className="space-y-2">
                         <div className="flex justify-between items-start mb-4">
                             <div>
-                                <div className="text-2xl md:text-3xl font-bold">${campaign.amountRaised?.toLocaleString()}</div>
+                                <div className="text-2xl md:text-3xl font-bold">
+                                    {userCurrency.symbol}{(campaign.amountRaised * exchangeRate).toLocaleString()}
+                                </div>
                                 <div className="text-gray-400 text-xs md:text-sm">raised</div>
                             </div>
                             <div className="text-right">
                                 <div className="text-gray-400 text-xs md:text-sm">Target</div>
-                                <div className="text-lg md:text-xl">${campaign.goal?.toLocaleString()}</div>
+                                <div className="text-lg md:text-xl">
+                                    {userCurrency.symbol}{(campaign.goal * exchangeRate).toLocaleString()}
+                                </div>
                             </div>
                         </div>
 
@@ -211,9 +300,10 @@ const CrowdfundingDetail = () => {
                     {/* Created By and Contribute Button */}
                     <div className="flex flex-col sm:flex-row items-center gap-4 sm:justify-between">
                         <div className="flex items-center gap-2">
-                            <img src={campaign.creatorImage} alt={campaign.createdBy} className="w-6 h-6 rounded-full object-cover" />
+                            {/* replace \ with / */}
+                            <img src={import.meta.env.VITE_SERVER_URL +'/'+ campaign.creator?.businessLogo.replace(/\\/g, '/') } alt={campaign.createdBy} className="w-6 h-6 rounded-full object-cover" />
                             <span className="text-gray-400 text-sm">Created by</span>
-                            <span className="text-sm">{campaign.createdBy}</span>
+                            <span className="text-sm">{campaign.creator?.businessName}</span>
                         </div>
                         <button
                             onClick={handleContribute}
@@ -251,7 +341,9 @@ const CrowdfundingDetail = () => {
                                         </div>
                                         <div className="text-right">
                                             <p className="text-xs md:text-sm text-white/60">Amount Donated</p>
-                                            <p className="font-medium text-sm md:text-base text-white/90">$ {donor.amount}</p>
+                                            <p className="font-medium text-sm md:text-base text-white/90">
+                                                {userCurrency.symbol}{(donor.amount * exchangeRate).toLocaleString()}
+                                            </p>
                                         </div>
                                     </div>
                                 ))}
@@ -269,12 +361,12 @@ const CrowdfundingDetail = () => {
                                         className="bg-[#1A1A1A]/80 backdrop-blur-sm border border-white/5 rounded-xl p-4 space-y-3 cursor-pointer hover:bg-[#1A1A1A]/90 transition-all duration-300"
                                     >
                                         <div className="flex items-center gap-3">
-                                            <img src={campaign.banner?.url} alt={campaign.banner?.alt || campaign.title} className="w-12 h-12 rounded-lg object-cover border border-white/10" />
+                                            <img src={import.meta.env.VITE_SERVER_URL +campaign?.banner?.url} alt={campaign.banner?.alt || campaign.title} className="w-12 h-12 rounded-lg object-cover border border-white/10" />
                                             <h3 className="font-medium text-sm md:text-base text-white/90">{campaign.title}</h3>
                                         </div>
                                         <div>
                                             <div className="text-xs md:text-sm text-white/60">
-                                                ${campaign.amountRaised?.toLocaleString()} raised
+                                                {userCurrency.symbol}{(campaign.amountRaised * exchangeRate).toLocaleString()} raised
                                             </div>
                                             <div className="relative h-1 bg-[#1A1A1A] rounded-full overflow-hidden mt-2">
                                                 <div
@@ -285,16 +377,19 @@ const CrowdfundingDetail = () => {
                                                 </div>
                                             </div>
                                             <div className="flex justify-between text-xs md:text-sm mt-1">
-                                                <span className="text-white/60">Target</span>
-                                                <span className="text-white/60">${campaign.goal?.toLocaleString()}</span>
+                                                <span className="text-white/60"></span>
+                                                <span className="text-white/60">
+                                                    {userCurrency.symbol}{(campaign.goal * exchangeRate).toLocaleString()}
+                                                </span>
                                             </div>
                                         </div>
                                         <div className="flex items-center justify-between text-xs md:text-sm text-white/60">
                                             <div className="flex items-center gap-2">
-                                                <div className="w-4 h-4 rounded-full bg-[#1A1A1A] flex items-center justify-center border border-white/10">
-                                                    <span className="text-xs">👤</span>
+                                                <div className="rounded-full bg-[#1A1A1A] flex items-center justify-center border border-white/10">
+                                                <img src={import.meta.env.VITE_SERVER_URL+'/' +campaign?.creator?.businessLogo.replace(/\\/g, '/')} alt={campaign.banner?.alt || campaign.title} className="w-8 h-8 rounded-full object-cover border border-white/10" />
+
                                                 </div>
-                                                <span>{campaign.creator?.stageName || `${campaign.creator?.firstName} ${campaign.creator?.lastName}`}</span>
+                                                <span>{campaign?.creator?.businessName || `${campaign.creator?.firstName} ${campaign.creator?.lastName}`}</span>
                                             </div>
                                             <span>{formatDate(campaign.endDate)}</span>
                                         </div>
