@@ -209,9 +209,10 @@ const SponsorRegistration = () => {
         if (!formData.role) errors.role = "Role is required";
         
         // Validate social media fields
-        if (!formData.facebook.trim()) errors.facebook = "Facebook URL is required";
-        if (!formData.instagram.trim()) errors.instagram = "Instagram URL is required";
-        if (!formData.twitter.trim()) errors.twitter = "Twitter URL is required";
+        // REMOVE:
+        // if (!formData.facebook.trim()) errors.facebook = "Facebook URL is required";
+        // if (!formData.instagram.trim()) errors.instagram = "Instagram URL is required";
+        // if (!formData.twitter.trim()) errors.twitter = "Twitter URL is required";
 
         // Validate products
         formData.products.forEach((product, index) => {
@@ -525,7 +526,7 @@ const SponsorRegistration = () => {
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-400 mb-2">
-                                        Facebook <span className="text-red-500">*</span>
+                                        Facebook
                                     </label>
                                     <input
                                         type="url"
@@ -534,7 +535,6 @@ const SponsorRegistration = () => {
                                         className={`w-full p-3 bg-[#1A1B23] rounded-lg border ${formErrors.facebook ? 'border-red-500' : 'border-gray-600'} focus:border-purple-500 focus:outline-none`}
                                         value={formData.facebook}
                                         onChange={(e) => handleInputChange(e)}
-                                        required
                                     />
                                     {formErrors.facebook && (
                                         <p className="text-red-500 text-sm mt-1">{formErrors.facebook}</p>
@@ -543,7 +543,7 @@ const SponsorRegistration = () => {
 
                                 <div>
                                     <label className="block text-sm font-medium text-gray-400 mb-2">
-                                        Instagram <span className="text-red-500">*</span>
+                                        Instagram
                                     </label>
                                     <input
                                         type="url"
@@ -552,7 +552,6 @@ const SponsorRegistration = () => {
                                         className={`w-full p-3 bg-[#1A1B23] rounded-lg border ${formErrors.instagram ? 'border-red-500' : 'border-gray-600'} focus:border-purple-500 focus:outline-none`}
                                         value={formData.instagram}
                                         onChange={(e) => handleInputChange(e)}
-                                        required
                                     />
                                     {formErrors.instagram && (
                                         <p className="text-red-500 text-sm mt-1">{formErrors.instagram}</p>
@@ -561,7 +560,7 @@ const SponsorRegistration = () => {
 
                                 <div>
                                     <label className="block text-sm font-medium text-gray-400 mb-2">
-                                        Twitter <span className="text-red-500">*</span>
+                                        Twitter
                                     </label>
                                     <input
                                         type="url"
@@ -570,7 +569,6 @@ const SponsorRegistration = () => {
                                         className={`w-full p-3 bg-[#1A1B23] rounded-lg border ${formErrors.twitter ? 'border-red-500' : 'border-gray-600'} focus:border-purple-500 focus:outline-none`}
                                         value={formData.twitter}
                                         onChange={(e) => handleInputChange(e)}
-                                        required
                                     />
                                     {formErrors.twitter && (
                                         <p className="text-red-500 text-sm mt-1">{formErrors.twitter}</p>
