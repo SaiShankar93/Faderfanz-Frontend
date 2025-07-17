@@ -207,21 +207,21 @@ const Login = () => {
                         </button>
 
                         {/* Or Divider */}
-                        <div className="flex items-center">
+                        {/* <div className="flex items-center">
                             <div className="flex-grow h-px bg-gray-600"></div>
                             <span className="px-4 text-gray-400 text-sm">Or</span>
                             <div className="flex-grow h-px bg-gray-600"></div>
-                        </div>
+                        </div> */}
 
                         {/* Google Login */}
-                        <button
+                        {/* <button
                             type="button"
                             onClick={loginWithGoogle}
                             className="w-full flex items-center justify-center gap-3 bg-black border border-gray-800 rounded-lg p-3 text-white hover:bg-gray-900 transition-colors"
                         >
                             <RiGoogleFill className="text-xl" />
                             <span>Sign up with Google</span>
-                        </button>
+                        </button> */}
                     </form>
                 </div>
             </div>
