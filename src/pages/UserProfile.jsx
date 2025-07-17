@@ -926,7 +926,7 @@ const UserProfile = () => {
                                 <h1 className="text-white text-xl md:text-2xl font-medium">Welcome back,</h1>
                                 <p className="text-gray-400 text-sm md:text-base">{userData.firstName} {userData.lastName} {userData.owner_name}</p>
                             </div>
-                            {userData.role === 'curator' && <div className="relative w-full sm:w-auto">
+                            {(userData.role === 'curator' || userData.role === 'venueOwner' || userData.role === 'sponsor') && <div className="relative w-full sm:w-auto">
                                 <button
                                     onClick={() => setIsCreateMenuOpen(!isCreateMenuOpen)}
                                     className="w-full sm:w-auto bg-[#00FFB2] text-black px-4 py-2 rounded-lg flex items-center justify-center sm:justify-start gap-2 text-sm md:text-base"
@@ -941,7 +941,7 @@ const UserProfile = () => {
                                         {/* <button className="w-full text-left px-4 py-2 text-sm md:text-base text-white hover:bg-[#1E1B33]">
                                             Create Post
                                         </button> */}
-                                        {(userData.role === 'curator' || userData.role === 'venueOwner') && (
+                                        {(userData.role === 'curator' || userData.role === 'venueOwner' || userData.role === 'sponsor') && (
                                             <button onClick={() => navigate('/create-event')} className="w-full text-left px-4 py-2 text-sm md:text-base text-white hover:bg-[#1E1B33]">
                                                 Create Event
                                             </button>

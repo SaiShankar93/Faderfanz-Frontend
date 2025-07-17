@@ -553,7 +553,7 @@ const Home = () => {
         <HeroSlider slider={slider} searchQuery={searchQuery} setSearchQuery={setSearchQuery} selectedLocation={selectedLocation} setSelectedLocation={setSelectedLocation} events={filteredProducts} />
         <ExploreCategories categories={categories} />
         <PopularEvents events={filteredProducts} />
-        {user?.role === 'curator' && <CreateEventBanner />}
+        {(user?.role === 'curator' || user?.role === 'sponsor' || user?.role === 'venueOwner') && <CreateEventBanner />}
 
         {/* Popular Venue Owners Section */}
         <div className="w-full max-w-7xl mx-auto px-4 py-16 mb-24 relative overflow-hidden">
