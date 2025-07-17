@@ -951,6 +951,12 @@ const UserProfile = () => {
                                                 Create Product
                                             </button>
                                         )}
+                                        {/* crowdfunding for sponsor */}
+                                        {userData.role === 'sponsor' && (
+                                            <button onClick={() => navigate('/raise-fund')} className="w-full text-left px-4 py-2 text-sm md:text-base text-white hover:bg-[#1E1B33]">
+                                                Create Campaign
+                                            </button>
+                                        )}
                                     </div>
                                 )}
                             </div>}
