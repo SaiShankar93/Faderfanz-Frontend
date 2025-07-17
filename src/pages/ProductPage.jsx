@@ -38,7 +38,6 @@ import { Dialog, Transition } from "@headlessui/react";
 import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/navigation";
-
 import { Autoplay, Pagination, Navigation } from "swiper/modules";
 import { Start } from "@mui/icons-material";
 import axiosInstance from "@/configs/axiosConfig";
@@ -139,9 +138,6 @@ const EventPage = ({}) => {
   });
 
   const [embedUrl, setEmbedUrl] = useState(``);
-  const [selectedCountry, setSelectedCountry] = useState(() => {
-    return localStorage.getItem("selectedCountry") || "IN";
-  });
   const [userCurrency, setUserCurrency] = useState({ code: "INR", symbol: "₹" });
   const [exchangeRate, setExchangeRate] = useState(1);
 
@@ -162,6 +158,23 @@ const EventPage = ({}) => {
       total,
     };
   };
+
+  const [country, setCountry] = useState(() => {
+    return localStorage.getItem("country") || "IN";
+  });
+
+  useEffect(() => {
+    const getLocation = async () => {
+    const res = await fetch("https://ipapi.co/json");
+      const data = await res.json();
+      setCountry(data.country_name);
+      localStorage.setItem("country", data.country_name);
+    };
+    if (!localStorage.getItem("country")) {
+      getLocation();
+    }
+  }, []);
+
 
   const handleIncrease = () => {
     const newCount = ticketCount + 1;
@@ -398,7 +411,7 @@ const EventPage = ({}) => {
   }, [setSelectedAttributes, selectedAttribute]);
 
   useEffect(() => {
-    const selected = countryCurrencyList.find((c) => c.code === selectedCountry);
+    const selected = countryCurrencyList.find((c) => c.name === country);
     if (!selected || selected.currency.code === "INR") {
       setExchangeRate(1);
       return;
@@ -407,17 +420,18 @@ const EventPage = ({}) => {
       .then((res) => res.json())
       .then((data) => setExchangeRate(data.rates[selected.currency.code] || 1))
       .catch(() => setExchangeRate(1));
-  }, [selectedCountry]);
+  }, [country]);
 
   useEffect(() => {
-    const currencyObj = countryCurrencyList.find((c) => c.code === selectedCountry);
+    const currencyObj = countryCurrencyList.find((c) => c.name === country);
     if (currencyObj) {
       setUserCurrency({ code: currencyObj.currency.code, symbol: currencyObj.currency.symbol });
     }
-  }, [selectedCountry]);
+  }, [country]);
 
-  console.log(selectedCountry, "selectedCountry");
+  console.log(country, "country");
   console.log(userCurrency.code, "userCurrency");
+  console.log(exchangeRate, "exchangeRate");
   const Stars = ({ stars }) => {
     const ratingStars = Array.from({ length: 5 }, (elem, index) => {
       return (
@@ -781,22 +795,6 @@ const EventPage = ({}) => {
                   <h2 className="text-[#94A3B8] text-lg md:text-2xl mb-4">
                     Ticket Information
                   </h2>
-                  {/* Country selection dropdown (moved here) */}
-                  <div className="mb-4">
-                    <label className="text-[#94A3B8] block mb-2">Select Country:</label>
-                    <select
-                      className="w-full bg-[#2A2C37] text-white p-2 rounded-lg focus:outline-none"
-                      value={selectedCountry}
-                      onChange={handleCountryChange}
-                    >
-                      {countryCurrencyList.map((country) => (
-                        <option key={country.code} value={country.code}>
-                          {country.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="text-xs text-[#94A3B8] mb-2">Prices are converted from INR and may vary due to exchange rates.</div>
                   <div className="bg-[#1C1D24] rounded-xl p-4">
                     {event?.tickets && event.tickets.length > 0 ? (
                       <>
@@ -885,7 +883,7 @@ const EventPage = ({}) => {
                           </button>
                         </div>
                         <span className="text-[#94A3B8] ml-4">
-                          Total: {userCurrency.symbol}{(ticketPrice * exchangeRate).toFixed(2)}
+                          Total: {userCurrency.symbol}{(ticketPrice * exchangeRate * ticketCount).toFixed(2)}
                         </span>
                       </div>
                     )}
