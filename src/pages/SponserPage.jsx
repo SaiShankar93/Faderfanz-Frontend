@@ -1246,9 +1246,10 @@ const SponserPage = () => {
                         <div className="space-y-4">
                             {upcomingEvents && upcomingEvents.length > 0 ? (
                                 upcomingEvents.slice(0, 2).map(event => (
-                                    <div
+                                    <Link
+                                        to={`/event/${event._id || event.id}`}
                                         key={event._id || event.id}
-                                        className="border border-white/10 rounded-2xl p-4 flex gap-4 cursor-pointer hover:bg-[#2A2C37] transition-colors"
+                                        className="block border border-white/10 rounded-2xl p-4 flex gap-4 cursor-pointer hover:bg-[#2A2C37] transition-colors"
                                     >
                                         <img
                                             src={event.banner?.url ? `${import.meta.env.VITE_SERVER_URL}${event.banner.url}` : event.image || "/Images/post.png"}
@@ -1274,7 +1275,7 @@ const SponserPage = () => {
                                                 <span className="text-[#C5FF32] text-sm">{event.stats?.interested || event.interested || 0} interested</span>
                                             </div>
                                         </div>
-                                    </div>
+                                    </Link>
                                 ))
                             ) : (
                                 <div className="text-center py-4">
@@ -1294,9 +1295,12 @@ const SponserPage = () => {
                             {suggestions.filter(s => !following.some(f => f._id === s._id)).map((suggestion) => (
                                 <div
                                     key={suggestion._id}
-                                    className="flex items-center justify-between cursor-pointer hover:bg-[#2A2C37] transition-colors rounded-lg p-2"
+                                    className="flex items-center justify-between hover:bg-[#2A2C37] transition-colors rounded-lg p-2"
                                 >
-                                    <div className="flex items-center gap-3">
+                                    <Link 
+                                        to={`/curator/${suggestion._id}`}
+                                        className="flex items-center gap-3 flex-grow"
+                                    >
                                         <img src={suggestion.images?.[0] ? `${import.meta.env.VITE_SERVER_URL}${suggestion.images[0]}` : "/Images/default-avatar.jpg"} alt={suggestion.name} className="w-10 h-10 rounded-full" />
                                         <div>
                                             <h3 className="text-white m-0">{suggestion.firstName} {suggestion.lastName}</h3>
@@ -1305,7 +1309,7 @@ const SponserPage = () => {
                                                 <span className="text-gray-400 text-sm ml-1">{suggestion.averageRating || 0}</span>
                                             </div>
                                         </div>
-                                    </div>
+                                    </Link>
                                     <button className="bg-[#3FE1B6] text-black px-4 py-1 rounded-2xl text-sm hover:bg-[#3FE1B6]/90" onClick={e => { e.stopPropagation(); handleFollow(suggestion._id); }}>
                                         Follow
                                     </button>
