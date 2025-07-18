@@ -1263,7 +1263,7 @@ const SponserPage = () => {
                                             </div>
                                             <div className="flex items-center gap-2 text-gray-400 text-sm mb-1">
                                                 <IoCalendarOutline className="w-4 h-4" />
-                                                <span>{event.startDate ? new Date(event.startDate).toLocaleDateStrien-GB", { day: "2-digit", month: "short", year: "numeric" }) : event.date || "Date TBD"}</span>
+                                                <span>{event.startDate ? new Date(event.startDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : event.date || "Date TBD"}</span>
                                             </div>
                                             <div className="flex items-center gap-2 text-gray-400 text-sm mb-1">
                                                 <IoTimeOutline className="w-4 h-4" />
