@@ -219,7 +219,7 @@ const Shop = () => {
 
   const getEvents = async () => {
     try {
-      const {data} = await axiosInstance.get(`/events`);
+      const {data} = await axiosInstance.get(`/events?needApproved=true`);
       if (data.data) {
         console.log(data.data,'data.data')
         setEvents(data.data);

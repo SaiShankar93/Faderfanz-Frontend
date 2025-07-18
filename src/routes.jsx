@@ -43,6 +43,7 @@ import Blogs from "./pages/dashboard/Blogs";
 import CreateVenue from "./pages/dashboard/CreateVenue";
 import CreateEvent from "./pages/dashboard/CreateEvent";
 import CreateCampaign from "./pages/dashboard/CreateCampaign";
+import AdminEvents from "./pages/dashboard/AdminEvents";
 // import PrivacyPolicy from "./pages/dashboard/PrivacyPolicy";
 
 const icon = {
@@ -64,6 +65,12 @@ export const routes = [
         name: "Blogs",
         path: "/blogs",
         element: <Blogs />,
+      },
+      {
+        icon: <PencilSquareIcon {...icon} />,
+        name: "Events",
+        path: "/events",
+        element: <AdminEvents />,
       },
       {
         icon: <PencilSquareIcon {...icon} />,
