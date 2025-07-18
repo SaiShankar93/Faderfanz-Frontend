@@ -10,6 +10,26 @@ import { useParams } from "react-router-dom";
 import axiosInstance from "@/configs/axiosConfig";
 import { toast } from 'react-toastify';
 
+// Utility to format time ago for posts
+const formatTimeAgo = (date) => {
+    const now = new Date();
+    const diffMs = now - date;
+    const diffSec = Math.floor(diffMs / 1000);
+    const diffMin = Math.floor(diffSec / 60);
+    const diffHour = Math.floor(diffMin / 60);
+    const diffDay = Math.floor(diffHour / 24);
+
+    if (diffDay > 0) {
+        return `${diffDay} day${diffDay !== 1 ? 's' : ''} ago`;
+    } else if (diffHour > 0) {
+        return `${diffHour} hour${diffHour !== 1 ? 's' : ''} ago`;
+    } else if (diffMin > 0) {
+        return `${diffMin} minute${diffMin !== 1 ? 's' : ''} ago`;
+    } else {
+        return 'Just now';
+    }
+};
+
 const CuratorPage = () => {
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState("reviews");
@@ -47,26 +67,22 @@ const CuratorPage = () => {
         }
     ]);
     const [sortBy, setSortBy] = useState('top-rated');
-    const [posts, setPosts] = useState([
-        {
-            id: 1,
-            author: "DJ Kazi",
-            timeAgo: "2 hours ago",
-            content: "Hi Everyone, today i was at the most interesting event in the world. It was a great time spent with @Selena @essar and @essar",
-            images: [
-                "/Images/post.png",
-                "/Images/post.png",
-                "/Images/post.png",
-                "/Images/post.png"
-            ],
-            views: 3445,
-            likes: 34,
-            comments: 45,
-            isLiked: false
-        }
-    ]);
+    const [posts, setPosts] = useState([]);
+    const [commentInputs, setCommentInputs] = useState({}); // { [postId]: commentText }
+    const [commentLoading, setCommentLoading] = useState({}); // { [postId]: boolean }
+    const [likeLoading, setLikeLoading] = useState({}); // { [postId]: boolean }
     const [isFollowing, setIsFollowing] = useState(false);
     const [isFollowingLoading, setIsFollowingLoading] = useState(false);
+    const [isPostModalOpen, setIsPostModalOpen] = useState(false);
+    const [selectedPost, setSelectedPost] = useState(null);
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
+    const [selectedImage, setSelectedImage] = useState(null);
+    const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+    const [imageViewerImages, setImageViewerImages] = useState([]);
+    const [upcomingEvents, setUpcomingEvents] = useState([]);
+    const [suggestions, setSuggestions] = useState([]);
+    const [following, setFollowing] = useState([]); // For filtering suggestions
 
     useEffect(() => {
         const fetchCurator = async () => {
@@ -75,10 +91,8 @@ const CuratorPage = () => {
                 const { data } = await axiosInstance.get(`management/curators/${id}`);
                 if (data) {
                     setCurator(data);
-                    console.log(data);
                     // TODO: Uncomment when API is ready
                     // setReviews(data.ratings || []);
-                    // setPosts(data.posts || []);
                     // Check if current user is following this curator
                     const token = localStorage.getItem('accessToken');
                     if (token && data.followers) {
@@ -99,11 +113,89 @@ const CuratorPage = () => {
                 setLoading(false);
             }
         };
+        const fetchPosts = async () => {
+            try {
+                const token = localStorage.getItem('accessToken');
+                const headers = token ? { Authorization: `Bearer ${token}` } : {};
+                const res = await axiosInstance.get(`/profiles/curator/${id}/posts`, { headers });
+                console.log(res.data, 'res.data');
+                const postsArr = Array.isArray(res.data.posts) ? res.data.posts : [];
+                if (postsArr.length > 0) {
+                    const currentUserId = token ? JSON.parse(atob(token.split('.')[1])).id : null;
+                    const normalizedPosts = postsArr.map(post => {
+                        const isLiked = (post.likes || []).some(like =>
+                            like.user === currentUserId || like.user?._id === currentUserId
+                        );
+                        return {
+                            ...post,
+                            id: post._id || post.id,
+                            author: post.author?.stageName || post.author?.name || post.author?.firstName || 'Curator',
+                            timeAgo: formatTimeAgo(new Date(post.createdAt)),
+                            content: post.text || post.content || '',
+                            images: (post.images || []).map(img =>
+                                img.startsWith('http') ? img : `${import.meta.env.VITE_SERVER_URL}${img}`
+                            ),
+                            likes: Array.isArray(post.likes) ? post.likes.length : (post.likes || 0),
+                            comments: post.comments || [],
+                            isLiked,
+                        };
+                    });
+                    console.log(normalizedPosts, 'normalizedPosts');
+                    setPosts(normalizedPosts);
+                } else {
+                    setPosts([]);
+                }
+            } catch (error) {
+                console.error('Error fetching curator posts:', error);
+            }
+        };
+        // Fetch upcoming events (profile logic)
+        const fetchUpcomingEvents = async () => {
+            try {
+                let response;
+                try {
+                    response = await axiosInstance.get('/events');
+                    if (response.data && response.data.success) {
+                        setUpcomingEvents(response.data.data);
+                        return;
+                    }
+                } catch (error) {
+                    try {
+                        response = await axiosInstance.get('/events/all');
+                        if (response.data && response.data.success) {
+                            setUpcomingEvents(response.data.data);
+                            return;
+                        }
+                    } catch (error2) {
+                        try {
+                            response = await axiosInstance.get('/events?category=all&status=upcoming');
+                            if (response.data && response.data.success) {
+                                setUpcomingEvents(response.data.data);
+                                return;
+                            }
+                        } catch (error3) {
+                            console.error('All events API attempts failed:', error3);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching upcoming events:', error);
+            }
+        };
+        // Fetch suggestions (profile logic)
+        const fetchSuggestions = async () => {
+            try {
+                const response = await axiosInstance.get('trending/curators');
+                setSuggestions(response.data.data || []);
+            } catch (error) {
+                console.error('Error fetching suggestions:', error);
+            }
+        };
         fetchCurator();
+        fetchPosts();
+        fetchUpcomingEvents();
+        fetchSuggestions();
     }, [id]);
-    const [selectedImage, setSelectedImage] = useState(null);
-    const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-    const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
 
     // const curator = {
     //     name: "DJ Kazi",
@@ -119,27 +211,6 @@ const CuratorPage = () => {
     //         facebook: "#"
     //     }
     // };
-
-    const upcomingEvents = [
-        {
-            _id: 1,
-            title: "The Kazi-culture show",
-            location: "12 Lake Avenue, Mumbai, India",
-            date: "25th Jan, 2023",
-            time: "8:30 AM - 7:30 PM",
-            interested: 14,
-            image: "/Images/blogcard.jpg"
-        },
-        {
-            _id: 2,
-            title: "The Kazi-culture show",
-            location: "12 Lake Avenue, Mumbai, India",
-            date: "25th Jan, 2023",
-            time: "8:30 AM - 7:30 PM",
-            interested: 14,
-            image: "/Images/blogcard.jpg"
-        }
-    ];
 
     const calculateAverageRating = useCallback(() => {
         if (reviews.length === 0) return 0;
@@ -228,28 +299,30 @@ const CuratorPage = () => {
         );
     }, []);
 
-    const openImageViewer = (image, index) => {
-        setSelectedImage(image);
+    const openImageViewer = (images, index) => {
+        setImageViewerImages(images);
+        setSelectedImage(images[index]);
         setSelectedImageIndex(index);
         setIsImageViewerOpen(true);
     };
 
     const closeImageViewer = () => {
+        setIsImageViewerOpen(false);
         setSelectedImage(null);
         setSelectedImageIndex(0);
-        setIsImageViewerOpen(false);
+        setImageViewerImages([]);
     };
 
     const navigateImage = (direction) => {
+        if (!imageViewerImages.length) return;
         let newIndex;
         if (direction === 'next') {
-            newIndex = (selectedImageIndex + 1) % posts[0].images.length;
+            newIndex = (selectedImageIndex + 1) % imageViewerImages.length;
         } else {
-            newIndex = selectedImageIndex - 1;
-            if (newIndex < 0) newIndex = posts[0].images.length - 1;
+            newIndex = selectedImageIndex === 0 ? imageViewerImages.length - 1 : selectedImageIndex - 1;
         }
         setSelectedImageIndex(newIndex);
-        setSelectedImage(posts[0].images[newIndex]);
+        setSelectedImage(imageViewerImages[newIndex]);
     };
 
     const handleFollowToggle = useCallback(async () => {
@@ -278,6 +351,122 @@ const CuratorPage = () => {
             setIsFollowingLoading(false);
         }
     }, [isFollowing, id]);
+
+    const handleLikePost = useCallback(async (postId) => {
+        setLikeLoading(prev => ({ ...prev, [postId]: true }));
+        try {
+            const token = localStorage.getItem('accessToken');
+            if (!token) {
+                toast.error('Please login to like posts');
+                setLikeLoading(prev => ({ ...prev, [postId]: false }));
+                return;
+            }
+            // Optimistic update
+            setPosts(prevPosts => prevPosts.map(post =>
+                post.id === postId ? {
+                    ...post,
+                    isLiked: !post.isLiked,
+                    likes: post.isLiked ? post.likes - 1 : post.likes + 1
+                } : post
+            ));
+            // API call
+            const res = await axiosInstance.post(`/profiles/posts/${postId}/like`, {}, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (res.data && res.data.data) {
+                const updatedPost = res.data.data;
+                const currentUserId = JSON.parse(atob(token.split('.')[1])).id;
+                const isLiked = (updatedPost.likes || []).some(like =>
+                    like.user === currentUserId || like.user?._id === currentUserId
+                );
+                setPosts(prevPosts => prevPosts.map(post =>
+                    post.id === postId ? {
+                        ...post,
+                        isLiked,
+                        likes: Array.isArray(updatedPost.likes) ? updatedPost.likes.length : (updatedPost.likes || 0)
+                    } : post
+                ));
+            }
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Failed to like post');
+            // Revert optimistic update
+            setPosts(prevPosts => prevPosts.map(post =>
+                post.id === postId ? {
+                    ...post,
+                    isLiked: !post.isLiked,
+                    likes: post.isLiked ? post.likes + 1 : post.likes - 1
+                } : post
+            ));
+        } finally {
+            setLikeLoading(prev => ({ ...prev, [postId]: false }));
+        }
+    }, []);
+
+    const handleCommentInput = (postId, value) => {
+        setCommentInputs(prev => ({ ...prev, [postId]: value }));
+    };
+
+    const handleAddComment = useCallback(async (postId) => {
+        const commentText = commentInputs[postId]?.trim();
+        if (!commentText) return;
+        setCommentLoading(prev => ({ ...prev, [postId]: true }));
+        try {
+            const token = localStorage.getItem('accessToken');
+            if (!token) {
+                toast.error('Please login to comment');
+                setCommentLoading(prev => ({ ...prev, [postId]: false }));
+                return;
+            }
+            // Optimistic UI
+            const optimisticComment = {
+                _id: `temp_${Date.now()}`,
+                user: { name: 'You' },
+                text: commentText,
+                createdAt: new Date().toISOString()
+            };
+            setPosts(prevPosts => prevPosts.map(post =>
+                post.id === postId ? {
+                    ...post,
+                    comments: [...(post.comments || []), optimisticComment]
+                } : post
+            ));
+            setCommentInputs(prev => ({ ...prev, [postId]: '' }));
+            // API call
+            const res = await axiosInstance.post(`/profiles/posts/${postId}/comment`, { text: commentText }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (res.data && res.data.data) {
+                setPosts(prevPosts => prevPosts.map(post =>
+                    post.id === postId ? {
+                        ...post,
+                        comments: res.data.data
+                    } : post
+                ));
+            }
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Failed to post comment');
+            // Revert optimistic UI
+            setPosts(prevPosts => prevPosts.map(post =>
+                post.id === postId ? {
+                    ...post,
+                    comments: (post.comments || []).filter(c => !c._id?.startsWith('temp_'))
+                } : post
+            ));
+        } finally {
+            setCommentLoading(prev => ({ ...prev, [postId]: false }));
+        }
+    }, [commentInputs]);
+
+    const handleOpenPostModal = (post) => {
+        setSelectedPost(post);
+        setCurrentImageIndex(0);
+        setIsPostModalOpen(true);
+    };
+    const handleClosePostModal = () => {
+        setIsPostModalOpen(false);
+        setSelectedPost(null);
+        setCurrentImageIndex(0);
+    };
 
     const renderReviewsContent = () => (
         <div className="space-y-6">
@@ -354,28 +543,26 @@ const CuratorPage = () => {
                         <div className="flex items-center gap-3">
                             <div className="w-12 h-12 rounded-full overflow-hidden">
                                 <img
-                                    src="/Images/default-avatar.jpg"
-                                    alt={post.author}
+                                    src={post.author?.profileImage ? `${import.meta.env.VITE_SERVER_URL}${post.author.profileImage}` : "/Images/default-avatar.jpg"}
+                                    alt={post.author?.name || post.author || 'Curator'}
                                     className="w-full h-full object-cover"
                                 />
                             </div>
                             <div>
-                                <h3 className="text-white font-medium">{post.author}</h3>
+                                <h3 className="text-white font-medium">{post.author?.name || post.author || 'Curator'}</h3>
                                 <p className="text-gray-400 text-sm">{post.timeAgo}</p>
                             </div>
                         </div>
-                        <button className="text-gray-400 text-xl">•••</button>
+                        {/* 3-dot menu icon removed */}
                     </div>
-
                     <div className="mb-4">
                         {formatPostContent(post.content)}
                     </div>
-
                     <div className="grid grid-cols-2 gap-2 mb-6">
-                        {post.images.map((image, index) => (
+                        {post.images && post.images.map((image, index) => (
                             <button
                                 key={index}
-                                onClick={() => openImageViewer(image, index)}
+                                onClick={() => openImageViewer(post.images, index)}
                                 className="relative overflow-hidden rounded-lg group"
                             >
                                 <img
@@ -387,15 +574,12 @@ const CuratorPage = () => {
                             </button>
                         ))}
                     </div>
-
                     <div className="flex items-center space-x-4 text-gray-400 text-sm">
-                        <div className="flex items-center gap-1.5">
-                            <IoEyeOutline className="w-4 h-4" />
-                            <span>{post.views}</span>
-                        </div>
+                        {/* Eye (views) icon removed */}
                         <button
-                            onClick={() => handlePostLike(post.id)}
-                            className="flex items-center gap-1.5 hover:text-[#3FE1B6] transition-colors"
+                            onClick={() => handleLikePost(post.id)}
+                            className={`flex items-center gap-1.5 hover:text-[#3FE1B6] transition-colors ${likeLoading[post.id] ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            disabled={likeLoading[post.id]}
                         >
                             {post.isLiked ? (
                                 <FaHeart className="w-4 h-4 text-[#3FE1B6]" />
@@ -406,21 +590,202 @@ const CuratorPage = () => {
                                 {post.likes} Like
                             </span>
                         </button>
-                        <button className="flex items-center gap-1.5 hover:text-[#3FE1B6] transition-colors">
+                        <button
+                            className="flex items-center gap-1.5 hover:text-[#3FE1B6] transition-colors"
+                            onClick={() => handleOpenPostModal(post)}
+                        >
                             <FaRegComment className="w-4 h-4" />
-                            <span>{post.comments} Comment</span>
+                            <span>{Array.isArray(post.comments) ? post.comments.length : 0} Comment</span>
                         </button>
                     </div>
+                    {/* Comments and add comment input removed from here */}
                 </div>
             ))}
-
+            {/* Post Modal */}
+            <Dialog
+                open={isPostModalOpen}
+                onClose={handleClosePostModal}
+                className="relative z-50"
+            >
+                <div className="fixed inset-0 bg-black/90" aria-hidden="true" />
+                <div className="fixed inset-0 flex items-center justify-center p-4">
+                    <Dialog.Panel className="bg-[#231D30] rounded-lg w-full max-w-full md:max-w-4xl h-[90vh] flex flex-col">
+                        {/* Header */}
+                        <div className="flex items-center justify-between p-4 border-b border-white/10">
+                            <div className="flex items-center gap-3">
+                                <img
+                                    src={selectedPost?.author?.profileImage ? `${import.meta.env.VITE_SERVER_URL}${selectedPost.author.profileImage}` : "/Images/default-avatar.jpg"}
+                                    alt={selectedPost?.author?.name || 'User'}
+                                    className="w-10 h-10 rounded-full"
+                                />
+                                <div>
+                                    <h3 className="text-white font-medium m-0">
+                                        {selectedPost?.author?.name || 'User'}
+                                    </h3>
+                                    <p className="text-white/60 text-sm">{selectedPost?.timeAgo}</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={handleClosePostModal}
+                                className="text-white/60 hover:text-white"
+                            >
+                                <span className="text-xl">✕</span>
+                            </button>
+                        </div>
+                        {/* Content */}
+                        <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
+                            {/* Left side - Images */}
+                            <div className="w-full md:w-1/2 bg-black flex items-center justify-center relative min-h-[200px] max-h-[300px] md:max-h-none">
+                                {selectedPost?.images && selectedPost.images.length > 0 ? (
+                                    <div className="relative w-full h-full">
+                                        {/* Current Image */}
+                                        <img
+                                            src={selectedPost.images[currentImageIndex]}
+                                            alt={`Post ${currentImageIndex + 1}`}
+                                            className="w-full h-full object-contain"
+                                            onError={(e) => {
+                                                e.target.src = "/Images/post.png";
+                                            }}
+                                        />
+                                        {/* Navigation Arrows - Only show if multiple images */}
+                                        {selectedPost.images.length > 1 && (
+                                            <>
+                                                {/* Previous Button */}
+                                                <button
+                                                    onClick={() => setCurrentImageIndex(prev =>
+                                                        prev === 0 ? selectedPost.images.length - 1 : prev - 1
+                                                    )}
+                                                    className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-colors"
+                                                >
+                                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                                    </svg>
+                                                </button>
+                                                {/* Next Button */}
+                                                <button
+                                                    onClick={() => setCurrentImageIndex(prev =>
+                                                        prev === selectedPost.images.length - 1 ? 0 : prev + 1
+                                                    )}
+                                                    className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-colors"
+                                                >
+                                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                                    </svg>
+                                                </button>
+                                                {/* Image Indicators */}
+                                                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
+                                                    {selectedPost.images.map((_, index) => (
+                                                        <button
+                                                            key={index}
+                                                            onClick={() => setCurrentImageIndex(index)}
+                                                            className={`w-2 h-2 rounded-full transition-colors ${
+                                                                index === currentImageIndex
+                                                                    ? 'bg-white'
+                                                                    : 'bg-white/50 hover:bg-white/70'
+                                                            }`}
+                                                        />
+                                                    ))}
+                                                </div>
+                                                {/* Image Counter */}
+                                                <div className="absolute top-4 right-4 bg-black/50 text-white px-2 py-1 rounded text-sm">
+                                                    {currentImageIndex + 1} / {selectedPost.images.length}
+                                                </div>
+                                            </>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div className="text-white/60 text-center">
+                                        <p>No image</p>
+                                    </div>
+                                )}
+                            </div>
+                            {/* Right side - Comments and actions */}
+                            <div className="w-full md:w-1/2 flex flex-col">
+                                {/* Post content */}
+                                <div className="p-4 border-b border-white/10">
+                                    <div className="flex gap-2">
+                                        <span className="text-white font-medium">
+                                            {selectedPost?.author?.name || 'User'}
+                                        </span>
+                                        <span className="text-white/80">
+                                            {selectedPost?.content}
+                                        </span>
+                                    </div>
+                                </div>
+                                {/* Comments */}
+                                <div className="flex-1 overflow-y-auto p-4">
+                                    <div className="space-y-4">
+                                        {Array.isArray(selectedPost?.comments) && selectedPost.comments.map((comment) => (
+                                            <div key={comment._id} className="flex gap-3">
+                                                <img
+                                                    src={comment.user?.profileImage || "/Images/default-avatar.jpg"}
+                                                    alt={comment.name || comment.user?.name || 'User'}
+                                                    className="w-8 h-8 rounded-full flex-shrink-0"
+                                                />
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-center gap-2 mb-1">
+                                                        <span className="text-white text-sm font-medium">
+                                                            {comment.name || comment.user?.name || 'User'}
+                                                        </span>
+                                                        <span className="text-white/40 text-xs">
+                                                            {new Date(comment.createdAt).toLocaleDateString()}
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-white/80 text-sm">
+                                                        {comment.text || comment.content}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                                {/* Add comment */}
+                                <div className="p-4 border-t border-white/10">
+                                    <div className="flex gap-3">
+                                        <img
+                                            src={curator?.images?.[0] ? `${import.meta.env.VITE_SERVER_URL}${curator.images[0]}` : "/Images/default-avatar.jpg"}
+                                            alt="Your profile"
+                                            className="w-8 h-8 rounded-full flex-shrink-0"
+                                        />
+                                        <div className="flex-1 flex gap-2">
+                                            <input
+                                                type="text"
+                                                value={commentInputs[selectedPost?.id] || ''}
+                                                onChange={e => handleCommentInput(selectedPost?.id, e.target.value)}
+                                                placeholder="Add a comment..."
+                                                className="flex-1 bg-transparent text-white placeholder-white/60 outline-none text-sm"
+                                                onKeyPress={e => {
+                                                    if (e.key === 'Enter') {
+                                                        handleAddComment(selectedPost?.id);
+                                                    }
+                                                }}
+                                            />
+                                            <button
+                                                onClick={() => handleAddComment(selectedPost?.id)}
+                                                disabled={!commentInputs[selectedPost?.id]?.trim() || commentLoading[selectedPost?.id]}
+                                                className={`text-sm font-medium ${
+                                                    commentInputs[selectedPost?.id]?.trim() && !commentLoading[selectedPost?.id]
+                                                        ? 'text-[#3FE1B6] hover:text-[#2fcfa4]'
+                                                        : 'text-white/40'
+                                                }`}
+                                            >
+                                                {commentLoading[selectedPost?.id] ? '...' : 'Post'}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </Dialog.Panel>
+                </div>
+            </Dialog>
+            {/* Image Viewer Modal */}
             <Dialog
                 open={isImageViewerOpen}
                 onClose={closeImageViewer}
                 className="relative z-50"
             >
                 <div className="fixed inset-0 bg-black/90" aria-hidden="true" />
-
                 <div className="fixed inset-0 flex items-center justify-center">
                     <Dialog.Panel className="relative w-full h-full flex items-center justify-center">
                         <button
@@ -429,21 +794,22 @@ const CuratorPage = () => {
                         >
                             <span className="text-2xl">✕</span>
                         </button>
-
-                        <button
-                            onClick={() => navigateImage('prev')}
-                            className="absolute left-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 z-10"
-                        >
-                            <span className="text-4xl">‹</span>
-                        </button>
-
-                        <button
-                            onClick={() => navigateImage('next')}
-                            className="absolute right-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 z-10"
-                        >
-                            <span className="text-4xl">›</span>
-                        </button>
-
+                        {imageViewerImages.length > 1 && (
+                            <>
+                                <button
+                                    onClick={() => navigateImage('prev')}
+                                    className="absolute left-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 z-10"
+                                >
+                                    <span className="text-4xl">‹</span>
+                                </button>
+                                <button
+                                    onClick={() => navigateImage('next')}
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-white hover:text-gray-300 z-10"
+                                >
+                                    <span className="text-4xl">›</span>
+                                </button>
+                            </>
+                        )}
                         <div className="relative max-w-5xl w-full mx-4">
                             <img
                                 src={selectedImage}
@@ -451,14 +817,13 @@ const CuratorPage = () => {
                                 className="w-full h-auto max-h-[80vh] object-contain rounded-lg"
                             />
                         </div>
-
                         <div className="absolute bottom-8 left-0 right-0 flex justify-center gap-2">
-                            {posts[0].images.map((_, index) => (
+                            {imageViewerImages.map((_, index) => (
                                 <button
                                     key={index}
                                     onClick={() => {
                                         setSelectedImageIndex(index);
-                                        setSelectedImage(posts[0].images[index]);
+                                        setSelectedImage(imageViewerImages[index]);
                                     }}
                                     className={`w-2 h-2 rounded-full transition-all ${index === selectedImageIndex
                                         ? 'bg-[#3FE1B6] w-4'
@@ -582,100 +947,81 @@ const CuratorPage = () => {
                     </div>
                 </div>
 
-                <div className="w-full lg:w-[380px] space-y-6">
-                    <div className="bg-[#231D30] rounded-lg p-6">
-                        <h2 className="text-white text-xl mb-4">Upcoming Performance</h2>
+                {/* Right Sidebar - match profile page */}
+                <div className="hidden lg:block w-full lg:w-[380px] space-y-6">
+                    {/* Upcoming Events */}
+                    <div className="rounded-lg p-6">
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-white text-xl">Upcoming Events</h2>
+                            <Link to="/events/all/all" className="text-[#00FFB2] text-sm">See more</Link>
+                        </div>
                         <div className="space-y-4">
-                            {upcomingEvents.map((event) => (
-                                <Link
-                                    to={`/event/${event._id}`}
-                                    key={event._id}
-                                    className="block bg-[#1A1625] rounded-lg p-4 hover:bg-[#1A1625]/70 transition-colors"
-                                >
-                                    <div className="flex gap-4">
-                                        <div className="w-20 h-20 flex-shrink-0">
-                                            <img
-                                                src={event.image}
-                                                alt={event.title}
-                                                className="w-full h-full object-cover rounded-lg"
-                                            />
-                                        </div>
-
+                            {upcomingEvents && upcomingEvents.length > 0 ? (
+                                upcomingEvents.slice(0, 2).map(event => (
+                                    <div
+                                        key={event._id || event.id}
+                                        className="border border-white/10 rounded-2xl p-4 flex gap-4 cursor-pointer hover:bg-[#2A2C37] transition-colors"
+                                    >
+                                        <img
+                                            src={event.banner?.url ? `${import.meta.env.VITE_SERVER_URL}${event.banner.url}` : event.image || "/Images/post.png"}
+                                            alt={event.title}
+                                            className="w-20 h-20 object-cover rounded-lg"
+                                        />
                                         <div className="flex-1 min-w-0">
-                                            <h3 className="text-white text-lg font-medium mb-2">{event.title}</h3>
-                                            <div className="space-y-2">
-                                                <div className="flex items-center gap-2 text-gray-400">
-                                                    <IoLocationOutline className="w-5 h-5 flex-shrink-0" />
-                                                    <span className="text-sm">{event.location}</span>
-                                                </div>
-                                                <div className="flex items-center gap-2 text-gray-400">
-                                                    <IoCalendarOutline className="w-5 h-5 flex-shrink-0" />
-                                                    <span className="text-sm">{event.date}</span>
-                                                </div>
-                                                <div className="flex items-center gap-2 text-gray-400">
-                                                    <IoTimeOutline className="w-5 h-5 flex-shrink-0" />
-                                                    <span className="text-sm">{event.time}</span>
-                                                </div>
-                                                <div className="flex items-center gap-1">
-                                                    <FaStar className="w-4 h-4 text-[#7c7d7b]" />
-                                                    <span className="text-[#C5FF32] text-sm">{event.interested} interested</span>
-                                                </div>
+                                            <h3 className="text-white text-lg font-medium mb-2 m-0">{event.title}</h3>
+                                            <div className="flex items-center gap-2 text-gray-400 text-sm mb-1">
+                                                <IoLocationOutline className="w-4 h-4" />
+                                                <span>{event.location?.address || event.location || "Location TBD"}</span>
+                                            </div>
+                                            <div className="flex items-center gap-2 text-gray-400 text-sm mb-1">
+                                                <IoCalendarOutline className="w-4 h-4" />
+                                                <span>{event.startDate ? new Date(event.startDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : event.date || "Date TBD"}</span>
+                                            </div>
+                                            <div className="flex items-center gap-2 text-gray-400 text-sm mb-1">
+                                                <IoTimeOutline className="w-4 h-4" />
+                                                <span>{event.startDate && event.endDate ? `${new Date(event.startDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${new Date(event.endDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : event.time || "Time TBD"}</span>
+                                            </div>
+                                            <div className="flex items-center gap-1 mt-2">
+                                                <FaStar className="w-4 h-4 text-[#7c7d7b]" />
+                                                <span className="text-[#C5FF32] text-sm">{event.stats?.interested || event.interested || 0} interested</span>
                                             </div>
                                         </div>
                                     </div>
-                                </Link>
-                            ))}
+                                ))
+                            ) : (
+                                <div className="text-center py-4">
+                                    <p className="text-gray-400 text-sm">No upcoming events</p>
+                                </div>
+                            )}
                         </div>
                     </div>
 
-                    <div className="bg-[#231D30] rounded-lg p-4 sm:p-6">
+                    {/* Suggestions */}
+                    <div className="border border-white/10 rounded-2xl p-6">
                         <div className="flex justify-between items-center mb-4">
                             <h2 className="text-white text-xl">Suggestions</h2>
-                            <a href="#" className="text-gray-400 text-sm">See All</a>
+                            <Link to="/suggestions" className="text-gray-400 text-sm hover:text-[#00FFB2]">See All</Link>
                         </div>
                         <div className="space-y-4">
-                            {[1, 2, 3].map((item, index) => (
-                                <div key={index} className="flex items-center justify-between">
+                            {suggestions.filter(s => !following.some(f => f._id === s._id)).map((suggestion) => (
+                                <div
+                                    key={suggestion._id}
+                                    className="flex items-center justify-between cursor-pointer hover:bg-[#2A2C37] transition-colors rounded-lg p-2"
+                                >
                                     <div className="flex items-center gap-3">
-                                        <img src="/Images/default-avatar.jpg" alt="" className="w-10 h-10 rounded-full" />
+                                        <img src={suggestion.images?.[0] ? `${import.meta.env.VITE_SERVER_URL}${suggestion.images[0]}` : "/Images/default-avatar.jpg"} alt={suggestion.name} className="w-10 h-10 rounded-full" />
                                         <div>
-                                            <h3 className="text-white">Nick Ramsy</h3>
-                                            <div className="flex items-center">
+                                            <h3 className="text-white m-0">{suggestion.firstName} {suggestion.lastName}</h3>
+                                            <div className="flex items-center border border-white/10 rounded-2xl py-1 px-3 max-w-fit">
                                                 <span className="text-yellow-400 text-sm">★</span>
-                                                <span className="text-gray-400 text-sm ml-1">4.6</span>
+                                                <span className="text-gray-400 text-sm ml-1">{suggestion.averageRating || 0}</span>
                                             </div>
                                         </div>
                                     </div>
-                                    <button className="bg-[#3FE1B6] text-black px-4 py-1 rounded-md text-sm">
+                                    <button className="bg-[#3FE1B6] text-black px-4 py-1 rounded-2xl text-sm hover:bg-[#3FE1B6]/90" onClick={e => { e.stopPropagation(); handleFollow(suggestion._id); }}>
                                         Follow
                                     </button>
                                 </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    <div className="bg-[#231D30] rounded-lg p-4 sm:p-6">
-                        <h2 className="text-white text-xl mb-4">Popular Event Owners</h2>
-                        <div className="grid grid-cols-2 gap-4">
-                            {[
-                                { id: 1, image: '/Images/Crowdcard.png', link: '/venue/:id' },
-                                { id: 2, image: '/Images/Crowdcard.png', link: '/venue/:id' },
-                                { id: 3, image: '/Images/Crowdcard.png', link: '/venue/:id' },
-                                { id: 4, image: '/Images/Crowdcard.png', link: '/venue/:id' }
-                            ].map((owner) => (
-                                <Link
-                                    key={owner.id}
-                                    to={owner.link}
-                                    className="flex flex-col items-center"
-                                >
-                                    <div className="w-32 h-32 rounded-full overflow-hidden">
-                                        <img
-                                            src={owner.image}
-                                            alt="Event Owner"
-                                            className="w-full h-full object-cover"
-                                        />
-                                    </div>
-                                </Link>
                             ))}
                         </div>
                     </div>
