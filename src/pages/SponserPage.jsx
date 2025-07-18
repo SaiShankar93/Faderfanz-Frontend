@@ -1018,9 +1018,9 @@ const SponserPage = () => {
                                         </span>
                                     )}
                                 </div>
-                                <button className="bg-[#3FE1B6] text-black px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#2fcfa4] transition-colors">
+                                {/* <button className="bg-[#3FE1B6] text-black px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#2fcfa4] transition-colors">
                                     View Details
-                                </button>
+                                </button> */}
                             </div>
                         </div>
                     </div>
