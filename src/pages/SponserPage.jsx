@@ -31,6 +31,44 @@ const formatTimeAgo = (date) => {
     }
 };
 
+const countryCurrencyList = [
+    { code: "IN", name: "India", currency: { code: "INR", symbol: "₹" } },
+    { code: "US", name: "United States", currency: { code: "USD", symbol: "$" } },
+    { code: "GB", name: "United Kingdom", currency: { code: "GBP", symbol: "£" } },
+    { code: "JP", name: "Japan", currency: { code: "JPY", symbol: "¥" } },
+    { code: "AU", name: "Australia", currency: { code: "AUD", symbol: "$" } },
+    { code: "CA", name: "Canada", currency: { code: "CAD", symbol: "$" } },
+    { code: "CH", name: "Switzerland", currency: { code: "CHF", symbol: "₣" } },
+    { code: "CN", name: "China", currency: { code: "CNY", symbol: "¥" } },
+    { code: "DE", name: "Germany", currency: { code: "EUR", symbol: "€" } },
+    { code: "FR", name: "France", currency: { code: "EUR", symbol: "€" } },
+    { code: "IT", name: "Italy", currency: { code: "EUR", symbol: "€" } },
+    { code: "ES", name: "Spain", currency: { code: "EUR", symbol: "€" } },
+    { code: "BG", name: "Bulgaria", currency: { code: "BGN", symbol: "лв" } },
+    { code: "BR", name: "Brazil", currency: { code: "BRL", symbol: "R$" } },
+    { code: "CZ", name: "Czech Republic", currency: { code: "CZK", symbol: "Kč" } },
+    { code: "DK", name: "Denmark", currency: { code: "DKK", symbol: "kr" } },
+    { code: "HK", name: "Hong Kong", currency: { code: "HKD", symbol: "$" } },
+    { code: "HU", name: "Hungary", currency: { code: "HUF", symbol: "Ft" } },
+    { code: "ID", name: "Indonesia", currency: { code: "IDR", symbol: "Rp" } },
+    { code: "IL", name: "Israel", currency: { code: "ILS", symbol: "₪" } },
+    { code: "IS", name: "Iceland", currency: { code: "ISK", symbol: "kr" } },
+    { code: "KR", name: "South Korea", currency: { code: "KRW", symbol: "₩" } },
+    { code: "MX", name: "Mexico", currency: { code: "MXN", symbol: "$" } },
+    { code: "MY", name: "Malaysia", currency: { code: "MYR", symbol: "RM" } },
+    { code: "NO", name: "Norway", currency: { code: "NOK", symbol: "kr" } },
+    { code: "NZ", name: "New Zealand", currency: { code: "NZD", symbol: "$" } },
+    { code: "PH", name: "Philippines", currency: { code: "PHP", symbol: "₱" } },
+    { code: "PL", name: "Poland", currency: { code: "PLN", symbol: "zł" } },
+    { code: "RO", name: "Romania", currency: { code: "RON", symbol: "lei" } },
+    { code: "SE", name: "Sweden", currency: { code: "SEK", symbol: "kr" } },
+    { code: "SG", name: "Singapore", currency: { code: "SGD", symbol: "$" } },
+    { code: "TH", name: "Thailand", currency: { code: "THB", symbol: "฿" } },
+    { code: "TR", name: "Turkey", currency: { code: "TRY", symbol: "₺" } },
+    { code: "ZA", name: "South Africa", currency: { code: "ZAR", symbol: "R" } },
+    { code: "EU", name: "Eurozone", currency: { code: "EUR", symbol: "€" } },
+];
+
 const SponserPage = () => {
   const {id} = useParams();
 
@@ -85,8 +123,13 @@ const SponserPage = () => {
     const [suggestions, setSuggestions] = useState([]);
     const [following, setFollowing] = useState([]);
     const [sponsoredEvents, setSponsoredEvents] = useState([]);
+    const [products, setProducts] = useState([]);
     const [isFollowing, setIsFollowing] = useState(false);
     const [isFollowingLoading, setIsFollowingLoading] = useState(false);
+    const [userCurrency, setUserCurrency] = useState({ code: "INR", symbol: "₹" });
+    const [exchangeRate, setExchangeRate] = useState(1); // Default for INR base currency
+    const [exchangeRateLoading, setExchangeRateLoading] = useState(false);
+    const [country, setCountry] = useState(() => localStorage.getItem("country") || "India");
 
     useEffect(() => {
         const fetchSponsor = async () => {
@@ -186,24 +229,117 @@ const SponserPage = () => {
                 }
             } catch (error) {}
         };
+        const fetchProducts = async () => {
+            try {
+                const token = localStorage.getItem('accessToken');
+                const headers = token ? { Authorization: `Bearer ${token}` } : {};
+                const res = await axiosInstance.get(`/profiles/sponsor/${id}/products`, { headers });
+                if (res.data && res.data.success) {
+                    setProducts(res.data.products || []);
+                }
+            } catch (error) {
+                console.error('Error fetching products:', error);
+                setProducts([]);
+            }
+        };
         const fetchSuggestions = async () => {
             try {
                 const response = await axiosInstance.get('trending/curators');
                 setSuggestions(response.data.data || []);
             } catch (error) {}
         };
+        const getLocation = async () => {
+            try {
+                const res = await fetch("https://ipapi.co/json");
+                const data = await res.json();
+                const countryData = countryCurrencyList.find(c => c.code === data.country_code);
+                if (countryData) {
+                    setCountry(countryData.name);
+                    setUserCurrency(countryData.currency);
+                    localStorage.setItem("country", countryData.name);
+                } else {
+                    // Default to India if country not found in list
+                    const india = countryCurrencyList.find(c => c.code === "IN");
+                    setCountry(india.name);
+                    setUserCurrency(india.currency);
+                    localStorage.setItem("country", india.name);
+                }
+            } catch (error) {
+                console.error("Error getting location:", error);
+                // Default to India on error
+                const india = countryCurrencyList.find(c => c.code === "IN");
+                setCountry(india.name);
+                setUserCurrency(india.currency);
+                localStorage.setItem("country", india.name);
+            }
+        };
+
+        const getExchangeRate = async () => {
+            try {
+                setExchangeRateLoading(true);
+                if (userCurrency.code === "INR") {
+                    // Base currency is INR, no conversion needed
+                    setExchangeRate(1);
+                } else {
+                    // Convert from INR to other currencies using frankfurter API
+                    const res = await fetch(`https://api.frankfurter.app/latest?amount=1&from=INR&to=${userCurrency.code}`);
+                    const data = await res.json();
+                    if (data.rates && data.rates[userCurrency.code]) {
+                        setExchangeRate(data.rates[userCurrency.code]);
+                    } else {
+                        // Fallback to approximate rates if currency not supported by API
+                        const fallbackRates = {
+                            USD: 0.012, // 1 INR ≈ 0.012 USD
+                            EUR: 0.011, // 1 INR ≈ 0.011 EUR
+                            GBP: 0.0095, // 1 INR ≈ 0.0095 GBP
+                            AUD: 0.018, // 1 INR ≈ 0.018 AUD
+                            CAD: 0.016, // 1 INR ≈ 0.016 CAD
+                            SGD: 0.016, // 1 INR ≈ 0.016 SGD
+                            AED: 0.044, // 1 INR ≈ 0.044 AED
+                        };
+                        setExchangeRate(fallbackRates[userCurrency.code] || 1);
+                    }
+                }
+            } catch (error) {
+                console.error("Error getting exchange rate:", error);
+                setExchangeRate(1);
+            } finally {
+                setExchangeRateLoading(false);
+            }
+        };
+
         fetchSponsor();
         fetchPosts();
         fetchUpcomingEvents();
+        fetchProducts();
         fetchSuggestions();
-    }, [id]);
+        
+        if (!localStorage.getItem("country")) {
+            getLocation();
+        } else {
+            // Set currency based on stored country
+            const countryData = countryCurrencyList.find(c => c.name === country);
+            if (countryData) {
+                setUserCurrency(countryData.currency);
+            } else {
+                // Default to India if stored country not found in list
+                const india = countryCurrencyList.find(c => c.code === "IN");
+                setCountry(india.name);
+                setUserCurrency(india.currency);
+                localStorage.setItem("country", india.name);
+            }
+        }
+        getExchangeRate();
+    }, [id, userCurrency.code, country]);
 
     const totalPosts = posts.length;
     const totalSponsoredEvents = sponsoredEvents.length;
+    const totalProducts = products.length;
     const tabs = [
         { id: "reviews", label: "Reviews/Rating" },
         { id: "posts", label: `Posts (${totalPosts})` },
-        { id: "sponsoredEvents", label: `Events Sponsored (${totalSponsoredEvents})` }
+        { id: "sponsoredEvents", label: `Events Sponsored (${totalSponsoredEvents})` },
+        { id: "products", label: `Products (${totalProducts})` }
     ];
 
     const [postSort, setPostSort] = useState('recent');
@@ -835,6 +971,68 @@ const SponserPage = () => {
         </div>
     );
 
+    const renderProductsContent = () => (
+        <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0">
+                <div className="flex flex-col gap-1">
+                    <h2 className="text-white text-xl">Products</h2>
+                    <p className="text-gray-400 text-sm">
+                        {exchangeRateLoading ? (
+                            <span className="animate-pulse">Loading prices for your location...</span>
+                        ) : (
+                            `Prices shown in ${userCurrency.code} • ${country}`
+                        )}
+                    </p>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {products.length > 0 ? products.map((product, index) => (
+                    <div key={product._id || index} className="bg-[#231D30] rounded-lg overflow-hidden hover:bg-[#1A1625]/70 transition-colors">
+                        <div className="relative">
+                            <img
+                                src={product.image ? `${import.meta.env.VITE_SERVER_URL}/${product.image.replace(/\\/g, '/')}` : "/Images/product-image.png"}
+                                alt={product.name}
+                                className="w-full h-48 object-cover"
+                                onError={(e) => {
+                                    e.target.src = "/Images/product-image.png";
+                                }}
+                            />
+                        </div>
+                        <div className="p-4">
+                            <h3 className="text-white text-lg font-medium mb-2 line-clamp-2">
+                                {product.name}
+                            </h3>
+                            <div className="flex items-center justify-between">
+                                <div className="flex flex-col">
+                                    <span className="text-[#3FE1B6] text-xl font-bold">
+                                        {exchangeRateLoading ? (
+                                            <span className="animate-pulse">Loading...</span>
+                                        ) : (
+                                            `${userCurrency.symbol}${(product.price * exchangeRate).toFixed(2)}`
+                                        )}
+                                    </span>
+                                    {userCurrency.code !== "INR" && !exchangeRateLoading && (
+                                        <span className="text-gray-400 text-sm">
+                                            ~₹{product.price.toFixed(2)} INR
+                                        </span>
+                                    )}
+                                </div>
+                                <button className="bg-[#3FE1B6] text-black px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#2fcfa4] transition-colors">
+                                    View Details
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )) : (
+                    <div className="col-span-full text-center text-gray-400 py-8">
+                        <p>No products available</p>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+
     const renderTabContent = () => {
         switch (activeTab) {
             case "reviews":
@@ -929,6 +1127,8 @@ const SponserPage = () => {
                 return renderPostsContent();
             case "sponsoredEvents":
                 return renderSponsoredEventsContent();
+            case "products":
+                return renderProductsContent();
             default:
                 return null;
         }
@@ -1063,7 +1263,7 @@ const SponserPage = () => {
                                             </div>
                                             <div className="flex items-center gap-2 text-gray-400 text-sm mb-1">
                                                 <IoCalendarOutline className="w-4 h-4" />
-                                                <span>{event.startDate ? new Date(event.startDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : event.date || "Date TBD"}</span>
+                                                <span>{event.startDate ? new Date(event.startDate).toLocaleDateStrien-GB", { day: "2-digit", month: "short", year: "numeric" }) : event.date || "Date TBD"}</span>
                                             </div>
                                             <div className="flex items-center gap-2 text-gray-400 text-sm mb-1">
                                                 <IoTimeOutline className="w-4 h-4" />
