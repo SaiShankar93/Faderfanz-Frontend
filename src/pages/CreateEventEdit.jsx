@@ -126,10 +126,6 @@ export default function CreateEventEdit() {
       }
     } else if (currentStep === 2) {
       // Validate step 2: Sponsors, curators, and venue
-      if (sponsorIds.length === 0) {
-        toast.error('At least one sponsor is required');
-        isValid = false;
-      }
       if (curatorIds.length === 0) {
         toast.error('At least one curator is required');
         isValid = false;
@@ -871,7 +867,7 @@ export default function CreateEventEdit() {
                   <h3 className="text-white text-lg font-semibold mb-3">Sponsors</h3>
                   <div className="flex justify-between items-center mb-2">
                     <label className="text-sm text-white">
-                      Choose sponsor(s)<span className="text-red-500">*</span>
+                      Choose sponsor(s)
                     </label>
                   </div>
                   <div className="flex gap-2 mb-2 flex-wrap">

@@ -602,7 +602,7 @@ export default function CreateEvent() {
                   <h3 className="text-white text-lg font-semibold mb-3">Sponsors</h3>
                   <div className="flex justify-between items-center mb-2">
                     <label className="text-sm text-white">
-                      Choose sponsor(s)<span className="text-red-500">*</span>
+                      Choose sponsor(s)
                     </label>
                   </div>
                   <div className="flex gap-2 mb-2 flex-wrap">
