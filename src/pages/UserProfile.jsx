@@ -38,6 +38,8 @@ const UserProfile = () => {
     const [mediaItems, setMediaItems] = useState([]);
     const [suggestions, setSuggestions] = useState([]);
     const [upcomingEvents, setUpcomingEvents] = useState([]);
+    const [interestedEvents, setInterestedEvents] = useState(new Set());
+    const [interestLoading, setInterestLoading] = useState({});
 
     // Loading and Error States
     const [loading, setLoading] = useState(true);
@@ -193,6 +195,26 @@ const UserProfile = () => {
                 }
                 if (blogPostsData) setBlogPosts(blogPostsData);
 
+                // Initialize interested events based on events data
+                const eventsToCheck = profile?.role === 'sponsor' && sponsoredEventsData ? sponsoredEventsData : eventsData;
+                if (eventsToCheck) {
+                    const interestedEventIds = new Set();
+                    eventsToCheck.forEach(event => {
+                        // Check if the current user is in the interested array
+                        if (event.interested && Array.isArray(event.interested)) {
+                            const isInterested = event.interested.some(interest => 
+                                interest.user === profile._id || interest.user._id === profile._id
+                            );
+                            if (isInterested) {
+                                interestedEventIds.add(event._id || event.id);
+                                console.log('User is interested in event:', event.title, event._id);
+                            }
+                        }
+                    });
+                    console.log('Initialized interested events set:', Array.from(interestedEventIds));
+                    setInterestedEvents(interestedEventIds);
+                }
+
                 // Set default suggestions (can be replaced with API call later)
                 // setSuggestions([
                 //     { id: 1, name: "DJ Kazi", rating: 4.8, image: "/Images/curator-img.png" },
@@ -261,7 +283,25 @@ const UserProfile = () => {
                 // Try the standard events endpoint first
                 response = await axiosInstance.get('/events');
                 if(response.data && response.data.success){
-                    setUpcomingEvents(response.data.data);
+                    const eventsData = response.data.data;
+                    setUpcomingEvents(eventsData);
+                    
+                    // Initialize interested events for upcoming events
+                    if (eventsData && userData) {
+                        const interestedEventIds = new Set(interestedEvents);
+                        eventsData.forEach(event => {
+                            // Check if the current user is in the interested array
+                            if (event.interested && Array.isArray(event.interested)) {
+                                const isInterested = event.interested.some(interest => 
+                                    interest.user === userData._id || interest.user._id === userData._id
+                                );
+                                if (isInterested) {
+                                    interestedEventIds.add(event._id || event.id);
+                                }
+                            }
+                        });
+                        setInterestedEvents(interestedEventIds);
+                    }
                 }
             } catch (error) {
                 console.error("Error with /events endpoint:", error);
@@ -892,6 +932,112 @@ const UserProfile = () => {
         }
     };
 
+    // Helper function to check if current user is interested in an event
+    const isUserInterestedInEvent = (event) => {
+        if (!event || !userData) return false;
+        
+        // Check if event has interested array
+        if (event.interested && Array.isArray(event.interested)) {
+            const isInterested = event.interested.some(interest => 
+                interest.user === userData._id || interest.user === userData.id
+            );
+            console.log(`Checking interest for event ${event.title}:`, {
+                eventId: event._id || event.id,
+                userId: userData._id,
+                interestedArray: event.interested,
+                isInterested: isInterested
+            });
+            return isInterested;
+        }
+        
+        // Fallback to interestedEvents set
+        const fallbackResult = interestedEvents.has(event._id || event.id);
+        console.log(`Fallback check for event ${event.title}:`, {
+            eventId: event._id || event.id,
+            interestedEventsSet: Array.from(interestedEvents),
+            fallbackResult: fallbackResult
+        });
+        return fallbackResult;
+    };
+
+    // Event interest toggle functionality
+    const handleEventInterestToggle = async (eventId) => {
+        try {
+            setInterestLoading(prev => ({ ...prev, [eventId]: true }));
+            
+            const token = localStorage.getItem('accessToken');
+            if (!token) {
+                toast.error('Please login to mark events as interested');
+                return;
+            }
+
+            const response = await axiosInstance.post(`/events/${eventId}/interest`);
+            
+            if (response.data) {
+                console.log('Interest toggle response:', response.data);
+                const { isInterested, totalInterested } = response.data;
+                
+                // Update interested events set
+                setInterestedEvents(prev => {
+                    const newSet = new Set(prev);
+                    if (isInterested) {
+                        newSet.add(eventId);
+                    } else {
+                        newSet.delete(eventId);
+                    }
+                    return newSet;
+                });
+                
+                // Update the event's interested count in the events list
+                setEvents(prev => prev.map(event => {
+                    if (event._id === eventId || event.id === eventId) {
+                        console.log('Updating event:', event.title, 'Current interested:', event.interested);
+                        // If the API returns the updated interested array, use it
+                        if (response.data.interested && Array.isArray(response.data.interested)) {
+                            console.log('Using API returned interested array:', response.data.interested);
+                            return { ...event, interested: response.data.interested };
+                        }
+                        // Otherwise, manually update the array
+                        const currentInterested = event.interested || [];
+                        const updatedInterested = isInterested 
+                            ? [...currentInterested, { user: userData._id, userModel: userData.role }]
+                            : currentInterested.filter(interest => interest.user !== userData._id);
+                        console.log('Manually updated interested array:', updatedInterested);
+                        return { ...event, interested: updatedInterested };
+                    }
+                    return event;
+                }));
+                
+                // Update upcoming events if they exist
+                setUpcomingEvents(prev => prev.map(event => {
+                    if (event._id === eventId || event.id === eventId) {
+                        console.log('Updating upcoming event:', event.title, 'Current interested:', event.interested);
+                        // If the API returns the updated interested array, use it
+                        if (response.data.interested && Array.isArray(response.data.interested)) {
+                            console.log('Using API returned interested array for upcoming event:', response.data.interested);
+                            return { ...event, interested: response.data.interested };
+                        }
+                        // Otherwise, manually update the array
+                        const currentInterested = event.interested || [];
+                        const updatedInterested = isInterested 
+                            ? [...currentInterested, { user: userData._id, userModel: userData.role }]
+                            : currentInterested.filter(interest => interest.user !== userData._id);
+                        console.log('Manually updated interested array for upcoming event:', updatedInterested);
+                        return { ...event, interested: updatedInterested };
+                    }
+                    return event;
+                }));
+                
+                toast.success(isInterested ? 'Marked as interested!' : 'Removed from interested!');
+            }
+        } catch (error) {
+            console.error('Error toggling event interest:', error);
+            toast.error(error.response?.data?.message || 'Failed to toggle interest status');
+        } finally {
+            setInterestLoading(prev => ({ ...prev, [eventId]: false }));
+        }
+    };
+
     // Filter users function
     const filterUsers = (users) => {
         return users.filter(user => {
@@ -1394,10 +1540,10 @@ const UserProfile = () => {
                                                                 }
                                                             </span>
                                                         </div>
-                                                        {event.attendeesCount !== undefined && (
+                                                        {event.interested !== undefined && (
                                                             <div className="flex items-center gap-2">
                                                                 <span className="text-gray-400">Interested:</span>
-                                                                <span className="text-white/80">{event.attendeesCount || event.interested || 0}</span>
+                                                                <span className="text-white/80">{Array.isArray(event.interested) ? event.interested.length : event.interested}</span>
                                                             </div>
                                                         )}
                                                     </div>
@@ -1935,10 +2081,23 @@ const UserProfile = () => {
                                   </span>
                                 </div>
                                 <div className="flex items-center gap-1 mt-2">
-                                  <FaStar className="w-4 h-4 text-[#7c7d7b]" />
-                                  <span className="text-[#C5FF32] text-sm">
-                                    {event.stats?.interested || 0} interested
-                                  </span>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleEventInterestToggle(event._id || event.id);
+                                    }}
+                                    disabled={interestLoading[event._id || event.id]}
+                                    className="flex items-center gap-1 hover:scale-105 transition-transform disabled:opacity-50"
+                                  >
+                                    {isUserInterestedInEvent(event) ? (
+                                      <FaStar className="w-4 h-4 text-[#C5FF32]" />
+                                    ) : (
+                                      <FaStar className="w-4 h-4 text-[#7c7d7b] hover:text-[#C5FF32] transition-colors" />
+                                    )}
+                                    <span className="text-[#C5FF32] text-sm">
+                                      {Array.isArray(event?.interested) ? event.interested.length : (event?.interested || 0)} interested
+                                    </span>
+                                  </button>
                                 </div>
                               </div>
                             </div>
