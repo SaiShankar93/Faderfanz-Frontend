@@ -141,6 +141,9 @@ const EventPage = ({}) => {
   const [embedUrl, setEmbedUrl] = useState(``);
   const [userCurrency, setUserCurrency] = useState({ code: "INR", symbol: "₹" });
   const [exchangeRate, setExchangeRate] = useState(1);
+  const [interestedEvents, setInterestedEvents] = useState(new Set());
+  const [interestLoading, setInterestLoading] = useState({});
+  const [userData, setUserData] = useState(null);
 
   // Helper function to calculate price details (matching backend calculation)
   const calculatePriceDetails = (price, quantity) => {
@@ -745,6 +748,86 @@ const EventPage = ({}) => {
     }
   };
 
+  // Get current user data
+  useEffect(() => {
+    const token = localStorage.getItem('accessToken');
+    if (token) {
+      try {
+        const decoded = JSON.parse(atob(token.split('.')[1]));
+        setUserData({ _id: decoded.id, role: decoded.role });
+      } catch (error) {
+        console.error('Error decoding token:', error);
+      }
+    }
+  }, []);
+
+  // Check if user is interested in an event
+  const isUserInterestedInEvent = (event) => {
+    if (!userData) return false;
+    
+    // Check if the event has an interested array
+    if (event.interested && Array.isArray(event.interested)) {
+      const isInterested = event.interested.some(interest => 
+        interest.user === userData._id || interest.user === userData.id
+      );
+      return isInterested;
+    }
+    
+    // Fallback to interestedEvents set
+    return interestedEvents.has(event._id || event.id);
+  };
+
+  // Event interest toggle functionality
+  const handleEventInterestToggle = async (eventId) => {
+    try {
+      setInterestLoading(prev => ({ ...prev, [eventId]: true }));
+      
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        toast.error('Please login to mark events as interested');
+        return;
+      }
+
+      const response = await axiosInstance.post(`/events/${eventId}/interest`);
+      
+      if (response.data) {
+        const { isInterested, totalInterested } = response.data;
+        
+        // Update interested events set
+        setInterestedEvents(prev => {
+          const newSet = new Set(prev);
+          if (isInterested) {
+            newSet.add(eventId);
+          } else {
+            newSet.delete(eventId);
+          }
+          return newSet;
+        });
+        
+        // Update the event's interested count
+        setEvent(prev => {
+          // If the API returns the updated interested array, use it
+          if (response.data.interested && Array.isArray(response.data.interested)) {
+            return { ...prev, interested: response.data.interested };
+          }
+          // Otherwise, manually update the array
+          const currentInterested = prev.interested || [];
+          const updatedInterested = isInterested 
+            ? [...currentInterested, { user: userData._id, userModel: userData.role }]
+            : currentInterested.filter(interest => interest.user !== userData._id);
+          return { ...prev, interested: updatedInterested };
+        });
+        
+        toast.success(isInterested ? 'Marked as interested!' : 'Removed from interested!');
+      }
+    } catch (error) {
+      console.error('Error toggling event interest:', error);
+      toast.error(error.response?.data?.message || 'Failed to toggle interest status');
+    } finally {
+      setInterestLoading(prev => ({ ...prev, [eventId]: false }));
+    }
+  };
+
   return (
     <div className="relative bg-[#0E0F13] min-h-screen text-white overflow-hidden font-sen">
       {/* Background gradient */}
@@ -775,21 +858,30 @@ const EventPage = ({}) => {
                 className="w-4 h-4 md:w-5 md:h-5"
               />
             </button>
-            <button className="bg-[#C5FF32] p-2 md:p-3 rounded-full">
-              <img
-                src="/icons/star-icon.svg"
-                alt="Star"
-                className="w-4 h-4 md:w-5 md:h-5"
-              />
+            <button 
+              onClick={() => handleEventInterestToggle(event._id || event.id)}
+              disabled={interestLoading[event._id || event.id]}
+              className={`p-2 md:p-3 rounded-full transition-colors ${
+                isUserInterestedInEvent(event) 
+                  ? 'bg-[#C5FF32] hover:bg-[#d4ff66]' 
+                  : 'bg-[#1C1D24]/50 hover:bg-[#1C1D24]/70'
+              } ${interestLoading[event._id || event.id] ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              <FaStar className={`w-4 h-4 md:w-5 md:h-5 transition-colors ${
+                isUserInterestedInEvent(event) 
+                  ? 'text-black' 
+                  : 'text-[#C5FF32]'
+              }`} />
             </button>
           </div>
         </div>
 
         {/* Title and Info Container */}
         <div className="mt-6 md:mt-8">
-          <h1 className="text-4xl md:text-[44px] font-bold mb-6 md:mb-8">
+          <h1 className="text-4xl md:text-[44px] font-bold mb-4">
             {event?.title || "Event Title"}
           </h1>
+          
 
           {/* Date/Time and Ticket Container */}
           <div className="flex flex-col md:flex-row justify-between gap-6 md:gap-8 bg-[#1C1D24]/50 rounded-xl p-4 md:p-6">
