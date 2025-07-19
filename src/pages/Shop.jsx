@@ -123,6 +123,9 @@ const Shop = () => {
   const [selectedLocation, setSelectedLocation] = useState('');
   const [itemsPerPage, setItemsPerPage] = useState(12);
   const { category, subcategory } = useParams();
+  const [interestedEvents, setInterestedEvents] = useState(new Set());
+  const [interestLoading, setInterestLoading] = useState({});
+  const [userData, setUserData] = useState(null);
 
   const { SetIsMobileFilterOpen, currency, wishlist } = useContext(AppContext);
   const handleInput = (e) => {
@@ -232,6 +235,89 @@ const Shop = () => {
   useEffect(() => {
     getEvents();
   }, []);
+
+  // Get current user data
+  useEffect(() => {
+    const token = localStorage.getItem('accessToken');
+    if (token) {
+      try {
+        const decoded = JSON.parse(atob(token.split('.')[1]));
+        setUserData({ _id: decoded.id, role: decoded.role });
+      } catch (error) {
+        console.error('Error decoding token:', error);
+      }
+    }
+  }, []);
+
+  // Check if user is interested in an event
+  const isUserInterestedInEvent = (event) => {
+    if (!userData) return false;
+    
+    // Check if the event has an interested array
+    if (event.interested && Array.isArray(event.interested)) {
+      const isInterested = event.interested.some(interest => 
+        interest.user === userData._id || interest.user === userData.id
+      );
+      return isInterested;
+    }
+    
+    // Fallback to interestedEvents set
+    return interestedEvents.has(event._id || event.id);
+  };
+
+  // Event interest toggle functionality
+  const handleEventInterestToggle = async (eventId, event) => {
+    try {
+      setInterestLoading(prev => ({ ...prev, [eventId]: true }));
+      
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        toast.error('Please login to mark events as interested');
+        return;
+      }
+
+      const response = await axiosInstance.post(`/events/${eventId}/interest`);
+      
+      if (response.data) {
+        const { isInterested, totalInterested } = response.data;
+        
+        // Update interested events set
+        setInterestedEvents(prev => {
+          const newSet = new Set(prev);
+          if (isInterested) {
+            newSet.add(eventId);
+          } else {
+            newSet.delete(eventId);
+          }
+          return newSet;
+        });
+        
+        // Update the event's interested count in events list
+        setEvents(prev => prev.map(eventItem => {
+          if (eventItem._id === eventId || eventItem.id === eventId) {
+            // If the API returns the updated interested array, use it
+            if (response.data.interested && Array.isArray(response.data.interested)) {
+              return { ...eventItem, interested: response.data.interested };
+            }
+            // Otherwise, manually update the array
+            const currentInterested = eventItem.interested || [];
+            const updatedInterested = isInterested 
+              ? [...currentInterested, { user: userData._id, userModel: userData.role }]
+              : currentInterested.filter(interest => interest.user !== userData._id);
+            return { ...eventItem, interested: updatedInterested };
+          }
+          return eventItem;
+        }));
+        
+        toast.success(isInterested ? 'Marked as interested!' : 'Removed from interested!');
+      }
+    } catch (error) {
+      console.error('Error toggling event interest:', error);
+      toast.error(error.response?.data?.message || 'Failed to toggle interest status');
+    } finally {
+      setInterestLoading(prev => ({ ...prev, [eventId]: false }));
+    }
+  };
 
   // Filter events based on selected filters
   const filteredEvents = useMemo(() => {
@@ -490,14 +576,30 @@ const Shop = () => {
                             <div className="flex items-center gap-1 text-gray-400">
                               <FaStar className="w-3 h-3 text-[#C5FF32]" />
                               <span className="text-sm">
-                                {event.stats?.interested || 0} interested
+                                {Array.isArray(event?.interested) ? event.interested.length : (event?.interested || 0)} interested
                               </span>
                             </div>
                           </div>
 
                           {/* Star button */}
-                          <button className="absolute right-0 top-0 bg-[#C5FF32] p-2.5 rounded-full hover:bg-[#d4ff66] transition-colors group">
-                            <FaStar className="w-4 h-4 text-black group-hover:scale-110 transition-transform" />
+                          <button 
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleEventInterestToggle(event._id || event.id, event);
+                            }}
+                            disabled={interestLoading[event._id || event.id]}
+                            className={`absolute right-0 top-0 p-2.5 rounded-full transition-colors group ${
+                              isUserInterestedInEvent(event) 
+                                ? 'bg-[#C5FF32] hover:bg-[#d4ff66]' 
+                                : 'bg-[#1C1D24]/50 hover:bg-[#1C1D24]/70'
+                            } ${interestLoading[event._id || event.id] ? 'opacity-50 cursor-not-allowed' : ''}`}
+                          >
+                            <FaStar className={`w-4 h-4 transition-colors ${
+                              isUserInterestedInEvent(event) 
+                                ? 'text-black' 
+                                : 'text-[#C5FF32]'
+                            } group-hover:scale-110 transition-transform`} />
                           </button>
                         </div>
                       </div>
