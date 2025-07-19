@@ -55,16 +55,6 @@ const CuratorPage = () => {
     });
     const { id } = useParams();
     const [reviews, setReviews] = useState([
-        {
-            id: 1,
-            userName: "Abuka Henry",
-            userType: "Fan/Guest",
-            userImage: "/Images/curator-img.png",
-            rating: 5,
-            comment: "DJ Kazi is a master of the turntables, effortlessly blending beats and creating an electrifying atmosphere wherever they perform. Their music selection is always on point, keeping the crowd engaged and energized.",
-            additionalComment: "I look forward to being there this weekend for the Weekend Show",
-            createdAt: new Date()
-        }
     ]);
     const [sortBy, setSortBy] = useState('top-rated');
     const [posts, setPosts] = useState([]);
@@ -865,9 +855,9 @@ const CuratorPage = () => {
                         <div className="relative h-48 rounded-t-lg overflow-hidden">
                             <div className="absolute inset-0 bg-gradient-to-r from-[#1F1B87] to-[#7B1B87] opacity-80"></div>
                             <div className="absolute inset-0 bg-[url('/Images/coverimg.png')] bg-cover bg-center mix-blend-overlay"></div>
-                            <button className="absolute right-4 top-4 bg-white hover:bg-gray-100 text-black px-4 py-1 rounded-md text-sm z-10">
+                            {/* <button className="absolute right-4 top-4 bg-white hover:bg-gray-100 text-black px-4 py-1 rounded-md text-sm z-10">
                                 Change Image
-                            </button>
+                            </button> */}
                         </div>
 
                         <div className="relative px-8">
