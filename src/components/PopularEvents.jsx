@@ -79,6 +79,16 @@ const PopularEvents = ({ showTitle = true, showBackground = true, currentEventId
         }
     };
 
+    // Function to update event interest in real-time
+    const updateEventInterest = (eventId, updatedEvent) => {
+        setEvents(prev => prev.map(event => {
+            if (event._id === eventId || event.id === eventId) {
+                return { ...event, ...updatedEvent };
+            }
+            return event;
+        }));
+    };
+
     useEffect(() => {
         fetchEvents();
     }, []);
@@ -195,7 +205,7 @@ const PopularEvents = ({ showTitle = true, showBackground = true, currentEventId
                             if(event.id === currentEventId){
                                 return null
                             }
-                            return <PopularEventCard key={event._id} event={event} />
+                            return <PopularEventCard key={event._id} event={event} onEventUpdate={updateEventInterest} />
                         })}
                     </div>
                 ) : (
