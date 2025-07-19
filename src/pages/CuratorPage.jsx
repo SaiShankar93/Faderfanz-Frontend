@@ -73,6 +73,9 @@ const CuratorPage = () => {
     const [upcomingEvents, setUpcomingEvents] = useState([]);
     const [suggestions, setSuggestions] = useState([]);
     const [following, setFollowing] = useState([]); // For filtering suggestions
+    const [interestedEvents, setInterestedEvents] = useState(new Set());
+    const [interestLoading, setInterestLoading] = useState({});
+    const [userData, setUserData] = useState(null);
 
     useEffect(() => {
         const fetchCurator = async () => {
@@ -181,6 +184,17 @@ const CuratorPage = () => {
                 console.error('Error fetching suggestions:', error);
             }
         };
+        // Get current user data
+        const token = localStorage.getItem('accessToken');
+        if (token) {
+            try {
+                const decoded = JSON.parse(atob(token.split('.')[1]));
+                setUserData({ _id: decoded.id, role: decoded.role });
+            } catch (error) {
+                console.error('Error decoding token:', error);
+            }
+        }
+
         fetchCurator();
         fetchPosts();
         fetchUpcomingEvents();
@@ -489,6 +503,76 @@ const CuratorPage = () => {
         } catch (error) {
             console.error('Error following curator:', error);
             toast.error('Failed to follow curator');
+        }
+    };
+
+    // Check if user is interested in an event
+    const isUserInterestedInEvent = (event) => {
+        if (!userData) return false;
+        
+        // Check if the event has an interested array
+        if (event.interested && Array.isArray(event.interested)) {
+            const isInterested = event.interested.some(interest => 
+                interest.user === userData._id || interest.user === userData.id
+            );
+            return isInterested;
+        }
+        
+        // Fallback to interestedEvents set
+        return interestedEvents.has(event._id || event.id);
+    };
+
+    // Event interest toggle functionality
+    const handleEventInterestToggle = async (eventId) => {
+        try {
+            setInterestLoading(prev => ({ ...prev, [eventId]: true }));
+            
+            const token = localStorage.getItem('accessToken');
+            if (!token) {
+                toast.error('Please login to mark events as interested');
+                return;
+            }
+
+            const response = await axiosInstance.post(`/events/${eventId}/interest`);
+            
+            if (response.data) {
+                const { isInterested, totalInterested } = response.data;
+                
+                // Update interested events set
+                setInterestedEvents(prev => {
+                    const newSet = new Set(prev);
+                    if (isInterested) {
+                        newSet.add(eventId);
+                    } else {
+                        newSet.delete(eventId);
+                    }
+                    return newSet;
+                });
+                
+                // Update the event's interested count in upcoming events
+                setUpcomingEvents(prev => prev.map(event => {
+                    if (event._id === eventId || event.id === eventId) {
+                        // If the API returns the updated interested array, use it
+                        if (response.data.interested && Array.isArray(response.data.interested)) {
+                            return { ...event, interested: response.data.interested };
+                        }
+                        // Otherwise, manually update the array
+                        const currentInterested = event.interested || [];
+                        const updatedInterested = isInterested 
+                            ? [...currentInterested, { user: userData._id, userModel: userData.role }]
+                            : currentInterested.filter(interest => interest.user !== userData._id);
+                        return { ...event, interested: updatedInterested };
+                    }
+                    return event;
+                }));
+                
+                toast.success(isInterested ? 'Marked as interested!' : 'Removed from interested!');
+            }
+        } catch (error) {
+            console.error('Error toggling event interest:', error);
+            toast.error(error.response?.data?.message || 'Failed to toggle interest status');
+        } finally {
+            setInterestLoading(prev => ({ ...prev, [eventId]: false }));
         }
     };
 
@@ -1026,8 +1110,24 @@ const CuratorPage = () => {
                                                 <span>{event.startDate && event.endDate ? `${new Date(event.startDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${new Date(event.endDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : event.time || "Time TBD"}</span>
                                             </div>
                                             <div className="flex items-center gap-1 mt-2">
-                                                <FaStar className="w-4 h-4 text-[#7c7d7b]" />
-                                                <span className="text-[#C5FF32] text-sm">{event.stats?.interested || event.interested || 0} interested</span>
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        handleEventInterestToggle(event._id || event.id);
+                                                    }}
+                                                    disabled={interestLoading[event._id || event.id]}
+                                                    className="flex items-center gap-1 hover:scale-105 transition-transform disabled:opacity-50"
+                                                >
+                                                    {isUserInterestedInEvent(event) ? (
+                                                        <FaStar className="w-4 h-4 text-[#C5FF32]" />
+                                                    ) : (
+                                                        <FaStar className="w-4 h-4 text-[#7c7d7b] hover:text-[#C5FF32] transition-colors" />
+                                                    )}
+                                                    <span className="text-[#C5FF32] text-sm">
+                                                        {Array.isArray(event?.interested) ? event.interested.length : (event?.interested || 0)} interested
+                                                    </span>
+                                                </button>
                                             </div>
                                         </div>
                                     </Link>
