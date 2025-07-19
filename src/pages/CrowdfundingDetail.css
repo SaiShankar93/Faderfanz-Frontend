@@ -107,9 +107,9 @@
 }
 
 /* Add a subtle pulse effect to the containers */
-.bg-gradient-to-br {
+/* .bg-gradient-to-br {
   animation: pulse 4s infinite;
-}
+} */
 
 @keyframes pulse {
   0%, 100% {
