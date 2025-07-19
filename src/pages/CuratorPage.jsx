@@ -81,8 +81,8 @@ const CuratorPage = () => {
                 const { data } = await axiosInstance.get(`management/curators/${id}`);
                 if (data) {
                     setCurator(data);
-                    // TODO: Uncomment when API is ready
-                    // setReviews(data.ratings || []);
+                    // Set reviews from API response
+                    setReviews(data.reviews || []);
                     // Check if current user is following this curator
                     const token = localStorage.getItem('accessToken');
                     if (token && data.followers) {
@@ -216,30 +216,46 @@ const CuratorPage = () => {
 
     const handleReviewSubmit = useCallback(async () => {
         if (rating === 0) {
-            alert('Please select a rating');
+            toast.error('Please select a rating');
+            return;
+        }
+        if (!reviewText.trim()) {
+            toast.error('Please enter a comment');
+            return;
+        }
+
+        // Check if user is logged in
+        const token = localStorage.getItem('accessToken');
+        if (!token) {
+            toast.error('Please login to add a review');
             return;
         }
 
         try {
-            const newReview = {
-                id: reviews.length + 1,
-                userName: "Current User",
-                userType: "Guest",
-                userImage: "/Images/default-avatar.jpg",
+            // Add review to curator
+            const res = await axiosInstance.post(`/profiles/curator/${id}/review`, {
                 rating,
-                comment: reviewText,
-                createdAt: new Date()
-            };
-
-            setReviews(prev => [newReview, ...prev]);
+                comment: reviewText
+            }, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            if (res.data && res.data.reviews) {
+                setReviews(res.data.reviews.reverse()); // Most recent first
+            }
             setRating(0);
             setReviewText('');
-            alert('Review submitted successfully');
+            toast.success('Review submitted successfully');
         } catch (error) {
-            alert('Failed to submit review');
             console.error('Error submitting review:', error);
+            if (error.response?.status === 401) {
+                toast.error('Please login to add a review');
+            } else {
+                toast.error(error.response?.data?.message || 'Failed to submit review');
+            }
         }
-    }, [rating, reviewText, reviews]);
+    }, [rating, reviewText, id]);
 
     const handleSortChange = useCallback((sortValue) => {
         setSortBy(sortValue);
@@ -458,6 +474,24 @@ const CuratorPage = () => {
         setCurrentImageIndex(0);
     };
 
+    const handleFollow = async (userId) => {
+        try {
+            const response = await axiosInstance.post(`profiles/curator/${userId}/follow`, {}, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                }
+            });
+            if (response.data) {
+                toast.success('Followed successfully');
+                // Update suggestions to remove the followed user
+                setSuggestions(prev => prev.filter(s => s._id !== userId));
+            }
+        } catch (error) {
+            console.error('Error following curator:', error);
+            toast.error('Failed to follow curator');
+        }
+    };
+
     const renderReviewsContent = () => (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
@@ -472,13 +506,23 @@ const CuratorPage = () => {
                 </select>
             </div>
 
-            {reviews.map((review) => (
-                <div key={review.id} className="bg-[#231D30] rounded-lg p-6">
+            {reviews.length > 0 ? reviews.map((review, index) => (
+                <div key={review._id || index} className="bg-[#231D30] rounded-lg p-6">
                     <div className="flex gap-4 mb-4">
-                        <img src={review.userImage} alt="" className="w-12 h-12 rounded-full" />
+                        <img 
+                            src={review.reviewer?.profileImage || review.userImage || "/Images/default-avatar.jpg"} 
+                            alt="Reviewer" 
+                            className="w-12 h-12 rounded-full object-cover" 
+                        />
                         <div>
-                            <h3 className="text-white font-medium">{review.userName}</h3>
-                            <p className="text-gray-400 text-sm">{review.userType}</p>
+                            <h3 className="text-white font-medium">
+                                {review.reviewerName || 
+                                 review.userName || 
+                                 (review.reviewer ? `${review.reviewer.firstName} ${review.reviewer.lastName}` : 'Anonymous')}
+                            </h3>
+                            <p className="text-gray-400 text-sm">
+                                {review.reviewerRole || review.userType || 'User'}
+                            </p>
                         </div>
                     </div>
                     <p className="text-gray-400 mb-4">{review.comment}</p>
@@ -487,12 +531,21 @@ const CuratorPage = () => {
                             {review.additionalComment}
                         </p>
                     )}
-                    <div className="flex items-center">
-                        <span className="text-yellow-400">★</span>
-                        <span className="text-white ml-1">{review.rating}.0 Ratings</span>
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                            <span className="text-yellow-400">★</span>
+                            <span className="text-white ml-1">{review.rating} Rating</span>
+                        </div>
+                        <span className="text-gray-500 text-sm">
+                            {new Date(review.createdAt).toLocaleDateString()}
+                        </span>
                     </div>
                 </div>
-            ))}
+            )) : (
+                <div className="text-center text-gray-400 py-8">
+                    <p>No reviews yet</p>
+                </div>
+            )}
 
             <div className="bg-[#231D30] rounded-lg p-6">
                 <h3 className="text-white mb-4">Say something about {curator.stageName || `${curator.firstName} ${curator.lastName}`}</h3>
@@ -510,7 +563,7 @@ const CuratorPage = () => {
                 <textarea
                     value={reviewText}
                     onChange={(e) => setReviewText(e.target.value)}
-                    placeholder="Any feedback? (optional)"
+                    placeholder="Any feedback? (required)"
                     className="w-full bg-[#1A1625] text-gray-400 rounded-lg p-4 min-h-[100px] mb-4"
                 />
                 <div className="flex justify-end">
